@@ -3353,7 +3353,7 @@ class Model_comercial extends CI_Model {
         $id_area = $this->security->xss_clean($this->uri->segment(3));
         //Consulto en Base de Datos
 
-        $sql = "SELECT area.id_area, area.no_area,area.encargado
+        $sql = "SELECT area.id_area,area.no_area,area.encargado,area.encargado_sta_clara
                 FROM area
                 WHERE area.id_area=".$id_area;
         $query = $this->db->query($sql);
@@ -3996,7 +3996,7 @@ class Model_comercial extends CI_Model {
         //Recuperamos el ID  -> 
         $id_area = $this->security->xss_clean($this->uri->segment(3));
         $area = strtoupper($this->security->xss_clean($this->input->post('editarea')));
-        $responsable = strtoupper($this->security->xss_clean($this->input->post('editresponsable')));
+        $responsable = strtoupper($this->security->xss_clean($this->input->post('nombre_encargado')));
         $almacen = $this->security->xss_clean($this->session->userdata('almacen'));
         //Verifico si existe
         $this->db->where('no_area',$area);
@@ -4006,12 +4006,21 @@ class Model_comercial extends CI_Model {
         if($query->num_rows()>0){
                 return false;
         }else{
-            $actualizar = array(
-                'no_area' => $area,
-                'encargado' => $responsable
-            );
-            $this->db->where('id_area',$id_area);
-            $this->db->update('area', $actualizar);
+            if( $almacen == 1 ){
+                $actualizar = array(
+                    'no_area' => $area,
+                    'encargado_sta_clara' => $responsable
+                );
+                $this->db->where('id_area',$id_area);
+                $this->db->update('area', $actualizar);
+            }else if( $almacen == 2 ){
+                $actualizar = array(
+                    'no_area' => $area,
+                    'encargado' => $responsable
+                );
+                $this->db->where('id_area',$id_area);
+                $this->db->update('area', $actualizar);
+            }
             return true;
         }
     }

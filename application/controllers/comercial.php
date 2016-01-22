@@ -2311,7 +2311,7 @@ class Comercial extends CI_Controller {
 	public function actualizararea()
 	{
 		$this->form_validation->set_rules('editarea', 'Área', 'trim|required|min_length[1]|max_length[20]|xss_clean');
-		$this->form_validation->set_rules('editresponsable', 'Responsable', 'trim|required|min_length[1]|max_length[20]|xss_clean');
+		$this->form_validation->set_rules('nombre_encargado', 'Responsable', 'trim|required|min_length[1]|max_length[20]|xss_clean');
 		//Mensajes
 		$this->form_validation->set_message('required','ERROR: Falta completar el campo: %s.');
 		$this->form_validation->set_message('min_length','ERROR: El campo %s debe tener 1 dígito como mínimo.');
@@ -3482,6 +3482,27 @@ class Comercial extends CI_Controller {
             $precio_unitario = $row->precio_unitario;
             $stock_actual_sta_clara = $row->stock_sta_clara;
         }
+
+        // Seleccion el id de la tabla producto
+        $this->db->select('id_pro');
+        $this->db->where('id_detalle_producto',$id_detalle_producto);
+        $query = $this->db->get('producto');
+        foreach($query->result() as $row){
+            $id_pro = $row->id_pro;
+        }
+
+        // Seleccionar el stock de acuerdo al producto y al área
+        // Actualización del Stock
+        $this->db->select('stock_area_sta_clara,stock_area_sta_anita,id_detalle_producto_area');
+        $this->db->where('id_area',$id_area);
+        $this->db->where('id_pro',$id_pro);
+        $query = $this->db->get('detalle_producto_area');
+        foreach($query->result() as $row){
+            $stock_area_sta_clara = $row->stock_area_sta_clara;
+            $stock_area_sta_anita = $row->stock_area_sta_anita;
+            $id_detalle_producto_area = $row->id_detalle_producto_area;
+        }
+
         // Obtener el valor si es un producto "NUEVO"
         $this->db->select('column_temp');
         $this->db->where('id_detalle_producto',$id_detalle_producto);
@@ -3492,7 +3513,7 @@ class Comercial extends CI_Controller {
 
         /* Validar el stock disponible por almacen */
         if($id_almacen == 1){
-        	if($cantidad > $stock_actual_sta_clara){
+        	if($cantidad > $stock_area_sta_clara){
 	        	echo 'error_stock';
 	        }else{
 	        	/* Validar si la salida esta en un periodo que ya cerro */
@@ -3586,8 +3607,10 @@ class Comercial extends CI_Controller {
 					        $this->model_comercial->descontarStock($id_detalle_producto,$cantidad,$stock_actual_sta_clara,$id_almacen, $id_area);
 					        /* Fin code */
 					        /* Actualizar estado del producto validando si tiene stock 0 */
-					        $stock_actual_general = $stock_actual + $stock_actual_sta_clara;
-					        $stock_actualizado = $stock_actual + $stock_actual_sta_clara - $cantidad;
+					        $stock_actual_general = $stock_area_sta_anita + $stock_area_sta_clara;
+					        $stock_actualizado = $stock_area_sta_anita + $stock_area_sta_clara - $cantidad;
+
+					        /*
 					        if($stock_actualizado == 0 AND $column_temp == ""){
 					        	$this->model_comercial->actualizarEstado($id_detalle_producto);
 					        }
@@ -3602,7 +3625,7 @@ class Comercial extends CI_Controller {
 					    						   'cantidad_salida' => $cantidad,
 					    						   'stock_actual' => $stock_actualizado,
 					    						   'precio_unitario_actual' => $precio_unitario,
-					    						   'num_comprobante' => $result,
+					    						   'num_comprobante' => $result_insert,
 					    						   );
 					    	$result_kardex = $this->model_comercial->saveSalidaProductoKardex($a_data_kardex,true);
 					    	/* Fin del registro para el kardex */
@@ -3809,7 +3832,7 @@ class Comercial extends CI_Controller {
 	        	}
 	        }
         }else if($id_almacen == 2){
-        	if($cantidad > $stock_actual_sta_anita){
+        	if($cantidad > $stock_area_sta_anita){
 	        	echo 'error_stock';
 	        }else{
 	        	/* Validar si la salida esta en un periodo que ya cerro */
@@ -3903,11 +3926,15 @@ class Comercial extends CI_Controller {
 					        $this->model_comercial->descontarStock($id_detalle_producto,$cantidad,$stock_actual_sta_anita,$id_almacen, $id_area);
 					        /* Fin code */
 					        /* Actualizar estado del producto validando si tiene stock 0 */
-					        $stock_actual_general = $stock_actual + $stock_actual_sta_anita;
-					        $stock_actualizado = $stock_actual + $stock_actual_sta_anita - $cantidad;
+					        $stock_actual_general = $stock_area_sta_anita + $stock_area_sta_clara;
+					        $stock_actualizado = $stock_area_sta_anita + $stock_area_sta_clara - $cantidad;
+					        // Decido comentar estas lineas de codigo por que no es necesario cambiar el estado del producto a un estado
+					        // inactivo cuando el stock del producto llega a 0
+					        /*
 					        if($stock_actualizado == 0 AND $column_temp == ""){
 					        	$this->model_comercial->actualizarEstado($id_detalle_producto);
 					        }
+					        */
 					        /* Fin de actualizacion */
 					        /* Realizar registro para el kardex */
 					    	$a_data_kardex = array('fecha_registro' => $fecharegistro,
@@ -3918,7 +3945,7 @@ class Comercial extends CI_Controller {
 					    						   'cantidad_salida' => $cantidad,
 					    						   'stock_actual' => $stock_actualizado,
 					    						   'precio_unitario_actual' => $precio_unitario,
-					    						   'num_comprobante' => $result,
+					    						   'num_comprobante' => $result_insert,
 					    						   );
 					    	$result_kardex = $this->model_comercial->saveSalidaProductoKardex($a_data_kardex,true);
 					    	/* Fin del registro para el kardex */

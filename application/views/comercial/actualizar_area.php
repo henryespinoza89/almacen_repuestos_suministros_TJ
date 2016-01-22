@@ -17,6 +17,7 @@
 				#Datos del Nombre de Máquina
 				$editarea = array('name'=>'editarea','id'=>'editarea','maxlength'=>'20', 'style'=>'width:150px', 'value'=>$data->no_area);
 				$editresponsable = array('name'=>'editresponsable','id'=>'editresponsable','maxlength'=>'20', 'style'=>'width:150px', 'value'=>$data->encargado);
+				$editresponsable_sta_clara = array('name'=>'editresponsable_sta_clara','id'=>'editresponsable_sta_clara','maxlength'=>'20', 'style'=>'width:150px', 'value'=>$data->encargado_sta_clara);
 			?>
 	    		<tr>
 					<td width="152">Área:</td>
@@ -24,7 +25,13 @@
 				</tr>
 				<tr>
 					<td width="152">Responsable:</td>
-					<td width="350"><?php echo form_input($editresponsable); ?></td>
+					<td width="350"><?php 
+										if($this->session->userdata('almacen') == 1){
+					                    	echo form_input($editresponsable_sta_clara); 
+					                  	}else if($this->session->userdata('almacen') == 2){
+					                    	echo form_input($editresponsable);
+					                  	}
+									?></td>
 				</tr>
 			<?php }?>
 	    	</table>

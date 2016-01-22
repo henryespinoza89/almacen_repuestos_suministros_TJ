@@ -145,15 +145,20 @@
             Actualizar: function() {
             $(".ui-dialog-buttonpane button:contains('Actualizar')").button("disable");
             $(".ui-dialog-buttonpane button:contains('Actualizar')").attr("disabled", true).addClass("ui-state-disabled");
-            //CONTROLO LAS VARIABLES
-            var editarea = $('#editarea').val(); editresponsable = $('#editresponsable').val();
-            if(editarea == '' || editresponsable == ''){
+            // CONTROLO LAS VARIABLES
+            var editarea = $('#editarea').val(); editresponsable = $('#editresponsable').val(); editresponsable_sta_clara = $('#editresponsable_sta_clara').val();
+            if(<?php echo $this->session->userdata('almacen'); ?> == 1){
+              var nombre_encargado = editresponsable_sta_clara;
+            }else if(<?php echo $this->session->userdata('almacen'); ?> == 2){
+              var nombre_encargado = editresponsable;
+            }
+            if(editarea == '' || nombre_encargado == ''){
               $("#modalerror").html('<b>ERROR:</b> Faltan completar el campos del formulario, por favor verifique.').dialog({
-                modal: true,position: 'center',width: 450, height: 145,resizable: false,
+                modal: true,position: 'center',width: 500, height: 125,resizable: false,title: 'Validación',
                 buttons: { Ok: function() {$(".ui-dialog-buttonpane button:contains('Actualizar')").button("enable");$( this ).dialog( "close" );}}
               });
             }else{
-              var dataString = 'editarea='+editarea+'&editresponsable='+editresponsable+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
+              var dataString = 'editarea='+editarea+'&nombre_encargado='+nombre_encargado+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
               $.ajax({
                 type: "POST",
                 url: "<?php echo base_url(); ?>comercial/actualizararea/"+id_area,
