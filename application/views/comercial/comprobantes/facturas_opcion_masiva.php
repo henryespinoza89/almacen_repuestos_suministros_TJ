@@ -207,6 +207,28 @@
       }}
     });
 
+    <?php if(!empty($validacion_no_existe_tipo_cambio)){ ?>
+      $("#error_validacion_no_existe_tipo_cambio").html('<strong>! No existe Tipo de Cambio para la fecha seleccionada.</strong>').dialog({
+        modal: true,position: 'center',width: 490,height: 140, resizable: false, title: 'Error de Validación',hide: 'scale',show: 'scale',
+        buttons: { Ok: function(){
+          $(this).dialog('close');
+        }}
+      });
+    <?php } ?>
+
+    <?php if(!empty($respuesta_validacion_areas_productos_importadas)){ ?>
+      var fila_area = "<?php echo $respuesta_validacion_areas_productos_importadas; ?>" ;
+    <?php } ?>
+
+    <?php if(!empty($respuesta_validacion_areas_productos_importadas)){ ?>
+      $("#error_respuesta_validacion_areas_productos_importadas").html('<strong>! Se encontro un Error en los Datos del Área de la Fila '+ fila_area + ' !<br> Verificar el Archivo Excel/CSV y volver a Cargar la Data.</strong>').dialog({
+        modal: true,position: 'center',width: 490,height: 140, resizable: false, title: 'Error de Validación',hide: 'scale',show: 'scale',
+        buttons: { Ok: function(){
+          $(this).dialog('close');
+        }}
+      });
+    <?php } ?>
+
     /* ------------ VALIDACIÓN DE DATOS SI EXISTE EL ID DEL PRODUCTO ------------ */
     <?php if(!empty($respuesta_validacion_facturas_importadas)){ ?>
       var fila_producto = "<?php echo $respuesta_validacion_facturas_importadas; ?>" ;
@@ -330,8 +352,16 @@
   <div id="finregistro"></div>
   <div id="modalerror"></div>
 
+  <?php if(!empty($validacion_no_existe_tipo_cambio)){ ?>
+    <div id="error_validacion_no_existe_tipo_cambio"></div>
+  <?php } ?>
+
   <?php if(!empty($respuesta_validacion_facturas_importadas)){ ?>
     <div id="error_respuesta_validacion_facturas_importadas"></div>
+  <?php } ?>
+
+  <?php if(!empty($respuesta_validacion_areas_productos_importadas)){ ?>
+    <div id="error_respuesta_validacion_areas_productos_importadas"></div>
   <?php } ?>
 
   <?php if(!empty($respuesta_validacion_actualizacion_importadas)){ ?>

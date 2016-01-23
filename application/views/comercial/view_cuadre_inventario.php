@@ -67,11 +67,23 @@ $(function(){
 
 	$("#nombre_producto").autocomplete({
         source: function (request, respond) {
-        	$.post("<?php echo base_url('comercial/traer_producto_autocomplete'); ?>", {<?php echo $this->security->get_csrf_token_name(); ?>: "<?php echo $this->security->get_csrf_hash(); ?>", q: request.term},
-	        function (response) {
-	            respond(response);
-	        }, 'json');
+
+        	var id_area = $("#area").val();
+        	if(id_area == ""){
+        		$("#nombre_producto").val("");
+				$("#modalerror").html('<strong>!Seleccionar el Área del Producto. Verificar!</strong>').dialog({
+                	modal: true,position: 'center',width: 450, height: 125,resizable: false,title: 'Validación de Registro',hide: 'blind',show: 'blind',
+                	buttons: { Ok: function() {$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );}}
+              	});
+			}else{
+	        	$.post("<?php echo base_url('comercial/traer_producto_autocomplete'); ?>", {<?php echo $this->security->get_csrf_token_name(); ?>: "<?php echo $this->security->get_csrf_hash(); ?>", q: request.term, a: id_area},
+		        function (response) {
+		            respond(response);
+		        }, 'json');
+			}
         }, select: function (event, ui) {
+	        var id_area = $("#area").val();
+
 	        var selectedObj = ui.item;
 	        var nombre_producto = selectedObj.nombre_producto;
 
@@ -82,7 +94,8 @@ $(function(){
 	          	type: 'get',
 	          	url: ruta,
 	          	data: {
-	            	'nombre_producto' : nombre_producto
+	            	'nombre_producto' : nombre_producto,
+	            	'id_area' : id_area
 	          	},
 	          	success: function(response){
 	            	$("#stockactual").val(response);
@@ -262,20 +275,6 @@ $(function(){
 			    	<!--Contenido de la Pestaña 1-->
 			        <div id="content-1">
 						<div id="data_general" style="opacity: inherit;padding: 0.1em;width: 400px;float: left;">
-							<table width="520" border="0" cellspacing="0" cellpadding="0">			        
-						        <tr>
-					                <td width="145" valign="middle" height="30" style="padding-bottom: 4px;">Nombre del Producto:</td>
-					                <td width="228" height="30" colspan="5"><?php echo form_input($nombre_producto);?></td>
-					            </tr>
-						        <tr>
-									<td width="127" valign="middle" style="color:#005197;padding-bottom: 4px;" height="30">Stock Actual del sistema:</td>
-						          	<td width="228" height="30"><?php echo form_input($stockactual);?></td>
-						        </tr>	
-								<tr>
-									<td width="127" valign="middle" height="30" style="padding-bottom: 4px;">Stock Físico de Inventario:</td>
-						          	<td width="228" height="30"><?php echo form_input($cantidad);?></td>
-								</tr>						        
-							</table>
 							<table width="518" border="0" cellspacing="0" cellpadding="0">
 						        <tr>
 						          	<td width="175" valign="middle" height="30">Área:</td>
@@ -292,6 +291,20 @@ $(function(){
 						          	<?php }?>
 						        </tr>
 						    </table>
+							<table width="520" border="0" cellspacing="0" cellpadding="0">			        
+						        <tr>
+					                <td width="145" valign="middle" height="30" style="padding-bottom: 4px;">Nombre del Producto:</td>
+					                <td width="228" height="30" colspan="5"><?php echo form_input($nombre_producto);?></td>
+					            </tr>
+						        <tr>
+									<td width="127" valign="middle" style="color:#005197;padding-bottom: 4px;" height="30">Stock Actual del sistema:</td>
+						          	<td width="228" height="30"><?php echo form_input($stockactual);?></td>
+						        </tr>	
+								<tr>
+									<td width="127" valign="middle" height="30" style="padding-bottom: 4px;">Stock Físico de Inventario:</td>
+						          	<td width="228" height="30"><?php echo form_input($cantidad);?></td>
+								</tr>						        
+							</table>
 						    <table width="614" border="0" cellspacing="0" cellpadding="0" style="margin-top: 3px;">			        
 							    <tr>
 							       	<td width="117" style="padding-top: 3px;" colspan="6"><input type="submit" id="cuadre_almacen" name="cuadre_almacen" value="Cuadrar Inventario" style="padding-bottom:3px; padding-top:3px; margin-bottom: 4px; background-color: #005197; border-radius:6px; margin-left: 300px; width: 150px;visibility: visible;height: 20px;" /></td>

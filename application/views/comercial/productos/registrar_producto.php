@@ -396,7 +396,9 @@
                     $("#finregistro").html('!El Producto ha sido actualizado con éxito!.').dialog({
                       modal: true,position: 'center',width: 300,height: 125,resizable: false, title: 'Fin de Actualización',
                       buttons: { Ok: function(){
-                        window.location.href="<?php echo base_url();?>comercial/gestionproductos";
+                        // window.location.href="<?php echo base_url();?>comercial/gestionproductos";
+                        $("#mdlEditarProducto").dialog("close");
+                        $( this ).dialog( "close" );
                       }}
                     });
                   }else{

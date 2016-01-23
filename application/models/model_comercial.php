@@ -548,7 +548,7 @@ class Model_comercial extends CI_Model {
         }
     }
 
-    public function inserta_factura_masiva($id_comprobante,$suma_parciales_factura,$a_data,$id_detalle_producto,$cantidad_ingreso,$precio_ingreso,$fecharegistro,$seriecomprobante,$numcomprobante,$total_factura_contabilidad,$almacen)
+    public function inserta_factura_masiva($nombre_area,$id_comprobante,$suma_parciales_factura,$a_data,$id_detalle_producto,$cantidad_ingreso,$precio_ingreso,$fecharegistro,$seriecomprobante,$numcomprobante,$total_factura_contabilidad,$almacen)
     {
         /* Realizo el registro del detalle de la factura */
         $insert = $this->db->insert('detalle_ingreso_producto', $a_data);
@@ -561,6 +561,47 @@ class Model_comercial extends CI_Model {
             $calculo_porcentaje = ($cantidad_ingreso*$precio_ingreso)/$suma_parciales_factura;
             $p_u_gastos = ($calculo_porcentaje * $total_factura_contabilidad)/$cantidad_ingreso;
         }
+
+        // Obtener el id del area
+        $this->db->select('id_area');
+        $this->db->where('no_area',$nombre_area);
+        $query = $this->db->get('area');
+        foreach($query->result() as $row){
+            $id_area = $row->id_area;
+        }
+        // Seleccion el id de la tabla producto
+        $this->db->select('id_pro');
+        $this->db->where('id_detalle_producto',$id_detalle_producto);
+        $query = $this->db->get('producto');
+        foreach($query->result() as $row){
+            $id_pro = $row->id_pro;
+        }
+        // Seleccionar el stock de acuerdo al producto y al área
+        // Actualización del Stock
+        $this->db->select('stock_area_sta_clara,stock_area_sta_anita,id_detalle_producto_area');
+        $this->db->where('id_area',$id_area);
+        $this->db->where('id_pro',$id_pro);
+        $query = $this->db->get('detalle_producto_area');
+        foreach($query->result() as $row){
+            $stock_area_sta_clara = $row->stock_area_sta_clara;
+            $stock_area_sta_anita = $row->stock_area_sta_anita;
+            $id_detalle_producto_area = $row->id_detalle_producto_area;
+        }
+
+        if($almacen == 1){
+            $stock_actualizado = $stock_area_sta_clara + $cantidad_ingreso;
+            $actualizar_stock_area = array(
+                'stock_area_sta_clara'=> $stock_actualizado
+            );
+        }else if($almacen == 2){
+            $stock_actualizado = $stock_area_sta_anita + $cantidad_ingreso;
+            $actualizar_stock_area = array(
+                'stock_area_sta_anita'=> $stock_actualizado
+            );
+        }
+        $this->db->where('id_detalle_producto_area',$id_detalle_producto_area);
+        $this->db->update('detalle_producto_area', $actualizar_stock_area);
+
         /* Actualización del Stock y Precio Unitario */
         $this->db->select('stock,precio_unitario,stock_sta_clara,stock_referencial_sta_anita,stock_referencial_sta_clara');
         $this->db->where('id_detalle_producto',$id_detalle_producto);
@@ -2013,6 +2054,7 @@ class Model_comercial extends CI_Model {
         if($this->input->post('fecharegistro')){
             $filtro .= " AND DATE(tipo_cambio.fecha_actual) ='".$this->security->xss_clean($this->input->post('fecharegistro'))."'";
         }
+        $filtro .= " LIMIT 10";
         $sql = "SELECT tipo_cambio.fecha_actual,tipo_cambio.dolar_compra,tipo_cambio.dolar_venta,tipo_cambio.euro_compra,
         tipo_cambio.euro_venta,tipo_cambio.fr_compra,tipo_cambio.fr_venta, tipo_cambio.id_tipo_cambio
         FROM tipo_cambio
