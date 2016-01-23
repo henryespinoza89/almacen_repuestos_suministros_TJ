@@ -1284,6 +1284,22 @@ class Comercial extends CI_Controller {
 		    }
 		}
 	}
+
+	public function traer_stock_general_cuadre()
+	{
+		$nombre_producto = $this->input->get('nombre_producto');
+		$id_almacen = $this->security->xss_clean($this->session->userdata('almacen'));
+		$variable = $this->model_comercial->getDataStock_general_cuadre($nombre_producto);
+		if($id_almacen == 1){
+	        foreach($variable as $fila){
+	        	echo $fila->stock_sta_clara;
+		    }
+		}else if($id_almacen == 2){
+	        foreach($variable as $fila){
+	        	echo $fila->stock;
+		    }
+		}
+	}
 	
 	public function gestionreporteproducto(){
 		$data['listaprocedencia'] = $this->model_comercial->listarProcedencia();
@@ -3647,6 +3663,127 @@ class Comercial extends CI_Controller {
 		        }
 	        }
 	    }while($aux_parametro_cuadre == 0);
+
+	}
+
+	public function cuadrar_producto_area_almacen(){
+		$nombre_producto = $this->security->xss_clean($this->input->post('nombre_producto'));
+		$area = $this->security->xss_clean($this->input->post('area'));
+		$cantidad = $this->security->xss_clean($this->input->post('cantidad'));
+		$id_almacen = $this->security->xss_clean($this->session->userdata('almacen'));
+		// Obtengo los datos del producto
+		$this->db->select('id_detalle_producto');
+        $this->db->where('no_producto',$nombre_producto);
+        $query = $this->db->get('detalle_producto');
+        foreach($query->result() as $row){
+            $id_detalle_producto = $row->id_detalle_producto;
+        }
+        // Obtengo los datos del producto
+		$this->db->select('id_pro');
+        $this->db->where('id_detalle_producto',$id_detalle_producto);
+        $query = $this->db->get('producto');
+        foreach($query->result() as $row){
+            $id_pro = $row->id_pro;
+        }
+        // Generar el ciclo
+        do{
+        	// Obtener stock del producto - de acuerdo al almacen
+        	$this->db->select('stock,precio_unitario,stock_sta_clara');
+	        $this->db->where('id_detalle_producto',$id_detalle_producto);
+	        $query = $this->db->get('detalle_producto');
+	        foreach($query->result() as $row){
+	        	$stockactual = $row->stock; // Sta. anita
+	        	$stock_sta_clara = $row->stock_sta_clara; // Sta. clara
+	        	$precio_unitario = $row->precio_unitario;
+	        }
+	        // Obtener la ultima salida del producto de la tabla salida_producto y kardex_producto
+	        // kardex_producto
+	        $this->db->select('id_kardex_producto,cantidad_salida,descripcion,fecha_registro');
+	        $this->db->where('id_detalle_producto',$id_detalle_producto);
+	        $this->db->order_by("id_kardex_producto", "asc");
+	        $query = $this->db->get('kardex_producto');
+	        if(count($query->result()) > 0){
+	        	foreach($query->result() as $row){
+	        		$auxiliar_last_kardex = $row->id_kardex_producto;
+	        		$cantidad_salida_kardex = $row->cantidad_salida;
+	        		$descripcion = $row->descripcion;
+	        		$fecha_registro = $row->fecha_registro;
+	        	}
+	        }
+	        // salida_producto
+	        $this->db->select('id_salida_producto,cantidad_salida,fecha');
+	        $this->db->where('id_detalle_producto',$id_detalle_producto);
+	        $this->db->order_by("id_salida_producto", "asc");
+	        $query = $this->db->get('salida_producto');
+	        if(count($query->result()) > 0){
+	        	foreach($query->result() as $row){
+	        		$auxiliar_last_salida = $row->id_salida_producto;
+	        		$cantidad_salida_table_salida = $row->cantidad_salida;
+	        	}
+	        }
+	        // Validar a que almacen pertenece
+	        if($id_almacen == 2){
+		        // El stock del sistema supera al stock fisico
+		        if($stockactual > $cantidad){
+	        		$unidad_base_salida = $stockactual - $cantidad;
+	        		// Realizar la salida con la cantidad necesaria para cuadrar el producto en el almacen
+					// tabla salida_producto
+					$a_data = array('id_area' => $area,
+									'fecha' => date('Y-m-d'),
+									'id_detalle_producto' => $id_detalle_producto,
+									'cantidad_salida' => $unidad_base_salida,
+									'id_almacen' => $id_almacen,
+									'p_u_salida' => $precio_unitario,
+									);
+					$result_insert = $this->model_comercial->saveSalidaProducto($a_data,true);
+					// tabla kardex
+					$new_stock = ($stockactual + $stock_sta_clara) - $unidad_base_salida;
+					$stock_general = $stockactual + $stock_sta_clara;
+					$a_data_kardex = array('fecha_registro' => date('Y-m-d'),
+				        	                'descripcion' => "SALIDA",
+				        	                'id_detalle_producto' => $id_detalle_producto,
+				        	                'stock_anterior' => $stock_general,
+				        	                'precio_unitario_anterior' => $precio_unitario,
+				        	                'cantidad_salida' => $unidad_base_salida,
+				        	                'stock_actual' => $new_stock,
+				        	                'precio_unitario_actual' => $precio_unitario,
+				        	                'num_comprobante' => $result_insert,
+				        	                );
+				    $result_kardex = $this->model_comercial->saveSalidaProductoKardex($a_data_kardex,true);
+		    	    // Actualizar stock de acuerdo al cuadre
+		    	    // Vuelvo a traer el stock porque lineas arriba ya lo actualice
+		    	    $this->db->select('stock');
+		            $this->db->where('id_detalle_producto',$id_detalle_producto);
+		            $query = $this->db->get('detalle_producto');
+		            foreach($query->result() as $row){
+		            	$stock_final = $row->stock;
+		            }
+		            // Descontar stock - el nuevo stock debe ser de acuerdo al valor de cuadre
+		            $this->model_comercial->descontarStock($id_detalle_producto,$unidad_base_salida,$stock_final,$id_almacen);
+		    	    // Enviar parametro para terminar bucle
+		    		$aux_parametro_cuadre = 1;
+		    		echo '1';
+	    		}
+	        }
+
+
+
+
+
+
+
+
+
+        }while($aux_parametro_cuadre == 0);
+
+
+
+
+
+
+
+
+
 
 	}
 

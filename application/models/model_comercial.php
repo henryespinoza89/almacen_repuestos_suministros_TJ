@@ -1152,6 +1152,22 @@ class Model_comercial extends CI_Model {
         }
     }
 
+    public function getDataStock_general_cuadre($nombre_producto){
+        $filtro = "";
+        $filtro .= " AND detalle_producto.no_producto ='".$nombre_producto."'";
+        $filtro .= " LIMIT 1";
+        
+        $sql = "SELECT detalle_producto.id_detalle_producto,detalle_producto.no_producto,detalle_producto.stock,detalle_producto.precio_unitario,
+                detalle_producto.stock_sta_clara
+                FROM detalle_producto
+                WHERE detalle_producto.id_detalle_producto IS NOT NULL".$filtro;
+        $query = $this->db->query($sql);
+        if($query->num_rows()>0)
+        {
+            return $query->result();
+        }
+    }
+
     public function listarProducto(){
         //esta variable filtrará y concatenará los diferentes filtros
         $filtro = "";

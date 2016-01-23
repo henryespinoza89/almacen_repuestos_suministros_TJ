@@ -17,6 +17,12 @@
 	    $stockactual = array('name'=>'stockactual','id'=>'stockactual','maxlength'=> '10', 'style'=>'width:100px;visibility: visible;height: 14px;','readonly'=> 'readonly');
 	}
 
+	if ($this->input->post('stockactual_general')){
+	    $stockactual_general = array('name'=>'stockactual_general','id'=>'stockactual_general','maxlength'=> '10', 'value' => $this->input->post('stockactual_general'), 'style'=>'width:100px;visibility: visible;height: 14px;','readonly'=> 'readonly');
+	}else{
+	    $stockactual_general = array('name'=>'stockactual_general','id'=>'stockactual_general','maxlength'=> '10', 'style'=>'width:100px;visibility: visible;height: 14px;','readonly'=> 'readonly');
+	}
+
 	if ($this->input->post('nombre_producto_o_i')){
 	    $nombre_producto_o_i = array('name'=>'nombre_producto_o_i','id'=>'nombre_producto_o_i','value'=>$this->input->post('nombre_producto_o_i'), 'style'=>'width:265px;font-family: verdana;visibility: visible;height: 14px;','placeholder'=>' :: Nombre del Producto ::');
 	}else{
@@ -89,6 +95,8 @@ $(function(){
 
 	        $("#nombre_producto").val(nombre_producto);
 	        nombre_producto = $("#nombre_producto").val();
+
+	        // Traer stock por area del producto
 	        var ruta = $('#direccion_traer_stock').text();
 	        $.ajax({
 	          	type: 'get',
@@ -101,6 +109,19 @@ $(function(){
 	            	$("#stockactual").val(response);
 	          	}
 	        });
+
+	        // Traer stock general del producto
+	        $.ajax({
+	          	type: 'get',
+	          	url: "<?php echo base_url(); ?>comercial/traer_stock_general_cuadre/",
+	          	data: {
+	            	'nombre_producto' : nombre_producto
+	          	},
+	          	success: function(response){
+	            	$("#stockactual_general").val(response);
+	          	}
+	        });
+
 	        $("#cantidad").focus();
         }
     });
@@ -199,7 +220,7 @@ $(function(){
 			var dataString = 'nombre_producto='+nombre_producto+'&stockactual='+stockactual+'&cantidad='+cantidad+'&area='+area+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
 	    	$.ajax({
 	            type: "POST",
-	            url: "<?php echo base_url(); ?>comercial/cuadrar_producto_almacen/",
+	            url: "<?php echo base_url(); ?>comercial/cuadrar_producto_area_almacen/",
 	          	data: dataString,
 	          	success: function(response){
 	            if(response == 1){
@@ -262,7 +283,7 @@ $(function(){
 	<div id="tituloCont" style="margin-bottom: 0;">Cuadre de Inventario</div>
 	<div id="formFiltro">
 		<!--Contenedor-->
-		<div id="datos_factura_importada" style="background: whitesmoke;width: 1370px;border-bottom: 1px solid #000;padding-top: 10px;padding-left: 10px;margin-bottom: 15px;height: 220px;">
+		<div id="datos_factura_importada" style="background: whitesmoke;width: 1370px;border-bottom: 1px solid #000;padding-top: 10px;padding-left: 10px;margin-bottom: 15px;height: 250px;">
 			<div id="container_tabs" style="margin-bottom: 10px;">
 				<!--Pestaña 1 activa por defecto-->
 			    <input id="tab-1" type="radio" name="tab-group" checked="checked" />
@@ -296,8 +317,12 @@ $(function(){
 					                <td width="145" valign="middle" height="30" style="padding-bottom: 4px;">Nombre del Producto:</td>
 					                <td width="228" height="30" colspan="5"><?php echo form_input($nombre_producto);?></td>
 					            </tr>
+					            <tr>
+									<td width="127" valign="middle" style="color:#005197;padding-bottom: 4px;" height="30">Stock Actual General:</td>
+						          	<td width="228" height="30"><?php echo form_input($stockactual_general);?></td>
+						        </tr>
 						        <tr>
-									<td width="127" valign="middle" style="color:#005197;padding-bottom: 4px;" height="30">Stock Actual del sistema:</td>
+									<td width="127" valign="middle" style="color:#005197;padding-bottom: 4px;" height="30">Stock Actual por Área:</td>
 						          	<td width="228" height="30"><?php echo form_input($stockactual);?></td>
 						        </tr>	
 								<tr>
