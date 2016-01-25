@@ -3667,6 +3667,7 @@ class Comercial extends CI_Controller {
 	}
 
 	public function cuadrar_producto_area_almacen(){
+		$suma_stock_producto_areas = 0;
 		$nombre_producto = $this->security->xss_clean($this->input->post('nombre_producto'));
 		$area = $this->security->xss_clean($this->input->post('area'));
 		$cantidad = $this->security->xss_clean($this->input->post('cantidad'));
@@ -3687,7 +3688,7 @@ class Comercial extends CI_Controller {
         }
         // Generar el ciclo
         do{
-        	// Obtener stock del producto - de acuerdo al almacen
+        	// Obtener stock del general del producto - de acuerdo al almacen
         	$this->db->select('stock,precio_unitario,stock_sta_clara');
 	        $this->db->where('id_detalle_producto',$id_detalle_producto);
 	        $query = $this->db->get('detalle_producto');
@@ -3723,47 +3724,59 @@ class Comercial extends CI_Controller {
 	        }
 	        // Validar a que almacen pertenece
 	        if($id_almacen == 2){
-		        // El stock del sistema supera al stock fisico
-		        if($stockactual > $cantidad){
-	        		$unidad_base_salida = $stockactual - $cantidad;
-	        		// Realizar la salida con la cantidad necesaria para cuadrar el producto en el almacen
-					// tabla salida_producto
-					$a_data = array('id_area' => $area,
-									'fecha' => date('Y-m-d'),
-									'id_detalle_producto' => $id_detalle_producto,
-									'cantidad_salida' => $unidad_base_salida,
-									'id_almacen' => $id_almacen,
-									'p_u_salida' => $precio_unitario,
-									);
-					$result_insert = $this->model_comercial->saveSalidaProducto($a_data,true);
-					// tabla kardex
-					$new_stock = ($stockactual + $stock_sta_clara) - $unidad_base_salida;
-					$stock_general = $stockactual + $stock_sta_clara;
-					$a_data_kardex = array('fecha_registro' => date('Y-m-d'),
-				        	                'descripcion' => "SALIDA",
-				        	                'id_detalle_producto' => $id_detalle_producto,
-				        	                'stock_anterior' => $stock_general,
-				        	                'precio_unitario_anterior' => $precio_unitario,
-				        	                'cantidad_salida' => $unidad_base_salida,
-				        	                'stock_actual' => $new_stock,
-				        	                'precio_unitario_actual' => $precio_unitario,
-				        	                'num_comprobante' => $result_insert,
-				        	                );
-				    $result_kardex = $this->model_comercial->saveSalidaProductoKardex($a_data_kardex,true);
-		    	    // Actualizar stock de acuerdo al cuadre
-		    	    // Vuelvo a traer el stock porque lineas arriba ya lo actualice
-		    	    $this->db->select('stock');
-		            $this->db->where('id_detalle_producto',$id_detalle_producto);
-		            $query = $this->db->get('detalle_producto');
-		            foreach($query->result() as $row){
-		            	$stock_final = $row->stock;
-		            }
-		            // Descontar stock - el nuevo stock debe ser de acuerdo al valor de cuadre
-		            $this->model_comercial->descontarStock($id_detalle_producto,$unidad_base_salida,$stock_final,$id_almacen);
-		    	    // Enviar parametro para terminar bucle
-		    		$aux_parametro_cuadre = 1;
-		    		echo '1';
-	    		}
+	        	// Actualizar stock del producto por area
+	        	$result_update = $this->model_comercial->actualizar_stock_producto_area($id_pro,$area,$id_almacen,$cantidad);
+	        	// Obtener la suma total de stock del producto distribuido en areas ya actualizado
+	        	$this->db->select('stock_area_sta_anita,id_detalle_producto_area');
+	        	$this->db->where('id_pro',$id_pro);
+	        	$query = $this->db->get('detalle_producto_area');
+	        	foreach($query->result() as $row){
+	        	    $suma_stock_producto_areas = $suma_stock_producto_areas + $row->stock_area_sta_anita;
+	        	}
+	        	// Hasta aca solo se ha actualizado el stock del producto por area
+	        	if($result_update){
+			        // El stock del sistema supera al stock fisico
+			        if($stockactual > $suma_stock_producto_areas){
+		        		$unidad_base_salida = $stockactual - $suma_stock_producto_areas;
+		        		// Realizar la salida con la cantidad necesaria para cuadrar el producto en el almacen
+						// tabla salida_producto
+						$a_data = array('id_area' => $area,
+										'fecha' => date('Y-m-d'),
+										'id_detalle_producto' => $id_detalle_producto,
+										'cantidad_salida' => $unidad_base_salida,
+										'id_almacen' => $id_almacen,
+										'p_u_salida' => $precio_unitario,
+										);
+						$result_insert = $this->model_comercial->saveSalidaProducto($a_data,true);
+						// tabla kardex
+						$new_stock = ($stockactual + $stock_sta_clara) - $unidad_base_salida;
+						$stock_general = $stockactual + $stock_sta_clara;
+						$a_data_kardex = array('fecha_registro' => date('Y-m-d'),
+					        	                'descripcion' => "SALIDA",
+					        	                'id_detalle_producto' => $id_detalle_producto,
+					        	                'stock_anterior' => $stock_general,
+					        	                'precio_unitario_anterior' => $precio_unitario,
+					        	                'cantidad_salida' => $unidad_base_salida,
+					        	                'stock_actual' => $new_stock,
+					        	                'precio_unitario_actual' => $precio_unitario,
+					        	                'num_comprobante' => $result_insert,
+					        	                );
+					    $result_kardex = $this->model_comercial->saveSalidaProductoKardex($a_data_kardex,true);
+			    	    // Actualizar stock de acuerdo al cuadre
+			    	    // Vuelvo a traer el stock porque lineas arriba ya lo actualice
+			    	    $this->db->select('stock');
+			            $this->db->where('id_detalle_producto',$id_detalle_producto);
+			            $query = $this->db->get('detalle_producto');
+			            foreach($query->result() as $row){
+			            	$stock_final = $row->stock;
+			            }
+			            // Descontar stock - el nuevo stock debe ser de acuerdo al valor de cuadre
+			            $this->model_comercial->descontarStock_general($id_detalle_producto,$unidad_base_salida,$stock_final,$id_almacen);
+			    	    // Enviar parametro para terminar bucle
+			    		$aux_parametro_cuadre = 1;
+			    		echo '1';
+		    		}
+	        	}
 	        }
 
 
