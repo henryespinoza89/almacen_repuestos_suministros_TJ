@@ -1137,8 +1137,10 @@ class Model_comercial extends CI_Model {
         $filtro .= " AND detalle_producto_area.id_area = ".$id_area;
         $filtro .= " LIMIT 1";
         
-        $sql = "SELECT detalle_producto.no_producto,unidad_medida.nom_uni_med,producto.column_temp,detalle_producto_area.id_detalle_producto_area,
-                detalle_producto_area.stock_area_sta_anita,detalle_producto_area.stock_area_sta_clara,detalle_producto_area.id_area
+        $sql = "SELECT detalle_producto.no_producto,unidad_medida.nom_uni_med,producto.column_temp,
+                detalle_producto_area.id_detalle_producto_area,
+                detalle_producto_area.stock_area_sta_anita,detalle_producto_area.stock_area_sta_clara,
+                detalle_producto_area.id_area
                 FROM producto
                 INNER JOIN detalle_producto ON producto.id_detalle_producto = detalle_producto.id_detalle_producto
                 INNER JOIN unidad_medida ON producto.id_unidad_medida = unidad_medida.id_unidad_medida
@@ -2070,6 +2072,28 @@ class Model_comercial extends CI_Model {
         }
     }
 
+    function update_stock_general_cuadre($id_detalle_producto,$stock_actual,$id_almacen){
+        try{
+            $stock_actualizado = $stock_actual;
+            if($id_almacen == 1){
+                $actualizar = array(
+                    'stock_sta_clara' => $stock_actualizado
+                );
+            }else if($id_almacen == 2){
+                $actualizar = array(
+                    'stock' => $stock_actualizado
+                );
+            }  
+            $this->db->where('id_detalle_producto',$id_detalle_producto);
+            $this->db->update('detalle_producto', $actualizar);
+
+            return 'descuento_successfull';
+        }catch(Exception $e){
+            throw new Exception("Error Inesperado");
+            return false;
+        }
+    }
+
     function actualizarEstado($id_detalle_producto){
         try{
 
@@ -2722,8 +2746,9 @@ class Model_comercial extends CI_Model {
     }
 
     function listarResumenProductos_report_excel(){
-        $sql = "SELECT producto.id_pro,producto.id_producto,detalle_producto.no_producto,detalle_producto.stock,detalle_producto.precio_unitario,
-        categoria.no_categoria,tipo_producto.no_tipo_producto,procedencia.no_procedencia,unidad_medida.nom_uni_med
+        $sql = "SELECT producto.id_pro,producto.id_producto,detalle_producto.no_producto,detalle_producto.stock,
+        detalle_producto.precio_unitario,categoria.no_categoria,tipo_producto.no_tipo_producto,procedencia.no_procedencia,
+        unidad_medida.nom_uni_med,area.no_area
         FROM
         producto
         INNER JOIN detalle_producto ON producto.id_detalle_producto = detalle_producto.id_detalle_producto
@@ -2731,6 +2756,8 @@ class Model_comercial extends CI_Model {
         LEFT JOIN tipo_producto ON tipo_producto.id_categoria = categoria.id_categoria AND producto.id_tipo_producto = tipo_producto.id_tipo_producto
         INNER JOIN procedencia ON producto.id_procedencia = procedencia.id_procedencia
         INNER JOIN unidad_medida ON producto.id_unidad_medida = unidad_medida.id_unidad_medida
+        LEFT JOIN detalle_producto_area ON detalle_producto_area.id_pro = producto.id_pro
+        LEFT JOIN area ON detalle_producto_area.id_area = area.id_area
         WHERE producto.id_producto IS NOT NULL";
         $query = $this->db->query($sql);
         if($query->num_rows()>0)

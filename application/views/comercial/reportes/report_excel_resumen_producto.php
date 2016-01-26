@@ -14,6 +14,7 @@
 	<tr style="text-align:center; font-weight:bold;vertical-align: middle;border: 1px solid #005197;background-color: #0072C6;color: white;font-size: 12px;">
 	    <td sort="idvend" width="107" height="30" >ID Producto </td>
 	    <td sort="nomcomp" width="213"><?php echo utf8_decode('Nombre o Descripción'); ?></td>
+	    <td sort="nomcomp" width="213"><?php echo utf8_decode('Área'); ?></td>
 	    <td sort="nomcomp" width="213"><?php echo utf8_decode('Categoría'); ?></td>
 	    <td sort="nomcomp" width="213"><?php echo utf8_decode('Tipo de Producto'); ?></td>
 	    <td sort="avpros" width="183"><?php echo utf8_decode('Procencia'); ?></td>
@@ -27,6 +28,7 @@
 	<tr style="text-align:center;vertical-align: middle;border: 1px solid #005197;font-size: 10px;">
 	    <td height="25"><?php echo utf8_decode($data->id_producto); ?></td>
 	    <td><?php echo utf8_decode($data->no_producto); ?></td>
+	    <td><?php echo utf8_decode($data->no_area); ?></td>
 	    <td><?php echo utf8_decode($data->no_categoria); ?></td>
 	    <td><?php echo utf8_decode($data->no_tipo_producto); ?></td>
 	    <td><?php echo utf8_decode($data->no_procedencia); ?></td>
@@ -40,6 +42,7 @@
 	?>
 	<tr style="text-align:center;vertical-align: middle;border: 1px solid #005197;font-size: 10px;">
 		<td height="25"><?php echo "" ?></td>
+	    <td><?php echo "" ?></td>
 	    <td><?php echo "" ?></td>
 	    <td><?php echo "" ?></td>
 	    <td><?php echo "" ?></td>

@@ -3723,7 +3723,8 @@ class Comercial extends CI_Controller {
 	        	}
 	        }
 	        // Validar a que almacen pertenece
-	        if($id_almacen == 2){
+	        if($id_almacen == 1){
+	        	echo 'entro a if de almacen';
 	        	// Actualizar stock del producto por area
 	        	$result_update = $this->model_comercial->actualizar_stock_producto_area($id_pro,$area,$id_almacen,$cantidad);
 	        	// Obtener la suma total de stock del producto distribuido en areas ya actualizado
@@ -3731,7 +3732,7 @@ class Comercial extends CI_Controller {
 	        	$this->db->where('id_pro',$id_pro);
 	        	$query = $this->db->get('detalle_producto_area');
 	        	foreach($query->result() as $row){
-	        	    $suma_stock_producto_areas = $suma_stock_producto_areas + $row->stock_area_sta_anita;
+	        	    $suma_stock_producto_areas = $suma_stock_producto_areas + $row->stock_area_sta_clara;
 	        	}
 	        	// Hasta aca solo se ha actualizado el stock del producto por area
 	        	if($result_update){
@@ -3764,29 +3765,44 @@ class Comercial extends CI_Controller {
 					    $result_kardex = $this->model_comercial->saveSalidaProductoKardex($a_data_kardex,true);
 			    	    // Actualizar stock de acuerdo al cuadre
 			    	    // Vuelvo a traer el stock porque lineas arriba ya lo actualice
-			    	    $this->db->select('stock');
+			    	    $this->db->select('stock_sta_clara');
 			            $this->db->where('id_detalle_producto',$id_detalle_producto);
 			            $query = $this->db->get('detalle_producto');
 			            foreach($query->result() as $row){
-			            	$stock_final = $row->stock;
+			            	$stock_final = $row->stock_sta_clara;
 			            }
 			            // Descontar stock - el nuevo stock debe ser de acuerdo al valor de cuadre
 			            $this->model_comercial->descontarStock_general($id_detalle_producto,$unidad_base_salida,$stock_final,$id_almacen);
 			    	    // Enviar parametro para terminar bucle
 			    		$aux_parametro_cuadre = 1;
 			    		echo '1';
+		    		}else if($cantidad_salida_kardex == $cantidad_salida_table_salida && $descripcion == 'SALIDA'){ // Validacion de cantidad de salida
+		    			// El stock fisico supera el stock del sistema
+		    			if($stockactual < $suma_stock_producto_areas){
+		    				// Eliminar las salidas necesarias para recuperar el stock del producto
+		    				// Validando que no se pase del stock que se necesita como cuadre
+		    				$stock_actualizado = $stockactual + $cantidad_salida_kardex; // unidades final del producto
+		    				if($stock_actualizado == $suma_stock_producto_areas){
+		    					// Eliminar salida // registro del kardex // actualizar stock
+		    					$this->model_comercial->update_stock_general_cuadre($id_detalle_producto,$stock_actualizado,$id_almacen);
+		    					$this->model_comercial->eliminar_insert_kardex($auxiliar_last_kardex);
+								$this->model_comercial->eliminar_insert_salida($auxiliar_last_salida);
+								$aux_parametro_cuadre = 1;
+								echo '1';
+								//echo 'parte 2';
+		    				}
+
+		    			}
 		    		}
 	        	}
+
+
+
+
+
+
+
 	        }
-
-
-
-
-
-
-
-
-
         }while($aux_parametro_cuadre == 0);
 
 

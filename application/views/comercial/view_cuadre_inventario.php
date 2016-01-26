@@ -262,7 +262,7 @@ $(function(){
     $("#cantidad").validCampoFranz('0123456789.');
 
     <?php 
-		if ($this->session->userdata('id_area') != ""){
+		if ($this->session->userdata('area') != ""){
 			$selected_area =  (int)$this->session->userdata('id_area');
 		}else{
 			if ($this->input->post('area')){
