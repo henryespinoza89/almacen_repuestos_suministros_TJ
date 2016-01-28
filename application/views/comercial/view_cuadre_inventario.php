@@ -247,6 +247,37 @@ $(function(){
 	                	}}
 	              	});
 	              	$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");
+	            }else if(response == "orden_ingreso"){
+	              	$("#modalerror").empty().append('<span style="color:red"><b>!Generar Orden de Ingreso!</b><br><b>Verificar Kardex del Producto.</b></span>').dialog({
+	                	modal: true,position: 'center',width: 490,height: 145,resizable: false,title: 'Validación',hide: 'blind',show: 'blind',
+	                	buttons: { Ok: function() {
+	                		$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );
+	                	}}
+	              	});
+	              	$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");
+	            }else if(response == "error_inesperado"){
+	              	$("#modalerror").empty().append('<span style="color:red"><b>!Se produjo un Error al momento de realizar el Registro!</b><br><b>Verificar los datos del Formulario.</b></span>').dialog({
+	                	modal: true,position: 'center',width: 490,height: 145,resizable: false,title: 'Validación',hide: 'blind',show: 'blind',
+	                	buttons: { Ok: function() {
+	                		$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );
+	                	}}
+	              	});
+	              	$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");
+	            }else if(response == "cantidad_negativa"){
+	              	$("#modalerror").empty().append('<span style="color:red"><b>!No se pudo realizar el Registro!</b><br><b>Verificar la cantidad de Cuadre.</b></span>').dialog({
+	                	modal: true,position: 'center',width: 490,height: 145,resizable: false,title: 'Validación',hide: 'blind',show: 'blind',
+	                	buttons: { Ok: function() {
+	                		$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );
+	                	}}
+	              	});
+	              	$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");
+	            }else if(response == "error_kardex"){
+	            	$("#modalerror").empty().append('<span style="color:red"><b>!Se produjo un Error en la Actualización del Stock del Producto!</b></span>').dialog({
+	                	modal: true,position: 'center',width: 480,height: 125,resizable: false,title: 'Error de Validación',hide: 'blind',show: 'blind',
+	                	buttons: { Ok: function() {$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );}}
+	              	});
+	              	$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");
+	                }
 	            }else{
 	            	$("#modalerror").empty().append('<span style="color:red"><b>!ERROR!</b></span>').dialog({
 	                	modal: true,position: 'center',width: 480,height: 125,resizable: false,title: 'Error de Validación',hide: 'blind',show: 'blind',

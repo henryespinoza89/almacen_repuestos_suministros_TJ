@@ -3724,6 +3724,9 @@ class Comercial extends CI_Controller {
 	        		$auxiliar_last_salida = $row->id_salida_producto;
 	        		$cantidad_salida_table_salida = $row->cantidad_salida;
 	        	}
+	        }else{
+	        	$auxiliar_last_salida = "";
+	        	$cantidad_salida_table_salida = "";
 	        }
 	        // Validar a que almacen pertenece
 	        if($id_almacen == 1){
@@ -3733,7 +3736,6 @@ class Comercial extends CI_Controller {
 	        	$this->db->select('stock_area_sta_clara');
 	        	$this->db->where('id_pro',$id_pro);
 	        	$query = $this->db->get('detalle_producto_area');
-	        	$variable = count($query->result());
 	        	foreach($query->result() as $row){
 	        	    $suma_stock_producto_areas = $suma_stock_producto_areas + $row->stock_area_sta_clara;
 	        	}
@@ -3850,27 +3852,158 @@ class Comercial extends CI_Controller {
 		    			echo 'cantidad_erronea_salidas';
 		    			$aux_parametro_cuadre = 1;
 		    		}
-
 				}
-
-
-
-
-
-
-
+	        }else if($id_almacen == 2){
+	        	// Actualizar stock del producto por area
+	        	$result_update = $this->model_comercial->actualizar_stock_producto_area($id_pro,$area,$id_almacen,$cantidad);
+	        	// Obtener la suma total de stock del producto distribuido en areas ya actualizado
+	        	$this->db->select('stock_area_sta_anita');
+	        	$this->db->where('id_pro',$id_pro);
+	        	$query = $this->db->get('detalle_producto_area');
+	        	foreach($query->result() as $row){
+	        	    $suma_stock_producto_areas = $suma_stock_producto_areas + $row->stock_area_sta_anita;
+	        	}
+	        	// Hasta aca solo se ha actualizado el stock del producto por area
+        		if($result_update){
+        			// El stock del sistema supera al stock fisico
+        			if($stockactual > $suma_stock_producto_areas){
+		        		$unidad_base_salida = $stockactual - $suma_stock_producto_areas;
+		        		// Realizar la salida con la cantidad necesaria para cuadrar el producto en el almacen
+						// tabla salida_producto
+						$a_data = array('id_area' => $area,
+										'fecha' => date('Y-m-d'),
+										'id_detalle_producto' => $id_detalle_producto,
+										'cantidad_salida' => $unidad_base_salida,
+										'id_almacen' => $id_almacen,
+										'p_u_salida' => $precio_unitario,
+										);
+						$result_insert = $this->model_comercial->saveSalidaProducto($a_data,true);
+						// tabla kardex
+						$new_stock = ($stockactual + $stock_sta_clara) - $unidad_base_salida;
+						$stock_general = $stockactual + $stock_sta_clara;
+						$a_data_kardex = array('fecha_registro' => date('Y-m-d'),
+					        	                'descripcion' => "SALIDA",
+					        	                'id_detalle_producto' => $id_detalle_producto,
+					        	                'stock_anterior' => $stock_general,
+					        	                'precio_unitario_anterior' => $precio_unitario,
+					        	                'cantidad_salida' => $unidad_base_salida,
+					        	                'stock_actual' => $new_stock,
+					        	                'precio_unitario_actual' => $precio_unitario,
+					        	                'num_comprobante' => $result_insert,
+					        	                );
+					    $result_kardex = $this->model_comercial->saveSalidaProductoKardex($a_data_kardex,true);
+					    // Actualizar stock de acuerdo al cuadre
+		    	    	// Vuelvo a traer el stock porque lineas arriba ya lo actualice
+		    	    	$this->db->select('stock');
+			            $this->db->where('id_detalle_producto',$id_detalle_producto);
+			            $query = $this->db->get('detalle_producto');
+			            foreach($query->result() as $row){
+			            	$stock_final = $row->stock;
+			            }
+			            // Descontar stock - el nuevo stock debe ser de acuerdo al valor de cuadre
+			            $this->model_comercial->descontarStock_general($id_detalle_producto,$unidad_base_salida,$stock_final,$id_almacen);
+			    	    // Enviar parametro para terminar bucle
+			    		$aux_parametro_cuadre = 1;
+			    		echo '1';
+        			}else if($cantidad_salida_kardex == $cantidad_salida_table_salida && $descripcion == 'SALIDA'){ // Validacion de cantidad de salida
+        				// El stock fisico supera el stock del sistema
+        				if($stockactual < $suma_stock_producto_areas){
+        					// Eliminar las salidas necesarias para recuperar el stock del producto
+	    					// Validando que no se pase del stock que se necesita como cuadre
+	    					$stock_actualizado = $stockactual + $cantidad_salida_kardex; // unidades final del producto
+	    					if($stock_actualizado == $suma_stock_producto_areas){
+		    					// Eliminar salida // registro del kardex // actualizar stock
+		    					$this->model_comercial->update_stock_general_cuadre($id_detalle_producto,$stock_actualizado,$id_almacen);
+		    					$this->model_comercial->eliminar_insert_kardex($auxiliar_last_kardex);
+								$this->model_comercial->eliminar_insert_salida($auxiliar_last_salida);
+								$aux_parametro_cuadre = 1;
+								echo '1';
+		    				}else if($stock_actualizado > $suma_stock_producto_areas){
+		    					$unidad_base_salida = $stock_actualizado - $suma_stock_producto_areas;
+	    						//$unidad_base_salida = $cantidad_salida_kardex - $unidad_base_salida;
+	    						// Eliminar salida // registro del kardex // actualizar stock
+		    					$this->model_comercial->update_stock_general_cuadre($id_detalle_producto,$stock_actualizado,$id_almacen);
+		    					$this->model_comercial->eliminar_insert_kardex($auxiliar_last_kardex);
+								$this->model_comercial->eliminar_insert_salida($auxiliar_last_salida);
+								// Realizar la salida con la cantidad necesaria para cuadrar el producto en el almacen
+								// tabla salida_producto
+								$a_data = array('id_area' => $area,
+												'fecha' => date('Y-m-d'),
+												'id_detalle_producto' => $id_detalle_producto,
+												'cantidad_salida' => $unidad_base_salida,
+												'id_almacen' => $id_almacen,
+												'p_u_salida' => $precio_unitario,
+												);
+								$result_insert = $this->model_comercial->saveSalidaProducto($a_data,true);
+								// tabla kardex
+								$new_stock = ($stock_actualizado + $stock_sta_clara) - $unidad_base_salida;
+								$stock_general = $stock_actualizado + $stock_sta_clara;
+								$a_data_kardex = array('fecha_registro' => date('Y-m-d'),
+							        	                'descripcion' => "SALIDA",
+							        	                'id_detalle_producto' => $id_detalle_producto,
+							        	                'stock_anterior' => $stock_general,
+							        	                'precio_unitario_anterior' => $precio_unitario,
+							        	                'cantidad_salida' => $unidad_base_salida,
+							        	                'stock_actual' => $new_stock,
+							        	                'precio_unitario_actual' => $precio_unitario,
+							        	                'num_comprobante' => $result_insert,
+							        	                );
+							    $result_kardex = $this->model_comercial->saveSalidaProductoKardex($a_data_kardex,true);
+							    // Actualizar stock de acuerdo al cuadre
+				    	    	// Vuelvo a traer el stock porque lineas arriba ya lo actualice
+				    	    	$this->db->select('stock');
+					            $this->db->where('id_detalle_producto',$id_detalle_producto);
+					            $query = $this->db->get('detalle_producto');
+					            foreach($query->result() as $row){
+					            	$stock_final = $row->stock;
+					            }
+					            // Descontar stock - el nuevo stock debe ser de acuerdo al valor de cuadre
+			                    $this->model_comercial->descontarStock_general($id_detalle_producto,$unidad_base_salida,$stock_final,$id_almacen);
+			            	    // Enviar parametro para terminar bucle
+			            		$aux_parametro_cuadre = 1;
+			            		echo '1';
+		    				}else if($stock_actualizado < $suma_stock_producto_areas){
+			        			// Eliminar salida // registro del kardex // actualizar stock
+			        			$this->model_comercial->update_stock_general_cuadre($id_detalle_producto,$stock_actualizado,$id_almacen);
+			        			$this->model_comercial->eliminar_insert_kardex($auxiliar_last_kardex);
+								$this->model_comercial->eliminar_insert_salida($auxiliar_last_salida);
+			        		}
+		    			}else{
+		    				echo 'cantidad_erronea_salidas';
+		    				$aux_parametro_cuadre = 1;
+		    			}
+        			}else if(($descripcion == 'ENTRADA') && ($stockactual < $suma_stock_producto_areas)){
+		    			$cantidad_ingreso = $suma_stock_producto_areas - $stockactual;
+		    			if($cantidad_ingreso > 0){
+		    				$datos = array(
+								"id_detalle_producto" => $id_detalle_producto,
+								"cantidad_ingreso" => $cantidad_ingreso,
+								"fecha_registro" => date('Y-m-d'),
+								"id_almacen" => $id_almacen
+							);
+							$id_ingreso_producto = $this->model_comercial->insert_orden_ingreso($datos);
+							if($id_ingreso_producto == 'error_inesperado'){
+					            echo 'error_inesperado';
+					            $aux_parametro_cuadre = 1;
+							}else{
+								// Agregamos el detalle del comprobante
+								$result = $this->model_comercial->kardex_orden_ingreso($id_ingreso_producto, $id_detalle_producto, $cantidad_ingreso, $id_almacen);
+								if($result == 'registro_correcto'){
+									$aux_parametro_cuadre = 1;
+									echo '1';
+						        }else{
+						        	echo 'error_kardex';
+						        	$aux_parametro_cuadre = 1;
+						        }
+							}
+		    			}else{
+					    	echo 'cantidad_negativa';
+					    	$aux_parametro_cuadre = 1;
+					    }
+		    		}
+        		}
 	        }
         }while($aux_parametro_cuadre == 0);
-
-
-
-
-
-
-
-
-
-
 	}
 
 	function finalizar_salida_before_13()
@@ -6169,18 +6302,18 @@ class Comercial extends CI_Controller {
 		$objWorkSheet = $objPHPExcel->createSheet(0); //Setting index when creating
 		$objPHPExcel->setActiveSheetIndex(0); // Esta línea y en esta posición hace que los formatos vayan a la primera hoja
 		$objPHPExcel->getDefaultStyle()->getFont()->setSize(13);
-		$objPHPExcel->setActiveSheetIndex(0)->mergeCells('A1:I1');
-		$objPHPExcel->getActiveSheet()->getStyle('A1:I1')->applyFromArray($borders);
-		$objPHPExcel->getActiveSheet()->getStyle('A1:I1')->applyFromArray($style);
-		$objPHPExcel->getActiveSheet()->getStyle('A1:I1')->applyFromArray($styleArray);
+		$objPHPExcel->setActiveSheetIndex(0)->mergeCells('A1:J1');
+		$objPHPExcel->getActiveSheet()->getStyle('A1:J1')->applyFromArray($borders);
+		$objPHPExcel->getActiveSheet()->getStyle('A1:J1')->applyFromArray($style);
+		$objPHPExcel->getActiveSheet()->getStyle('A1:J1')->applyFromArray($styleArray);
 		//$objPHPExcel->getActiveSheet()->getRowDimension('A')->setRowHeight(40);
-		$objPHPExcel->getActiveSheet()->getStyle('A1:I1')->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
+		$objPHPExcel->getActiveSheet()->getStyle('A1:J1')->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
 		$objPHPExcel->getActiveSheet()->getRowDimension('1')->setRowHeight(30);
 
 		$objPHPExcel->getDefaultStyle()->getFont()->setSize(10);
-		$objPHPExcel->getActiveSheet()->getStyle('A2:I2')->applyFromArray($borders);
-		$objPHPExcel->getActiveSheet()->getStyle('A2:I2')->applyFromArray($style);
-		$objPHPExcel->getActiveSheet()->getStyle('A2:I2')->applyFromArray($styleArray);
+		$objPHPExcel->getActiveSheet()->getStyle('A2:J2')->applyFromArray($borders);
+		$objPHPExcel->getActiveSheet()->getStyle('A2:J2')->applyFromArray($style);
+		$objPHPExcel->getActiveSheet()->getStyle('A2:J2')->applyFromArray($styleArray);
 
 		$objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(25);
 		$objPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(55);
@@ -6191,6 +6324,7 @@ class Comercial extends CI_Controller {
 		$objPHPExcel->getActiveSheet()->getColumnDimension('G')->setWidth(15);
 		$objPHPExcel->getActiveSheet()->getColumnDimension('H')->setWidth(15);
 		$objPHPExcel->getActiveSheet()->getColumnDimension('I')->setWidth(15);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('J')->setWidth(15);
 		//Write cells
 		if($almacen == 1){
 			$objWorkSheet->setCellValue('A1', 'INVENTARIO FISICO DE PRODUCTOS - STA. CLARA                     FECHA: '.date('d-m-y'));
@@ -6205,7 +6339,8 @@ class Comercial extends CI_Controller {
 	    			 ->setCellValue('F2', 'PROCEDENCIA')
 	    			 ->setCellValue('G2', 'U. MEDIDA')
 	    			 ->setCellValue('H2', 'STOCK')
-	    			 ->setCellValue('I2', 'INVENTARIO');
+	    			 ->setCellValue('I2', 'P. UNITARIO')
+	    			 ->setCellValue('J2', 'INVENTARIO');
 	    /* Traer informacion de la BD */
 	    $result = $this->model_comercial->get_info_inventario_actual();
 	    /* Recorro con todos los nombres seleccionados que tienen una salida/ingreso en el kardex */
@@ -6214,7 +6349,7 @@ class Comercial extends CI_Controller {
 	    $p = 3;
 	    foreach ($result as $reg) {
 	    	$objPHPExcel->getActiveSheet()->getStyle('H'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-	    	//$objPHPExcel->getActiveSheet()->getStyle('I'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+	    	$objPHPExcel->getActiveSheet()->getStyle('I'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
 	    	/* Centrar contenido */
 	    	$objPHPExcel->getActiveSheet()->getStyle('A'.$p)->applyFromArray($style);
     		$objPHPExcel->getActiveSheet()->getStyle('B'.$p)->applyFromArray($style);
@@ -6225,6 +6360,7 @@ class Comercial extends CI_Controller {
     		$objPHPExcel->getActiveSheet()->getStyle('G'.$p)->applyFromArray($style);
     		$objPHPExcel->getActiveSheet()->getStyle('H'.$p)->applyFromArray($style);
     		$objPHPExcel->getActiveSheet()->getStyle('I'.$p)->applyFromArray($style);
+    		$objPHPExcel->getActiveSheet()->getStyle('J'.$p)->applyFromArray($style);
     		/* border */
     		$objPHPExcel->getActiveSheet()->getStyle('A'.$p)->applyFromArray($borders);
     		$objPHPExcel->getActiveSheet()->getStyle('B'.$p)->applyFromArray($borders);
@@ -6235,6 +6371,7 @@ class Comercial extends CI_Controller {
     		$objPHPExcel->getActiveSheet()->getStyle('G'.$p)->applyFromArray($borders);
     		$objPHPExcel->getActiveSheet()->getStyle('H'.$p)->applyFromArray($borders);
     		$objPHPExcel->getActiveSheet()->getStyle('I'.$p)->applyFromArray($borders);
+    		$objPHPExcel->getActiveSheet()->getStyle('J'.$p)->applyFromArray($borders);
     		if($reg->estado == 't'){
     			$estado = 'ACTIVO';
     		}else if($reg->estado == 'f'){
@@ -6259,7 +6396,8 @@ class Comercial extends CI_Controller {
     					 ->setCellValue('F'.$p, $reg->no_procedencia)
     					 ->setCellValue('G'.$p, $reg->nom_uni_med)
     					 ->setCellValue('H'.$p, $reg->stock)
-    					 ->setCellValue('I'.$p, "");
+    					 ->setCellValue('I'.$p, $reg->precio_unitario)
+    					 ->setCellValue('J'.$p, "");
 	    	}
 		    /* Rename sheet */
 		    $objWorkSheet->setTitle("Inventario_Almacen");
