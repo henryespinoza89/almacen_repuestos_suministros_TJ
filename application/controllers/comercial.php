@@ -1145,7 +1145,8 @@ class Comercial extends CI_Controller {
 	public function traer_producto_autocomplete_traslado() {
 		
 		$termino = strtoupper($this->input->post('q'));
-        $resultado = $this->model_comercial->get_nombre_producto_autocomplete_traslado($termino);
+		$id_area = strtoupper($this->input->post('a'));
+        $resultado = $this->model_comercial->get_nombre_producto_autocomplete_traslado($termino, $id_area);
 
         $array = array( "label" => "no se encontraron resultados" );
 
@@ -1156,8 +1157,8 @@ class Comercial extends CI_Controller {
                     "label" => $producto['no_producto'],
                     "nombre_producto" => $producto['no_producto'],
                     "id_detalle_producto" => $producto['id_detalle_producto'],
-                    "stock_sta_anita" => $producto['stock'],
-                    "stock_sta_clara" => $producto['stock_sta_clara'],
+                    "stock_sta_anita" => $producto['stock_area_sta_anita'],
+                    "stock_sta_clara" => $producto['stock_area_sta_clara'],
                     "column_temp" => $producto['column_temp']
                 );
                 array_push($data, $array);
@@ -1480,6 +1481,7 @@ class Comercial extends CI_Controller {
 		}else{
 			$data['tipocambio'] = 1;
 		}
+		$data['listaarea']= $this->model_comercial->listarArea();
 		$data['listaalmacen_partida']= $this->model_comercial->listaAlmacenCombo_traslado_inicio();
 		$data['listaalmacen_llegada']= $this->model_comercial->listaAlmacenCombo_traslado_llegada();
 		$this->load->view('comercial/menu');
@@ -1490,39 +1492,64 @@ class Comercial extends CI_Controller {
 		$id_almacen = $this->security->xss_clean($this->session->userdata('almacen'));
 		$nombre_producto = $this->input->post('nombre_producto');
 		$cantidad = $this->input->post('cantidad');
+		$id_area = $this->input->post('id_area');
 		/* Get data product */
-		$this->db->select('id_detalle_producto,precio_unitario,stock,stock_sta_clara');
+		$this->db->select('id_detalle_producto');
         $this->db->where('no_producto',$nombre_producto);
         $query = $this->db->get('detalle_producto');
+        foreach($query->result() as $row){
+            $id_detalle_producto = $row->id_detalle_producto;
+        }
+        // Obtengo los datos del producto
+		$this->db->select('id_pro');
+        $this->db->where('id_detalle_producto',$id_detalle_producto);
+        $query = $this->db->get('producto');
+        foreach($query->result() as $row){
+            $id_pro = $row->id_pro;
+        }
+        // Datos del area
+        $this->db->select('no_area');
+        $this->db->where('id_area',$id_area);
+        $query = $this->db->get('area');
+        foreach($query->result() as $row){
+            $no_area = $row->no_area;
+        }
+        $arr1 = explode(" ", $no_area);
+
+		$this->db->select('id_detalle_producto_area,stock_area_sta_anita,stock_area_sta_clara');
+        $this->db->where('id_pro',$id_pro);
+        $this->db->where('id_area',$id_area);
+        $query = $this->db->get('detalle_producto_area');
         if(count($query->result()) > 0){
         	foreach($query->result() as $row){
-        	    $id_detalle_producto = $row->id_detalle_producto;
-        	    $precio_unitario = $row->precio_unitario;
-        	    $stock = $row->stock;
-        	    $stock_sta_clara = $row->stock_sta_clara;
+        	    $id_detalle_producto_area = $row->id_detalle_producto_area;
+        	    $stock_area_sta_anita = $row->stock_area_sta_anita;
+        	    $stock_area_sta_clara = $row->stock_area_sta_clara;
         	}
         	if($id_almacen == 1){ // Sta. Clara
-        		if($cantidad > $stock_sta_clara){
+        		if($cantidad > $stock_area_sta_clara){
         			echo 'stock_insuficiente';
         		}else{
         			$data = array(
         				'id' => $id_detalle_producto,
         				'qty' => $cantidad,
         				'price' => 5,
-        				'name'=> $nombre_producto
+        				'name'=> $nombre_producto,
+        				'options'=> $arr1
         			);
         			$this->cart->insert($data);
         			echo 'successfull';
         		}
         	}if($id_almacen == 2){ // Sta. Anita
-        		if($cantidad > $stock){
+        		if($cantidad > $stock_area_sta_anita){
         			echo 'stock_insuficiente';
         		}else{
         			$data = array(
         				'id' => $id_detalle_producto,
         				'qty' => $cantidad,
         				'price' => 5,
-        				'name'=> $nombre_producto
+        				'name'=> $nombre_producto,
+        				'options'=> $arr1
         			);
         			$this->cart->insert($data);
         			echo 'successfull';
@@ -3848,9 +3875,37 @@ class Comercial extends CI_Controller {
 		    				echo 'cantidad_erronea_salidas';
 		    				$aux_parametro_cuadre = 1;
 		    			}
+		    		}else if(($descripcion == 'ENTRADA') && ($stock_sta_clara < $suma_stock_producto_areas)){
+		    			$cantidad_ingreso = $suma_stock_producto_areas - $stock_sta_clara;
+		    			if($cantidad_ingreso > 0){
+		    				$datos = array(
+								"id_detalle_producto" => $id_detalle_producto,
+								"cantidad_ingreso" => $cantidad_ingreso,
+								"fecha_registro" => date('Y-m-d'),
+								"id_almacen" => $id_almacen
+							);
+							$id_ingreso_producto = $this->model_comercial->insert_orden_ingreso($datos);
+							if($id_ingreso_producto == 'error_inesperado'){
+					            echo 'error_inesperado';
+					            $aux_parametro_cuadre = 1;
+							}else{
+								// Agregamos el detalle del comprobante
+								$result = $this->model_comercial->kardex_orden_ingreso($id_ingreso_producto, $id_detalle_producto, $cantidad_ingreso, $id_almacen);
+								if($result == 'registro_correcto'){
+									$aux_parametro_cuadre = 1;
+									echo '1';
+						        }else{
+						        	echo 'error_kardex';
+						        	$aux_parametro_cuadre = 1;
+						        }
+							}
+		    			}else{
+					    	echo 'cantidad_negativa';
+					    	$aux_parametro_cuadre = 1;
+					    }
 		    		}else{
-		    			echo 'cantidad_erronea_salidas';
 		    			$aux_parametro_cuadre = 1;
+		    			echo '1';
 		    		}
 				}
 	        }else if($id_almacen == 2){
@@ -4000,6 +4055,9 @@ class Comercial extends CI_Controller {
 					    	echo 'cantidad_negativa';
 					    	$aux_parametro_cuadre = 1;
 					    }
+		    		}else{
+		    			$aux_parametro_cuadre = 1;
+		    			echo '1';
 		    		}
         		}
 	        }

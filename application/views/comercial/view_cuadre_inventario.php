@@ -69,6 +69,16 @@ var formatNumber = {
 
 $(function(){
 
+	<?php 
+		if ($this->input->post('area')){
+			$selected_area =  (int)$this->input->post('area');
+		}else{	$selected_area = "";
+	?>
+   			$("#area").append('<option value="" selected="selected">:: SELECCIONE ::</option>');
+	<?php 
+		}	
+	?>
+
 	$("#nombre_producto").focus();
 
 	$("#nombre_producto").autocomplete({
@@ -153,6 +163,7 @@ $(function(){
         }
     });
 
+    /*
     $("#orden_ingreso").click(function(){
     	var nombre_producto = $("#nombre_producto_o_i").val();
 		var stockactual = $("#stockactual_o_i").val();
@@ -204,7 +215,7 @@ $(function(){
 	       	});
 		}
     });
-
+	*/
 
     $("#cuadre_almacen").click(function(){
 		var nombre_producto = $("#nombre_producto").val();
@@ -223,88 +234,73 @@ $(function(){
 	            url: "<?php echo base_url(); ?>comercial/cuadrar_producto_area_almacen/",
 	          	data: dataString,
 	          	success: function(response){
-	            if(response == 1){
-	              	$("#modalerror").empty().append('<span style="color:black"><b>!El Cuadre del Producto en Almacén se realizó con Éxito!</b></span>').dialog({
-	                	modal: true,position: 'center',width: 500,height: 125,resizable: false,title: 'Registro de Salidas',hide: 'blind',show: 'blind',
-	                	buttons: { Ok: function() {
-	                		window.location.href="<?php echo base_url();?>comercial/gestioncuadreinventario";
-	                	}}
-	              	});
-	              	$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");
-	            }else if(response == "no_existe_salida_disponible"){
-	              	$("#modalerror").empty().append('<span style="color:red"><b>!No existen Salidas disponibles para realizar el cuadre del producto!</b><br><b>Verificar Kardex del Producto.</b></span>').dialog({
-	                	modal: true,position: 'center',width: 490,height: 145,resizable: false,title: 'Validación',hide: 'blind',show: 'blind',
-	                	buttons: { Ok: function() {
-	                		$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );
-	                	}}
-	              	});
-	              	$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");
-	            }else if(response == "cantidad_erronea_salidas"){
-	              	$("#modalerror").empty().append('<span style="color:red"><b>!No se pudo realizar el Registro Completo del Cuadre en Almacén!</b><br><b>Verificar Kardex del Producto.</b></span>').dialog({
-	                	modal: true,position: 'center',width: 490,height: 145,resizable: false,title: 'Validación',hide: 'blind',show: 'blind',
-	                	buttons: { Ok: function() {
-	                		$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );
-	                	}}
-	              	});
-	              	$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");
-	            }else if(response == "orden_ingreso"){
-	              	$("#modalerror").empty().append('<span style="color:red"><b>!Generar Orden de Ingreso!</b><br><b>Verificar Kardex del Producto.</b></span>').dialog({
-	                	modal: true,position: 'center',width: 490,height: 145,resizable: false,title: 'Validación',hide: 'blind',show: 'blind',
-	                	buttons: { Ok: function() {
-	                		$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );
-	                	}}
-	              	});
-	              	$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");
-	            }else if(response == "error_inesperado"){
-	              	$("#modalerror").empty().append('<span style="color:red"><b>!Se produjo un Error al momento de realizar el Registro!</b><br><b>Verificar los datos del Formulario.</b></span>').dialog({
-	                	modal: true,position: 'center',width: 490,height: 145,resizable: false,title: 'Validación',hide: 'blind',show: 'blind',
-	                	buttons: { Ok: function() {
-	                		$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );
-	                	}}
-	              	});
-	              	$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");
-	            }else if(response == "cantidad_negativa"){
-	              	$("#modalerror").empty().append('<span style="color:red"><b>!No se pudo realizar el Registro!</b><br><b>Verificar la cantidad de Cuadre.</b></span>').dialog({
-	                	modal: true,position: 'center',width: 490,height: 145,resizable: false,title: 'Validación',hide: 'blind',show: 'blind',
-	                	buttons: { Ok: function() {
-	                		$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );
-	                	}}
-	              	});
-	              	$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");
-	            }else if(response == "error_kardex"){
-	            	$("#modalerror").empty().append('<span style="color:red"><b>!Se produjo un Error en la Actualización del Stock del Producto!</b></span>').dialog({
-	                	modal: true,position: 'center',width: 480,height: 125,resizable: false,title: 'Error de Validación',hide: 'blind',show: 'blind',
-	                	buttons: { Ok: function() {$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );}}
-	              	});
-	              	$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");
-	                }
-	            }else{
-	            	$("#modalerror").empty().append('<span style="color:red"><b>!ERROR!</b></span>').dialog({
-	                	modal: true,position: 'center',width: 480,height: 125,resizable: false,title: 'Error de Validación',hide: 'blind',show: 'blind',
-	                	buttons: { Ok: function() {$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );}}
-	              	});
-	              	$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");
-	                }
-	            }
+		            if(response == 1){
+		              	$("#modalerror").empty().append('<span style="color:black"><b>!El Cuadre del Producto en Almacén se realizó con Éxito!</b></span>').dialog({
+		                	modal: true,position: 'center',width: 500,height: 125,resizable: false,title: 'Registro de Salidas',hide: 'blind',show: 'blind',
+		                	buttons: { Ok: function() {
+		                		window.location.href="<?php echo base_url();?>comercial/gestioncuadreinventario";
+		                	}}
+		              	});
+		              	$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");
+		            }else if(response == "no_existe_salida_disponible"){
+		              	$("#modalerror").empty().append('<span style="color:red"><b>!No existen Salidas disponibles para realizar el cuadre del producto!</b><br><b>Verificar Kardex del Producto.</b></span>').dialog({
+		                	modal: true,position: 'center',width: 490,height: 145,resizable: false,title: 'Validación',hide: 'blind',show: 'blind',
+		                	buttons: { Ok: function() {
+		                		$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );
+		                	}}
+		              	});
+		              	$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");
+		            }else if(response == "cantidad_erronea_salidas"){
+		              	$("#modalerror").empty().append('<span style="color:red"><b>!No se pudo realizar el Registro Completo del Cuadre en Almacén!</b><br><b>Verificar Kardex del Producto.</b></span>').dialog({
+		                	modal: true,position: 'center',width: 490,height: 145,resizable: false,title: 'Validación',hide: 'blind',show: 'blind',
+		                	buttons: { Ok: function() {
+		                		$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );
+		                	}}
+		              	});
+		              	$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");
+		            }else if(response == "orden_ingreso"){
+		              	$("#modalerror").empty().append('<span style="color:red"><b>!Generar Orden de Ingreso!</b><br><b>Verificar Kardex del Producto.</b></span>').dialog({
+		                	modal: true,position: 'center',width: 490,height: 145,resizable: false,title: 'Validación',hide: 'blind',show: 'blind',
+		                	buttons: { Ok: function() {
+		                		$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );
+		                	}}
+		              	});
+		              	$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");
+		            }else if(response == "error_inesperado"){
+		              	$("#modalerror").empty().append('<span style="color:red"><b>!Se produjo un Error al momento de realizar el Registro!</b><br><b>Verificar los datos del Formulario.</b></span>').dialog({
+		                	modal: true,position: 'center',width: 490,height: 145,resizable: false,title: 'Validación',hide: 'blind',show: 'blind',
+		                	buttons: { Ok: function() {
+		                		$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );
+		                	}}
+		              	});
+		              	$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");
+		            }else if(response == "cantidad_negativa"){
+		              	$("#modalerror").empty().append('<span style="color:red"><b>!No se pudo realizar el Registro!</b><br><b>Verificar la cantidad de Cuadre.</b></span>').dialog({
+		                	modal: true,position: 'center',width: 490,height: 145,resizable: false,title: 'Validación',hide: 'blind',show: 'blind',
+		                	buttons: { Ok: function() {
+		                		$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );
+		                	}}
+		              	});
+		              	$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");
+		            }else if(response == "error_kardex"){
+		            	$("#modalerror").empty().append('<span style="color:red"><b>!Se produjo un Error en la Actualización del Stock del Producto!</b></span>').dialog({
+		                	modal: true,position: 'center',width: 480,height: 125,resizable: false,title: 'Error de Validación',hide: 'blind',show: 'blind',
+		                	buttons: { Ok: function() {$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );}}
+		              	});
+		              	$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");
+		            }else{
+		            	$("#modalerror").empty().append('<span style="color:red"><b>!ERROR!</b></span>').dialog({
+		                	modal: true,position: 'center',width: 480,height: 125,resizable: false,title: 'Error de Validación',hide: 'blind',show: 'blind',
+		                	buttons: { Ok: function() {$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );}}
+		              	});
+		              	$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");
+		            }
+		        }
 	       	});
 		}
 	});
 
     $("#cantidad").validCampoFranz('0123456789.');
-
-    <?php 
-		if ($this->session->userdata('area') != ""){
-			$selected_area =  (int)$this->session->userdata('id_area');
-		}else{
-			if ($this->input->post('area')){
-				$selected_area =  (int)$this->input->post('area');
-			}else{	$selected_area = "";
-		}
-	?>
-   			$("#area").append('<option value="" selected="selected">:: SELECCIONE ::</option>');
-	<?php 
-		}	
-	?>
 
 });
 
@@ -314,14 +310,16 @@ $(function(){
 	<div id="tituloCont" style="margin-bottom: 0;">Cuadre de Inventario</div>
 	<div id="formFiltro">
 		<!--Contenedor-->
-		<div id="datos_factura_importada" style="background: whitesmoke;width: 1370px;border-bottom: 1px solid #000;padding-top: 10px;padding-left: 10px;margin-bottom: 15px;height: 250px;">
+		<div id="datos_factura_importada" style="background: whitesmoke;width: 1370px;border-bottom: 1px solid #000;padding-left: 10px;margin-bottom: 15px;height: 280px;">
 			<div id="container_tabs" style="margin-bottom: 10px;">
 				<!--Pestaña 1 activa por defecto-->
 			    <input id="tab-1" type="radio" name="tab-group" checked="checked" />
-			    <label for="tab-1">Opción 1 - Unidades disponibles</label>
+			    <!--<label for="tab-1">Opción 1 - Unidades disponibles</label>-->
 			    <!--Pestaña 2 inactiva por defecto-->
+			    <!--
 			    <input id="tab-2" type="radio" name="tab-group" />
 			    <label for="tab-2">Opción 2 - Orden de Ingreso</label>
+			    -->
 			    <!--Contenido a mostrar/ocultar-->
 			    <div id="content">
 			    	<!--Contenido de la Pestaña 1-->
@@ -369,19 +367,20 @@ $(function(){
 						</div>
 					</div>
 					<!--Contenido de la Pestaña 2 Finanzas -->
+					<!--
 			        <div id="content-2">
 						<table width="520" border="0" cellspacing="0" cellpadding="0">			        
 					        <tr>
 				                <td width="145" valign="middle" height="30" style="padding-bottom: 4px;">Nombre del Producto:</td>
-				                <td width="228" height="30" colspan="5"><?php echo form_input($nombre_producto_o_i);?></td>
+				                <td width="228" height="30" colspan="5"><?php // echo form_input($nombre_producto_o_i);?></td>
 				            </tr>
 					        <tr>
 								<td width="127" valign="middle" style="color:#005197;padding-bottom: 4px;" height="30">Stock Actual del sistema:</td>
-					          	<td width="228" height="30"><?php echo form_input($stockactual_o_i);?></td>
+					          	<td width="228" height="30"><?php // echo form_input($stockactual_o_i);?></td>
 					        </tr>	
 							<tr>
 								<td width="127" valign="middle" height="30" style="padding-bottom: 4px;">Stock Físico de Inventario:</td>
-					          	<td width="228" height="30"><?php echo form_input($cantidad_o_i);?></td>
+					          	<td width="228" height="30"><?php // echo form_input($cantidad_o_i);?></td>
 							</tr>						        
 						</table>
 						<table width="614" border="0" cellspacing="0" cellpadding="0" style="margin-top: 3px;">			        
@@ -390,6 +389,7 @@ $(function(){
 						    </tr>						        
 						</table>
 			        </div>
+			        -->
 				</div>
 			</div>
 		</div>

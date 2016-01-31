@@ -14,13 +14,13 @@
 	<tr style="text-align:center; font-weight:bold;vertical-align: middle;border: 1px solid #005197;background-color: #0072C6;color: white;font-size: 12px;">
 	    <td sort="idvend" width="107" height="30" >ID Producto </td>
 	    <td sort="nomcomp" width="213"><?php echo utf8_decode('Nombre o Descripción'); ?></td>
-	    <td sort="nomcomp" width="213"><?php echo utf8_decode('Área'); ?></td>
-	    <td sort="nomcomp" width="213"><?php echo utf8_decode('Categoría'); ?></td>
-	    <td sort="nomcomp" width="213"><?php echo utf8_decode('Tipo de Producto'); ?></td>
-	    <td sort="avpros" width="183"><?php echo utf8_decode('Procencia'); ?></td>
-	    <td sort="avpros" width="193"><?php echo utf8_decode('Unidad de Medida'); ?></td>
-	    <td sort="avpros" width="193"><?php echo utf8_decode('Stock'); ?></td>
-	    <td sort="avpros" width="193"><?php echo utf8_decode('Precio Unitario'); ?></td>
+	    <td sort="nomcomp" width="150"><?php echo utf8_decode('Área'); ?></td>
+	    <td sort="nomcomp" width="150"><?php echo utf8_decode('Categoría'); ?></td>
+	    <td sort="nomcomp" width="150"><?php echo utf8_decode('Tipo de Producto'); ?></td>
+	    <td sort="avpros" width="150"><?php echo utf8_decode('Procencia'); ?></td>
+	    <td sort="avpros" width="150"><?php echo utf8_decode('Unidad de Medida'); ?></td>
+	    <td sort="avpros" width="130"><?php echo utf8_decode('Stock'); ?></td>
+	    <td sort="avpros" width="130"><?php echo utf8_decode('Precio Unitario'); ?></td>
 	</tr>
 	<?php 
 		foreach($producto as $data){

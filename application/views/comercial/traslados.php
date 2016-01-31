@@ -162,6 +162,16 @@
 
 		$("#nombre_producto").focus();
 
+		<?php 
+			if ($this->input->post('area')){
+				$selected_area =  (int)$this->input->post('area');
+			}else{	$selected_area = "";
+		?>
+	   			$("#area").append('<option value="" selected="selected">:: SELECCIONE ::</option>');
+		<?php 
+			}	
+		?>
+
 		$("#imprimir_traslado").click(function(){
 			var almacen_partida = $("#almacen_partida").val();
 			var almacen_llegada = $("#almacen_llegada").val();
@@ -194,7 +204,7 @@
 	    });
 
 		$("#submit_agregar_detalle_model_carrito").click(function(){
-			if($("#nombre_producto").val() == '' || $("#cantidad").val() == ''){
+			if($("#nombre_producto").val() == '' || $("#cantidad").val() == '' || $("#area").val() == ''){
 		        $("#modalerror").html('<strong>!Falta Completar algunos Campos del Formulario. Verificar!</strong>').dialog({
 		          modal: true,position: 'center',width: 450, height: 125,resizable: false,title: 'Validación de Registro',hide: 'blind',show: 'blind',
 		          buttons: { Ok: function() {$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );}}
@@ -206,6 +216,7 @@
 			        data: {
 			          'nombre_producto' : $("#nombre_producto").val(),
 			          'cantidad' : $("#cantidad").val(),
+			          'id_area' : $("#area").val(),
 			        },
 			        success: function(response){
 			        	if(response == 'successfull'){
@@ -286,15 +297,26 @@
 	    /** Función de Autocompletado para el Nombre del Producto **/
 	    $("#nombre_producto").autocomplete({
 	      	source: function (request, respond) {
-		        $.post("<?php echo base_url('comercial/traer_producto_autocomplete_traslado'); ?>", {<?php echo $this->security->get_csrf_token_name(); ?>: "<?php echo $this->security->get_csrf_hash(); ?>", q: request.term},
-		        function (response) {
-		            respond(response);
-		        }, 'json');
+	      		var id_area = $("#area").val();
+	        	if(id_area == ""){
+	        		$("#nombre_producto").val("");
+					$("#modalerror").html('<strong>!Seleccionar el Área del Producto. Verificar!</strong>').dialog({
+	                	modal: true,position: 'center',width: 450, height: 125,resizable: false,title: 'Validación de Registro',hide: 'blind',show: 'blind',
+	                	buttons: { Ok: function() {$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );}}
+	              	});
+				}else{
+			        $.post("<?php echo base_url('comercial/traer_producto_autocomplete_traslado'); ?>", {<?php echo $this->security->get_csrf_token_name(); ?>: "<?php echo $this->security->get_csrf_hash(); ?>", q: request.term, a: id_area},
+			        function (response) {
+			            respond(response);
+			        }, 'json');
+				}
 	      	}, select: function (event, ui) {
-	        var selectedObj = ui.item;
-	        $("#nombre_producto").val(selectedObj.no_producto);
-	        $("#stock_sta_anita").val(selectedObj.stock_sta_anita);
-	        $("#stock_sta_clara").val(selectedObj.stock_sta_clara);
+		      	var id_area = $("#area").val();
+
+		        var selectedObj = ui.item;
+		        $("#nombre_producto").val(selectedObj.no_producto);
+		        $("#stock_sta_anita").val(selectedObj.stock_sta_anita);
+		        $("#stock_sta_clara").val(selectedObj.stock_sta_clara);
 	      }
 	    });
 	    /** Fin de la Función **/
@@ -437,7 +459,7 @@
     <?php } ?>
 	<div id="tituloCont" style="margin-bottom: 0px;">Traslado de Productos</div>
 	<div id="formFiltro">
-		<div style="width: 400px;float: left;background: whitesmoke;border-bottom: 1px solid #000;height: 140px;padding-top: 15px;padding-left: 15px;">
+		<div style="width: 400px;float: left;background: whitesmoke;border-bottom: 1px solid #000;height: 170px;padding-top: 15px;padding-left: 15px;">
 			<table width="518" border="0" cellspacing="0" cellpadding="0">
 		        <tr>
 		          	<td width="148" valign="middle" height="30">Punto de Partida:</td>
@@ -482,7 +504,7 @@
 		        </tr>						        
 			</table>
 		</div>
-		<div style="width: 965px;height: 140px;float: left;background: whitesmoke;border-bottom: 1px solid #000;padding-top: 15px;margin-bottom: 15px;">
+		<div style="width: 965px;height: 170px;float: left;background: whitesmoke;border-bottom: 1px solid #000;padding-top: 15px;margin-bottom: 15px;">
 			<!--
 			<table width="518" border="0" cellspacing="0" cellpadding="0">
 				<tr>
@@ -492,6 +514,22 @@
 				</tr>
 			</table>
 			-->
+			<table width="446" border="0" cellspacing="0" cellpadding="0" style="margin-bottom: 3px;">
+		        <tr>
+		          	<td width="175" valign="middle" height="30">Área:</td>
+		          	<?php
+		          		$existe = count($listaarea);
+		          		if($existe <= 0){ ?>
+			            	<td width="330" height="30"><b><?php echo 'Registrar en el Sistema';?></b></td>
+			        <?php    
+			            }
+			            else
+			            {
+		          	?>
+		          		<td width="330"><?php echo form_dropdown('area',$listaarea,$selected_area,"id='area' style='width:150px;'" );?></td>
+		          	<?php }?>
+		        </tr>
+		    </table>
 			<table width="457" border="0" cellspacing="0" cellpadding="0">
 		        <tr>
 		          	<td width="128" valign="middle" height="30" style="width: 132px;">Producto:</td>
@@ -536,6 +574,7 @@
 		            <tr class="tituloTable">
 		              <td sort="idprod" width="80" height="25">Item</td>
 		              <td sort="catprod" width="120">Cantidad</td>
+		              <td sort="catprod" width="120">Área</td>
 		              <td sort="nombreprod" width="380">Producto o Descripción</td>
 		              <td sort="procprod" width="20">&nbsp;</td>
 		            </tr>
@@ -549,6 +588,13 @@
 			        <tr class="contentTable" style="height: 32px; border-color: #F1EEEE;border-bottom-style: solid;">
 			            <td><?php echo str_pad($i, 3, 0, STR_PAD_LEFT); ?></td>
 			            <td><?php echo number_format($item['qty'],2,'.',','); ?></td>
+        	            <?php 
+        	            	if($this->cart->has_options($item['rowid']) === TRUE){
+        		            	foreach ($this->cart->product_options($item['rowid']) as $option_name => $option_value){
+        				?>
+        	            		<td><?php echo $option_value; ?></td>
+        	            	<?php } ?>
+                    	<?php } ?>
 			            <td><?php echo $item['name']; ?></td>
 			            <td width="20" align="center">
 			            	<?php echo anchor('comercial/remove_traslados/'.$item['rowid'],'X',array('style'=>'text-decoration: none; color:#898989;')); ?>
@@ -567,7 +613,7 @@
 	        </table>
 	        <table border="0" cellspacing="0" cellpadding="0" id="listaProductos">
 	            <tr>
-	            	<td style="width: 475px;"><?php echo anchor('comercial/vaciar_listado_traslado', 'Vaciar Listado de Productos', array('style'=>'text-decoration: none; background-color: #005197; color: white; font-family: tahoma; border-radius: 6px; padding: 3px 15px; font-size: 11px;')); ?></td>
+	            	<td style="width: 605px;"><?php echo anchor('comercial/vaciar_listado_traslado', 'Vaciar Listado de Productos', array('style'=>'text-decoration: none; background-color: #005197; color: white; font-family: tahoma; border-radius: 6px; padding: 3px 15px; font-size: 11px;')); ?></td>
 	            	<td style="padding-top: 3px;width: 180px;">
 	            		<i id="imprimir_traslado"><span id="text_print">Imprimir Documento<span class="fa fa-file-pdf-o" id="icon_print"></span></span></i>
 	            	</td>

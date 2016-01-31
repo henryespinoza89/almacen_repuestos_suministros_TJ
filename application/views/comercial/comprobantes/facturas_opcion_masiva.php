@@ -2,7 +2,6 @@
   $file = array('name'=>'file','id'=>'file','maxlength'=>'20', 'style'=>'width:300px;padding-left: 0px;', 'class'=>'required', 'type'=>'file');
   //$total_factura_contabilidad = array('name'=>'total_factura_contabilidad','id'=>'total_factura_contabilidad', 'style'=>'width:80px');
   //$monto_total_factura = array('name'=>'monto_total_factura','id'=>'monto_total_factura', 'style'=>'width:80px');
-
   if ($this->input->post('seriecomprobante')){
     $seriecomprobante = array('name'=>'seriecomprobante','id'=>'seriecomprobante','maxlength'=>'5','value'=>$this->input->post('seriecomprobante'), 'style'=>'width:30px;margin-right: 2px;', 'class'=>'required','onpaste'=>'return false');
   }else{
@@ -16,10 +15,11 @@
   }
 
   if ($this->input->post('numcomprobante')){
-    $numcomprobante = array('name'=>'numcomprobante','id'=>'numcomprobante','maxlength'=>'20','value'=>$this->input->post('numcomprobante'), 'style'=>'width:108px', 'class'=>'required','onpaste'=>'return false');
+    $numcomprobante = array('name'=>'numcomprobante','id'=>'numcomprobante','maxlength'=>'20','value'=>$this->input->post('numcomprobante'), 'style'=>'width:108px', 'class'=>'required');
   }else{
-    $numcomprobante = array('name'=>'numcomprobante','id'=>'numcomprobante','maxlength'=>'20', 'style'=>'width:108px', 'class'=>'required','onpaste'=>'return false');
+    $numcomprobante = array('name'=>'numcomprobante','id'=>'numcomprobante','maxlength'=>'20', 'style'=>'width:108px', 'class'=>'required');
   }
+  // ,'onpaste'=>'return false' // No permite utilizar el ctr v en el input
 
   if ($this->input->post('fecharegistro')){
     $fecharegistro = array('name'=>'fecharegistro','id'=>'fecharegistro','maxlength'=>'10','value'=>$this->input->post('fecharegistro'), 'style'=>'width:150px','readonly'=> 'readonly', 'class'=>'required');

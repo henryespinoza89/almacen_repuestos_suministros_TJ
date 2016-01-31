@@ -73,7 +73,12 @@
       			auxiliar = 0;
       		}
       	});
-		
+
+      	$("#view_invoice").mouseleave(function(){
+            $("#view_invoice").hide();
+            auxiliar = 0;
+        });
+	
 		$("#error_view_complete").html('!Falta completar el campo Contraseña Actual.!').dialog({
 	        modal: true,position: 'center',width: 400,height: 145,resizable: false, title: 'Error/Campos Vacios',
 	        buttons: { Ok: function(){
@@ -130,11 +135,16 @@
 		
 	});
 		
-		function muestra_seguridad_clave(clave,formulario){
-			seguridad=seguridad_clave(clave);
-	        $("#valSeguridad").html("Contrase&ntilde;a fuerte: "+ seguridad + "%");
-	        $("#securityPass").val(seguridad);
-		}
+	function muestra_seguridad_clave(clave,formulario){
+		seguridad=seguridad_clave(clave);
+        $("#valSeguridad").html("Contrase&ntilde;a fuerte: "+ seguridad + "%");
+        $("#securityPass").val(seguridad);
+	}
+
+	function gestionar_factura_importada(e, id_row){
+	    e.preventDefault();
+	    window.location.href="<?php echo base_url();?>comercial/gestionfacturasmasivas";
+	}
 		
 	</script>
 	<style>
