@@ -1107,6 +1107,23 @@ class Comercial extends CI_Controller {
 		}
 	}
 
+	public function gestionreportmensual(){
+		$nombre = $this->security->xss_clean($this->session->userdata('nombre')); //Variable de sesion
+		$apellido = $this->security->xss_clean($this->session->userdata('apaterno')); //Variable de sesion
+		if($nombre == "" AND $apellido == ""){
+			$this->load->view('login');
+		}else{
+			if($this->model_comercial->existeTipoCambio() == TRUE){
+			$data['tipocambio'] = 0;
+			}else{
+				$data['tipocambio'] = 1;
+			}
+			$this->load->view('comercial/menu_script');
+			$this->load->view('comercial/menu_cabecera');
+			$this->load->view('comercial/view_report_mensual');
+		}
+	}
+
 	public function gestionreportsalida(){
 		$nombre = $this->security->xss_clean($this->session->userdata('nombre')); //Variable de sesion
 		$apellido = $this->security->xss_clean($this->session->userdata('apaterno')); //Variable de sesion
@@ -6305,6 +6322,325 @@ class Comercial extends CI_Controller {
 		/* datos de la salida del excel */
 		header("Content-type: application/vnd.ms-excel");
 		header("Content-Disposition: attachment; filename=inventario.xls");
+		header("Cache-Control: max-age=0");
+		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+		$objWriter->save('php://output');
+		exit;
+	}
+
+	public function al_exportar_report_factura_mensual(){
+		$almacen = $this->security->xss_clean($this->session->userdata('almacen'));
+		$data = $this->security->xss_clean($this->uri->segment(3));
+		$data = json_decode($data, true);
+		$f_inicial = $data[0];
+		$f_final = $data[1];
+
+		$this->load->library('pHPExcel');
+		/* variables de PHPExcel */
+		$objPHPExcel = new PHPExcel();
+		$nombre_archivo = "phpExcel";
+
+		/* propiedades de la celda */
+		$objPHPExcel->getDefaultStyle()->getFont()->setName('Arial Narrow');
+		$objPHPExcel->getDefaultStyle()->getFont()->setSize(10);
+		$objPHPExcel->getActiveSheet()->getRowDimension('1')->setRowHeight(10);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(10);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(10);
+
+		/* Obtener el nombre del mes */
+        $elementos = explode("-", $f_inicial);
+        $anio = $elementos[0];
+        $mes = $elementos[1];
+        $dia = $elementos[2];
+
+        if($mes == 1){
+            $nombre_mes = "ENERO";
+        }else if($mes == 2){
+            $nombre_mes = "FEBRERO";
+        }else if($mes == 3){
+            $nombre_mes = "MARZO";
+        }else if($mes == 4){
+            $nombre_mes = "ABRIL";
+        }else if($mes == 5){
+            $nombre_mes = "MAYO";
+        }else if($mes == 6){
+            $nombre_mes = "JUNIO";
+        }else if($mes == 7){
+            $nombre_mes = "JULIO";
+        }else if($mes == 8){
+            $nombre_mes = "AGOSTO";
+        }else if($mes == 9){
+            $nombre_mes = "SETIEMBRE";
+        }else if($mes == 10){
+            $nombre_mes = "OCTUBRE";
+        }else if($mes == 11){
+            $nombre_mes = "NOVIEMBRE";
+        }else if($mes == 12){
+            $nombre_mes = "DICIEMBRE";
+        }
+
+		/* Here your first sheet */
+	    $sheet = $objPHPExcel->getActiveSheet();
+
+	    /* Style - Bordes */
+	    $borders = array(
+			'borders' => array(
+				'allborders' => array(
+					'style' => PHPExcel_Style_Border::BORDER_THIN,
+					'color' => array('argb' => 'FF000000'),
+				)
+			),
+		);
+
+		$style = array(
+	        'alignment' => array(
+	            'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
+	        )
+	    );
+
+	    $style_2 = array(
+	        'alignment' => array(
+	            'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_RIGHT,
+	        )
+	    );
+
+	    $styleArray = array(
+		    'font' => array(
+		        'bold' => true
+		    )
+		);
+
+		// Add new sheet
+		$objWorkSheet = $objPHPExcel->createSheet(0); //Setting index when creating
+		$objPHPExcel->setActiveSheetIndex(0); // Esta línea y en esta posición hace que los formatos vayan a la primera hoja
+		$objPHPExcel->getDefaultStyle()->getFont()->setSize(12);
+		$objPHPExcel->setActiveSheetIndex(0)->mergeCells('A1:J1');
+		$objPHPExcel->setActiveSheetIndex(0)->mergeCells('K1:M1');
+		$objPHPExcel->getActiveSheet()->getStyle('A1:M1')->applyFromArray($borders);
+		$objPHPExcel->getActiveSheet()->getStyle('A1:M1')->applyFromArray($style);
+		$objPHPExcel->getActiveSheet()->getStyle('A1:M1')->applyFromArray($styleArray);
+		//$objPHPExcel->getActiveSheet()->getRowDimension('A')->setRowHeight(40);
+		$objPHPExcel->getActiveSheet()->getStyle('A1:M1')->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
+		$objPHPExcel->getActiveSheet()->getRowDimension('1')->setRowHeight(30);
+
+		$objPHPExcel->getDefaultStyle()->getFont()->setSize(10);
+		$objPHPExcel->getActiveSheet()->getStyle('A2:M2')->applyFromArray($borders);
+		$objPHPExcel->getActiveSheet()->getStyle('A2:M2')->applyFromArray($style);
+		$objPHPExcel->getActiveSheet()->getStyle('A2:M2')->applyFromArray($styleArray);
+
+		$objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(5);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(15);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth(15);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth(10);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth(15);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('F')->setWidth(45);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('G')->setWidth(50);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('H')->setWidth(15);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('I')->setWidth(15);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('J')->setWidth(15);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('K')->setWidth(15);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('L')->setWidth(15);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('M')->setWidth(15);
+
+		// Write cells
+		if($almacen == 1){
+			$objWorkSheet->setCellValue('A1', 'SALIDA DE PRODUCTOS VALORIZADOS - STA. CLARA                     FECHA: '.$nombre_mes.' '.$anio);
+    	}else if($almacen == 2){
+    		$objWorkSheet->setCellValue('A1', 'SALIDA DE PRODUCTOS VALORIZADOS - STA. ANITA                     FECHA: '.$nombre_mes.' '.$anio);
+    	}
+    	$objWorkSheet->setCellValue('K1', ' SALIDAS ');
+
+    	$objWorkSheet->setCellValue('A2', '')
+	    			 ->setCellValue('B2', 'MES')
+	    			 ->setCellValue('C2', 'TIPO DOC.')
+	    			 ->setCellValue('D2', 'SERIE')
+	    			 ->setCellValue('E2', 'NUMERO')
+	    			 ->setCellValue('F2', 'PROVEEDOR')
+	    			 ->setCellValue('G2', 'NOMBRE DEL PRODUCTO')
+	    			 ->setCellValue('H2', 'PROCED')
+	    			 ->setCellValue('I2', 'SUM/REP')
+	    			 ->setCellValue('J2', 'MEDIDA')
+	    			 ->setCellValue('K2', 'CANTIDAD')
+	    			 ->setCellValue('L2', 'CU')
+	    			 ->setCellValue('M2', 'CT');
+
+	    /* Traer informacion de la BD */
+	    // Selecciono todos los productos que salieron de almacen dentro de la fecha seleccionada
+	    $result = $this->model_comercial->get_info_salidas_report($f_inicial, $f_final, $almacen);
+	    // Recorrido
+	    $p = 3;
+	    if(count($result) > 0){
+		    foreach ($result as $reg) {
+		    	$objPHPExcel->getActiveSheet()->getStyle('K'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+		    	$objPHPExcel->getActiveSheet()->getStyle('L'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+		    	$objPHPExcel->getActiveSheet()->getStyle('M'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+		    	/* Centrar contenido */
+		    	$objPHPExcel->getActiveSheet()->getStyle('A'.$p)->applyFromArray($style);
+	    		$objPHPExcel->getActiveSheet()->getStyle('B'.$p)->applyFromArray($style);
+	    		$objPHPExcel->getActiveSheet()->getStyle('C'.$p)->applyFromArray($style);
+	    		$objPHPExcel->getActiveSheet()->getStyle('D'.$p)->applyFromArray($style);
+	    		$objPHPExcel->getActiveSheet()->getStyle('E'.$p)->applyFromArray($style);
+	    		$objPHPExcel->getActiveSheet()->getStyle('F'.$p)->applyFromArray($style);
+	    		$objPHPExcel->getActiveSheet()->getStyle('G'.$p)->applyFromArray($style);
+	    		$objPHPExcel->getActiveSheet()->getStyle('H'.$p)->applyFromArray($style);
+	    		$objPHPExcel->getActiveSheet()->getStyle('I'.$p)->applyFromArray($style);
+	    		$objPHPExcel->getActiveSheet()->getStyle('J'.$p)->applyFromArray($style);
+	    		$objPHPExcel->getActiveSheet()->getStyle('K'.$p)->applyFromArray($style);
+	    		$objPHPExcel->getActiveSheet()->getStyle('L'.$p)->applyFromArray($style);
+	    		$objPHPExcel->getActiveSheet()->getStyle('M'.$p)->applyFromArray($style);
+	    		/* border */
+	    		$objPHPExcel->getActiveSheet()->getStyle('A'.$p)->applyFromArray($borders);
+	    		$objPHPExcel->getActiveSheet()->getStyle('B'.$p)->applyFromArray($borders);
+	    		$objPHPExcel->getActiveSheet()->getStyle('C'.$p)->applyFromArray($borders);
+	    		$objPHPExcel->getActiveSheet()->getStyle('D'.$p)->applyFromArray($borders);
+	    		$objPHPExcel->getActiveSheet()->getStyle('E'.$p)->applyFromArray($borders);
+	    		$objPHPExcel->getActiveSheet()->getStyle('F'.$p)->applyFromArray($borders);
+	    		$objPHPExcel->getActiveSheet()->getStyle('G'.$p)->applyFromArray($borders);
+	    		$objPHPExcel->getActiveSheet()->getStyle('H'.$p)->applyFromArray($borders);
+	    		$objPHPExcel->getActiveSheet()->getStyle('I'.$p)->applyFromArray($borders);
+	    		$objPHPExcel->getActiveSheet()->getStyle('J'.$p)->applyFromArray($borders);
+	    		$objPHPExcel->getActiveSheet()->getStyle('K'.$p)->applyFromArray($borders);
+	    		$objPHPExcel->getActiveSheet()->getStyle('L'.$p)->applyFromArray($borders);
+	    		$objPHPExcel->getActiveSheet()->getStyle('M'.$p)->applyFromArray($borders);
+
+		    	$id_detalle_producto = $reg->id_detalle_producto;
+		    	$fecha_salida = $reg->fecha;
+		    	$cantidad_salida = $reg->cantidad_salida;
+		    	$no_producto = $reg->no_producto;
+		    	$no_procedencia = $reg->no_procedencia;
+		    	$no_categoria = $reg->no_categoria;
+		    	$nom_uni_med = $reg->nom_uni_med;
+		    	// Identificando las facturas utilizadas para la salida del producto
+		    	$invoice = $this->model_comercial->get_info_facturas_report($id_detalle_producto);
+		    	$sumatoria_unidades_factura = 0;
+		    	$cant_facturas = 0;
+		    	$contador_filas = 1;
+		    	$variable_u = FALSE;
+		    	$variable_p = FALSE;
+		    	if(count($invoice) > 0){
+			    	foreach ($invoice as $row) {
+			    		if($sumatoria_unidades_factura < $cantidad_salida){
+			    			if($cant_facturas == 0){
+			    				if($row->serie_comprobante == '000'){
+					    			$nombre_comprobante_u = 'INVOICE';
+					    			$serie_factura_u = '';
+					    		}else{
+					    			$nombre_comprobante_u = $row->no_comprobante;
+					    			$serie_factura_u = $row->serie_comprobante;
+					    		}
+					    		$num_factura_u = $row->nro_comprobante;
+					    		$serie_factura_u = $row->serie_comprobante;
+					    		$razon_social_u = $row->razon_social;
+					    		$precio_ingreso_u = $row->precio;
+					    		$unidades_ingreso_u = $row->unidades;
+					    		// Analisis
+					    		if(($cantidad_salida - $unidades_ingreso_u) >= 0){
+					    			$unidades_utilizadas_u = $unidades_ingreso_u;
+					    		}else if(($cantidad_salida - $unidades_ingreso_u) < 0){
+					    			$unidades_utilizadas_u = $cantidad_salida;
+					    		}
+					    		$cant_facturas++;
+					    		// Sumatoria
+				    			$sumatoria_unidades_factura = $sumatoria_unidades_factura + $unidades_ingreso_u;
+				    			$variable_u = TRUE;
+			    			}else if($cant_facturas == 1){
+			    				if($row->serie_comprobante == '000'){
+					    			$nombre_comprobante_p = 'INVOICE';
+					    			$serie_factura_p = '';
+					    		}else{
+					    			$nombre_comprobante_p = $row->no_comprobante;
+					    			$serie_factura_p = $row->serie_comprobante;
+					    		}
+			    				$num_factura_p = $row->nro_comprobante;
+			    				$razon_social_p = $row->razon_social;
+			    				$precio_ingreso_p = $row->precio;
+			    				$unidades_ingreso_p = $row->unidades;
+			    				// Analisis
+			    				$unidades_utilizadas_p = $unidades_ingreso_p - ( $cantidad_salida -  $unidades_utilizadas_u );
+			    				$cant_facturas++;
+			    				// Sumatoria
+				    			$sumatoria_unidades_factura = $sumatoria_unidades_factura + $unidades_ingreso_p;
+				    			$variable_p = TRUE;
+			    			}
+			    		}
+			    		// Contador de filas
+			    	}
+			    }
+	    		if($variable_p == TRUE){
+		    		$objWorkSheet->setCellValue('A'.$p, $contador_filas)
+		    					 ->setCellValue('B'.$p, $nombre_mes)
+		    					 ->setCellValue('C'.$p, $nombre_comprobante_p)
+		    					 ->setCellValueExplicit('D'.$p, $serie_factura_p,PHPExcel_Cell_DataType::TYPE_STRING)
+		    					 ->setCellValue('E'.$p, $num_factura_p)
+		    					 ->setCellValue('F'.$p, $razon_social_p)
+		    					 ->setCellValue('G'.$p, $no_producto)
+		    					 ->setCellValue('H'.$p, $no_procedencia)
+		    					 ->setCellValue('I'.$p, $no_categoria)
+		    					 ->setCellValue('J'.$p, $nom_uni_med)
+		    					 ->setCellValue('K'.$p, $unidades_utilizadas_p)
+		    					 ->setCellValue('L'.$p, $precio_ingreso_p)
+		    					 ->setCellValue('M'.$p, ($unidades_utilizadas_p*$precio_ingreso_p));
+		    		$p++;
+		    		$contador_filas++;
+	    		}
+	    		if($variable_u == TRUE){
+	    			// Estilos
+	    			$objPHPExcel->getActiveSheet()->getStyle('K'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+			    	$objPHPExcel->getActiveSheet()->getStyle('L'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+			    	$objPHPExcel->getActiveSheet()->getStyle('M'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+			    	/* Centrar contenido */
+			    	$objPHPExcel->getActiveSheet()->getStyle('A'.$p)->applyFromArray($style);
+		    		$objPHPExcel->getActiveSheet()->getStyle('B'.$p)->applyFromArray($style);
+		    		$objPHPExcel->getActiveSheet()->getStyle('C'.$p)->applyFromArray($style);
+		    		$objPHPExcel->getActiveSheet()->getStyle('D'.$p)->applyFromArray($style);
+		    		$objPHPExcel->getActiveSheet()->getStyle('E'.$p)->applyFromArray($style);
+		    		$objPHPExcel->getActiveSheet()->getStyle('F'.$p)->applyFromArray($style);
+		    		$objPHPExcel->getActiveSheet()->getStyle('G'.$p)->applyFromArray($style);
+		    		$objPHPExcel->getActiveSheet()->getStyle('H'.$p)->applyFromArray($style);
+		    		$objPHPExcel->getActiveSheet()->getStyle('I'.$p)->applyFromArray($style);
+		    		$objPHPExcel->getActiveSheet()->getStyle('J'.$p)->applyFromArray($style);
+		    		$objPHPExcel->getActiveSheet()->getStyle('K'.$p)->applyFromArray($style);
+		    		$objPHPExcel->getActiveSheet()->getStyle('L'.$p)->applyFromArray($style);
+		    		$objPHPExcel->getActiveSheet()->getStyle('M'.$p)->applyFromArray($style);
+		    		/* border */
+		    		$objPHPExcel->getActiveSheet()->getStyle('A'.$p)->applyFromArray($borders);
+		    		$objPHPExcel->getActiveSheet()->getStyle('B'.$p)->applyFromArray($borders);
+		    		$objPHPExcel->getActiveSheet()->getStyle('C'.$p)->applyFromArray($borders);
+		    		$objPHPExcel->getActiveSheet()->getStyle('D'.$p)->applyFromArray($borders);
+		    		$objPHPExcel->getActiveSheet()->getStyle('E'.$p)->applyFromArray($borders);
+		    		$objPHPExcel->getActiveSheet()->getStyle('F'.$p)->applyFromArray($borders);
+		    		$objPHPExcel->getActiveSheet()->getStyle('G'.$p)->applyFromArray($borders);
+		    		$objPHPExcel->getActiveSheet()->getStyle('H'.$p)->applyFromArray($borders);
+		    		$objPHPExcel->getActiveSheet()->getStyle('I'.$p)->applyFromArray($borders);
+		    		$objPHPExcel->getActiveSheet()->getStyle('J'.$p)->applyFromArray($borders);
+		    		$objPHPExcel->getActiveSheet()->getStyle('K'.$p)->applyFromArray($borders);
+		    		$objPHPExcel->getActiveSheet()->getStyle('L'.$p)->applyFromArray($borders);
+		    		$objPHPExcel->getActiveSheet()->getStyle('M'.$p)->applyFromArray($borders);
+
+	    			$objWorkSheet->setCellValue('A'.$p, $contador_filas)
+		    					 ->setCellValue('B'.$p, $nombre_mes)
+		    					 ->setCellValue('C'.$p, $nombre_comprobante_u)
+		    					 ->setCellValueExplicit('D'.$p, $serie_factura_u,PHPExcel_Cell_DataType::TYPE_STRING)
+		    					 ->setCellValue('E'.$p, $num_factura_u)
+		    					 ->setCellValue('F'.$p, $razon_social_u)
+		    					 ->setCellValue('G'.$p, $no_producto)
+		    					 ->setCellValue('H'.$p, $no_procedencia)
+		    					 ->setCellValue('I'.$p, $no_categoria)
+		    					 ->setCellValue('J'.$p, $nom_uni_med)
+		    					 ->setCellValue('K'.$p, $unidades_utilizadas_u)
+		    					 ->setCellValue('L'.$p, $precio_ingreso_u)
+		    					 ->setCellValue('M'.$p, ($unidades_utilizadas_u*$precio_ingreso_u));
+	    			$p++;
+	    			$contador_filas++;
+	    		}
+	    		/* Rename sheet */
+			    $objWorkSheet->setTitle("reporte_mensual_salidas");
+		    }
+	    }
+    	$objPHPExcel->setActiveSheetIndex(0);
+		/* datos de la salida del excel */
+		header("Content-type: application/vnd.ms-excel");
+		header("Content-Disposition: attachment; filename=reporte_mensual_salidas.xls");
 		header("Cache-Control: max-age=0");
 		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
 		$objWriter->save('php://output');

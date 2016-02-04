@@ -191,6 +191,7 @@
 						<ul>
 							<li><a href='<?php echo base_url();?>comercial/gestionreportentrada' style="width: 126px;"><span>Reporte de Facturas</span></a>
 							<li><a href='<?php echo base_url();?>comercial/gestionreportsalida'><span>Reporte de Salidas</span></a>
+							<li><a href='<?php echo base_url();?>comercial/gestionreportmensual'><span>Reporte Mensual</span></a>
 						</ul>
 					</li>
 				</ul>

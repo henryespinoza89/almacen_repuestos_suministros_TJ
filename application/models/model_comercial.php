@@ -3065,6 +3065,47 @@ class Model_comercial extends CI_Model {
         }
     }
 
+    function get_info_salidas_report($f_inicial, $f_final, $almacen){
+        $filtro = "";
+        $filtro .= " AND salida_producto.id_almacen =".(int)$almacen;
+        $filtro .= " AND DATE(salida_producto.fecha) BETWEEN'".$f_inicial."'AND'".$f_final."'";
+        $filtro .= " ORDER BY salida_producto.fecha ASC , salida_producto.id_salida_producto ASC";
+        $sql = "SELECT salida_producto.id_salida_producto,salida_producto.id_detalle_producto,
+        salida_producto.cantidad_salida,salida_producto.p_u_salida,salida_producto.fecha,detalle_producto.no_producto,
+        procedencia.no_procedencia,categoria.no_categoria,unidad_medida.nom_uni_med,salida_producto.id_almacen
+        FROM salida_producto
+        INNER JOIN detalle_producto ON salida_producto.id_detalle_producto = detalle_producto.id_detalle_producto
+        INNER JOIN producto ON producto.id_detalle_producto = detalle_producto.id_detalle_producto
+        INNER JOIN procedencia ON producto.id_procedencia = procedencia.id_procedencia
+        INNER JOIN unidad_medida ON producto.id_unidad_medida = unidad_medida.id_unidad_medida
+        INNER JOIN categoria ON producto.id_categoria = categoria.id_categoria
+        WHERE salida_producto.id_salida_producto IS NOT NULL".$filtro;
+        $query = $this->db->query($sql);
+        if($query->num_rows()>0)
+        {
+            return $query->result();
+        }
+    }
+
+    function get_info_facturas_report($id_detalle_producto){
+        $filtro = "";
+        $filtro .= " AND detalle_ingreso_producto.id_detalle_producto =".(int)$id_detalle_producto;
+        $filtro .= " ORDER BY ingreso_producto.fecha DESC , ingreso_producto.id_ingreso_producto DESC";
+        $sql = "SELECT ingreso_producto.id_comprobante,ingreso_producto.serie_comprobante,ingreso_producto.nro_comprobante,
+        proveedor.razon_social,detalle_ingreso_producto.unidades,detalle_ingreso_producto.id_detalle_producto,ingreso_producto.id_ingreso_producto,
+        detalle_ingreso_producto.precio,comprobante.no_comprobante
+        FROM ingreso_producto
+        INNER JOIN detalle_ingreso_producto ON detalle_ingreso_producto.id_ingreso_producto = ingreso_producto.id_ingreso_producto
+        INNER JOIN proveedor ON ingreso_producto.id_proveedor = proveedor.id_proveedor
+        INNER JOIN comprobante ON ingreso_producto.id_comprobante = comprobante.id_comprobante
+        WHERE ingreso_producto.id_ingreso_producto IS NOT NULL".$filtro;
+        $query = $this->db->query($sql);
+        if($query->num_rows()>0)
+        {
+            return $query->result();
+        }
+    }
+
     function report_saldo_inicial($id_detalle_producto,$f_inicial){
         $filtro = "";
         $filtro .= " AND DATE(saldos_iniciales.fecha_cierre) ='".$f_inicial."'";
