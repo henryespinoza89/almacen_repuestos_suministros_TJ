@@ -3070,7 +3070,7 @@ class Model_comercial extends CI_Model {
         $filtro .= " AND salida_producto.id_almacen =".(int)$almacen;
         $filtro .= " AND DATE(salida_producto.fecha) BETWEEN'".$f_inicial."'AND'".$f_final."'";
         $filtro .= " ORDER BY salida_producto.fecha ASC , salida_producto.id_salida_producto ASC";
-        $sql = "SELECT salida_producto.id_salida_producto,salida_producto.id_detalle_producto,
+        $sql = "SELECT DISTINCT salida_producto.id_salida_producto,salida_producto.id_detalle_producto,
         salida_producto.cantidad_salida,salida_producto.p_u_salida,salida_producto.fecha,detalle_producto.no_producto,
         procedencia.no_procedencia,categoria.no_categoria,unidad_medida.nom_uni_med,salida_producto.id_almacen
         FROM salida_producto
@@ -3091,6 +3091,7 @@ class Model_comercial extends CI_Model {
         $filtro = "";
         $filtro .= " AND detalle_ingreso_producto.id_detalle_producto =".(int)$id_detalle_producto;
         $filtro .= " ORDER BY ingreso_producto.fecha DESC , ingreso_producto.id_ingreso_producto DESC";
+        $filtro .= " LIMIT 2";
         $sql = "SELECT ingreso_producto.id_comprobante,ingreso_producto.serie_comprobante,ingreso_producto.nro_comprobante,
         proveedor.razon_social,detalle_ingreso_producto.unidades,detalle_ingreso_producto.id_detalle_producto,ingreso_producto.id_ingreso_producto,
         detalle_ingreso_producto.precio,comprobante.no_comprobante
@@ -3098,6 +3099,38 @@ class Model_comercial extends CI_Model {
         INNER JOIN detalle_ingreso_producto ON detalle_ingreso_producto.id_ingreso_producto = ingreso_producto.id_ingreso_producto
         INNER JOIN proveedor ON ingreso_producto.id_proveedor = proveedor.id_proveedor
         INNER JOIN comprobante ON ingreso_producto.id_comprobante = comprobante.id_comprobante
+        WHERE ingreso_producto.id_ingreso_producto IS NOT NULL".$filtro;
+        $query = $this->db->query($sql);
+        if($query->num_rows()>0)
+        {
+            return $query->result();
+        }
+    }
+
+    function get_select_facturas_asociadas($id_salida_producto){
+        $filtro = "";
+        $filtro .= " AND adm_facturas_asociadas.id_salida_producto =".(int)$id_salida_producto;
+        $filtro .= " ORDER BY adm_facturas_asociadas.id_facturas_asociadas ASC";
+        $sql = "SELECT adm_facturas_asociadas.id_facturas_asociadas,adm_facturas_asociadas.id_salida_producto,adm_facturas_asociadas.id_ingreso_producto,
+        adm_facturas_asociadas.cantidad_utilizada
+        FROM adm_facturas_asociadas
+        WHERE adm_facturas_asociadas.id_facturas_asociadas IS NOT NULL".$filtro;
+        $query = $this->db->query($sql);
+        if($query->num_rows()>0)
+        {
+            return $query->result();
+        }
+    }
+
+    function get_select_data_invoice($id_ingreso_producto){
+        $filtro = "";
+        $filtro .= " AND ingreso_producto.id_ingreso_producto =".(int)$id_ingreso_producto;
+        $sql = "SELECT ingreso_producto.serie_comprobante,ingreso_producto.nro_comprobante,proveedor.razon_social,comprobante.no_comprobante,
+        ingreso_producto.id_ingreso_producto,detalle_ingreso_producto.id_detalle_producto,detalle_ingreso_producto.precio
+        FROM ingreso_producto
+        INNER JOIN proveedor ON ingreso_producto.id_proveedor = proveedor.id_proveedor
+        INNER JOIN comprobante ON ingreso_producto.id_comprobante = comprobante.id_comprobante
+        INNER JOIN detalle_ingreso_producto ON detalle_ingreso_producto.id_ingreso_producto = ingreso_producto.id_ingreso_producto
         WHERE ingreso_producto.id_ingreso_producto IS NOT NULL".$filtro;
         $query = $this->db->query($sql);
         if($query->num_rows()>0)
@@ -4825,6 +4858,7 @@ class Model_comercial extends CI_Model {
                 }
                 /* Registro de detalle producto */
                 $datos = array(
+                    "unidades_referencial" => $item['qty'],
                     "unidades" => $item['qty'],
                     "id_detalle_producto" => $id_detalle_producto,
                     "precio" => $item['price'], // GUARDO EL PRECIO UNITARIO DEL PRODUCTO COMO SE INGRESO EN LA FACTURA

@@ -39,7 +39,7 @@
 			    // Luego lo paso por JSON  a un archivo php llamado js.php
 			    jObject= JSON.stringify(jObject);
 	    		
-	    		url = '<?php echo base_url(); ?>comercial/al_exportar_report_factura_mensual/'+jObject;
+	    		url = '<?php echo base_url(); ?>comercial/al_exportar_report_factura_mensual_opcion_2/'+jObject;
 	    		$(location).attr('href',url);
 			}
     	});
