@@ -1,12 +1,11 @@
 <?php
-	//Exportamos a Excel los resultados
+	// Exportamos a Excel los resultados
 	header("Content-type: application/octet-stream");
 	header("Content-Disposition: attachment; filename=ReporteListadoProductos.xls");
 	header("Pragma: no-cache");
 	header("Expires: 0");
 ?>
 
-<!-- TABLA LISTA DE VISITADORES -->
 <?php
 	$sumatoria = 0;
 ?>

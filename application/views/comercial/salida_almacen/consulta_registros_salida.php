@@ -3,7 +3,7 @@
 
   $("#nombre_producto").autocomplete({
     source: function (request, respond) {
-      $.post("<?php echo base_url('comercial/traer_producto_autocomplete'); ?>", {<?php echo $this->security->get_csrf_token_name(); ?>: "<?php echo $this->security->get_csrf_hash(); ?>", q: request.term},
+      $.post("<?php echo base_url('comercial/traer_producto_autocomplete_consultar_salidas'); ?>", {<?php echo $this->security->get_csrf_token_name(); ?>: "<?php echo $this->security->get_csrf_hash(); ?>", q: request.term},
       function (response) {
           respond(response);
       }, 'json');
@@ -395,13 +395,13 @@
             } 
           ?> 
           <tfoot class="nav">
-                  <tr>
-                      <td colspan=12>
-                          <div class="pagination"></div>
-                          <div class="paginationTitle">Página</div>
-                          <div class="selectPerPage"></div>
-                      </td>
-                  </tr>                   
+            <tr>
+              <td colspan=12>
+                <div class="pagination"></div>
+                <div class="paginationTitle">Página</div>
+                <div class="selectPerPage"></div>
+              </td>
+            </tr>                   
           </tfoot>          
       </table>
     <?php }?>

@@ -1204,6 +1204,25 @@ class Comercial extends CI_Controller {
         print(json_encode($data));
     }
 
+    public function traer_producto_autocomplete_consultar_salidas() {
+		$termino = strtoupper($this->input->post('q'));
+        $resultado = $this->model_comercial->get_nombre_producto_autocomplete_consultar_salidas($termino);
+
+        $array = array( "label" => "no se encontraron resultados" );
+
+        if ($resultado != null) {
+            $data = array();
+            foreach ($resultado as $producto) {
+                $array = array(
+                    "label" => $producto['no_producto'],
+                    "nombre_producto" => $producto['no_producto']
+                );
+                array_push($data, $array);
+            }
+        }
+        print(json_encode($data));
+    }
+
     public function traer_proveedor_autocomplete() {
 		
 		$termino = strtoupper($this->input->post('q'));
