@@ -8,37 +8,7 @@
 
 <script type="text/javascript">
 	$(function(){
-		/*
-		$('#listaMontosCierre').jTPS( {perPages:[12],scrollStep:1,scrollDelay:30,clickCallback:function () {     
-            var table = '#listaMontosCierre';
-            document.cookie = 'jTPS=sortasc:' + $(table + ' .sortableHeader').index($(table + ' .sortAsc')) + ',' +
-                'sortdesc:' + $(table + ' .sortableHeader').index($(table + ' .sortDesc')) + ',' +
-                'page:' + $(table + ' .pageSelector').index($(table + ' .hilightPageSelector')) + ';';
-            }
-        });
-        var cookies = document.cookie.split(';');
-        for (var ci = 0, cie = cookies.length; ci < cie; ci++) {
-                var cookie = cookies[ci].split('=');
-                if (cookie[0] == 'jTPS') {
-                        var commands = cookie[1].split(',');
-                        for (var cm = 0, cme = commands.length; cm < cme; cm++) {
-                                var command = commands[cm].split(':');
-                                if (command[0] == 'sortasc' && parseInt(command[1]) >= 0) {
-                                        $('#listaMontosCierre .sortableHeader:eq(' + parseInt(command[1]) + ')').click();
-                                } else if (command[0] == 'sortdesc' && parseInt(command[1]) >= 0) {
-                                        $('#listaMontosCierre .sortableHeader:eq(' + parseInt(command[1]) + ')').click().click();
-                                } else if (command[0] == 'page' && parseInt(command[1]) >= 0) {
-                                        $('#listaMontosCierre .pageSelector:eq(' + parseInt(command[1]) + ')').click();
-                                }
-                        }
-                }
-        }
-        $('#listaMontosCierre tbody tr:not(.stubCell)').bind('mouseover mouseout',
-            function (e) {
-                e.type == 'mouseover' ? $(this).children('td').addClass('hilightRow') : $(this).children('td').removeClass('hilightRow');
-            }
-        );
-		*/
+		
 		$("#div-loader").hide();
 		
 		$("#report_exportar_excel").click(function(){
@@ -87,6 +57,43 @@
 			}
     	});
 
+		//Script para crear la tabla que será el contenedor de los productos registrados
+	    $('#listaMontosCierre').jTPS( {perPages:[10,20,30,50,'Todos'],scrollStep:1,scrollDelay:30,clickCallback:function () {     
+	        // target table selector
+	        var table = '#listaMontosCierre';
+	        // store pagination + sort in cookie 
+	        document.cookie = 'jTPS=sortasc:' + $(table + ' .sortableHeader').index($(table + ' .sortAsc')) + ',' +
+                'sortdesc:' + $(table + ' .sortableHeader').index($(table + ' .sortDesc')) + ',' +
+                'page:' + $(table + ' .pageSelector').index($(table + ' .hilightPageSelector')) + ';';
+	        }
+	    });
+
+	    // reinstate sort and pagination if cookie exists
+	    var cookies = document.cookie.split(';');
+	    for (var ci = 0, cie = cookies.length; ci < cie; ci++) {
+            var cookie = cookies[ci].split('=');
+            if (cookie[0] == 'jTPS') {
+                var commands = cookie[1].split(',');
+                for (var cm = 0, cme = commands.length; cm < cme; cm++) {
+                    var command = commands[cm].split(':');
+                    if (command[0] == 'sortasc' && parseInt(command[1]) >= 0) {
+                            $('#listaMontosCierre .sortableHeader:eq(' + parseInt(command[1]) + ')').click();
+                    } else if (command[0] == 'sortdesc' && parseInt(command[1]) >= 0) {
+                            $('#listaMontosCierre .sortableHeader:eq(' + parseInt(command[1]) + ')').click().click();
+                    } else if (command[0] == 'page' && parseInt(command[1]) >= 0) {
+                            $('#listaMontosCierre .pageSelector:eq(' + parseInt(command[1]) + ')').click();
+                    }
+                }
+            }
+	    }
+
+	    // bind mouseover for each tbody row and change cell (td) hover style
+	    $('#listaMontosCierre tbody tr:not(.stubCell)').bind('mouseover mouseout',
+            function (e) {
+                e.type == 'mouseover' ? $(this).children('td').addClass('hilightRow') : $(this).children('td').removeClass('hilightRow');
+            }
+	    );
+
 		$("#fecha_cierre").datepicker({ 
 			dateFormat: 'yy-mm-dd',showOn: "button",
 			buttonImage: "<?php echo base_url();?>assets/img/calendar.png",
@@ -122,7 +129,7 @@
           	else
             {
         ?>
-        	<!--
+        	
 	        <table border="0" cellspacing="0" cellpadding="0" id="listaMontosCierre" style="width:900px;margin-top: 20px;margin-bottom: 5px;">
 	          	<thead>
 		            <tr class="tituloTable">
@@ -137,12 +144,12 @@
 		        <?php
 	            	$i = 1;
 	            	foreach($monto as $data){
-	            		(array)$arr = str_split(date('Y-m-d'), 4);
+	            		/*(array)$arr = str_split(date('Y-m-d'), 4);
         				$anio_sistema = $arr[0];
-        				/* Formato para la fecha */
+        				/* Formato para la fecha 
 						$elementos = explode("-", $data->fecha_cierre);
 						$anio_bd = $elementos[0];
-						if($anio_sistema == $anio_bd){
+						if($anio_sistema == $anio_bd){*/
 	          	?>
 				          	<tr class="contentTable">
 					            <td height="25"><?php echo str_pad($i, 4, 0, STR_PAD_LEFT); ?></td>
@@ -153,9 +160,9 @@
 					            <td><?php echo number_format($data->monto_cierre,2,'.',','); ?></td>
 					        </tr>
 		        <?php
-		        		}
-		            $i++;
-		            } 
+		        		//}
+		            	$i++;
+		            }
 		        ?>
 		        <tfoot class="nav">
 	                <tr>
@@ -167,7 +174,7 @@
 	                </tr>                   
 	          	</tfoot>
 		    </table>
-		    -->
+		    
 	    <?php }?>
     </div>
     <div id="modalerror"></div>

@@ -1072,11 +1072,13 @@ class Model_comercial extends CI_Model {
         try {
             $id_almacen = $this->security->xss_clean($this->session->userdata('almacen'));
             $filtro = "";
+            /*
             if($id_almacen == 1){
                 $filtro .= " AND detalle_producto_area.stock_area_sta_clara > 0 ";
             }else if($id_almacen == 2){
                 $filtro .= " AND detalle_producto_area.stock_area_sta_anita > 0 ";
             }
+            */
             $filtro .= " AND detalle_producto_area.id_area =".(int)$id_area;
             $filtro .= " AND producto.estado = TRUE ";
             $filtro .= "LIMIT 10";
@@ -3200,7 +3202,7 @@ class Model_comercial extends CI_Model {
         $filtro = "";
         $filtro .= " AND DATE(saldos_iniciales.fecha_cierre) ='".$f_inicial."'";
         $sql = "SELECT saldos_iniciales.fecha_cierre,detalle_producto.no_producto,saldos_iniciales.stock_inicial,
-        saldos_iniciales.precio_uni_inicial
+        saldos_iniciales.precio_uni_inicial,saldos_iniciales.stock_inicial_sta_clara
         FROM saldos_iniciales
         INNER JOIN producto ON saldos_iniciales.id_pro = producto.id_pro
         INNER JOIN detalle_producto ON producto.id_detalle_producto = detalle_producto.id_detalle_producto

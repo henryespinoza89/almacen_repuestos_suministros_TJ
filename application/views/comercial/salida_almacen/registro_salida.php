@@ -146,6 +146,7 @@ $(function() {
 	              	});
 	              	$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");
 	            }else{
+	            	console.log(response);
 	            	$("#modalerror").empty().append('<span style="color:red"><b>!ERROR!</b></span>').dialog({
 	                	modal: true,position: 'center',width: 480,height: 125,resizable: false,title: 'Error de Validación',hide: 'blind',show: 'blind',
 	                	buttons: { Ok: function() {$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );}}

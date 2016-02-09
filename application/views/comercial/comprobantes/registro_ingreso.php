@@ -615,7 +615,7 @@ $(function(){
 	<div id="formFiltro">
 		<div id="options" style="border-bottom: 1px solid #000; padding-bottom: 10px; margin-bottom: 0;">
         	<div class="newagente"><a href="<?php echo base_url(); ?>comercial/gestionaduana/">Gestionar Datos del Agente Aduanero</a></div>
-        	<div class="newconsult"><a href="<?php echo base_url(); ?>comercial/gestionconsultarRegistros/">Consultar Registros de Ingreso</a></div>
+        	<div class="newconsult"><a href="<?php echo base_url(); ?>comercial/gestionconsultarRegistros_optionsAdvanced/">Consultar Registros de Ingreso</a></div>
         	<!--<div class="newotros"><a href="<?php //echo base_url(); ?>comercial/gestionotrosDoc/">Otros</a></div>-->
         	<div class="facturas_opcion_masiva"><a href="<?php echo base_url(); ?>comercial/gestionfacturasmasivas/">Registrar Facturas Importadas - Opción Masiva</a></div>
       	</div>
