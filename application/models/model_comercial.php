@@ -4063,6 +4063,9 @@ class Model_comercial extends CI_Model {
     function eliminarSalidaProducto($id_salida_producto,$almacen)
     {
         $aux_bucle_saldos_ini = 0;
+        $aux_bucle_saldos_ini_opcion_2 = 0;
+        // $variable_permanente = 0;
+        $variable_fecha = "";
         // VALIDACION DE CAMPOS DE STOCK POR AREAS NO TODOS LOS PRODUCTOS TIENEN ESTA INNFORMACION
         $stock_area_sta_clara = "";
         $stock_area_sta_anita = "";
@@ -4269,7 +4272,7 @@ class Model_comercial extends CI_Model {
                             $stock_inicial_sta_clara = $stock_inicial_sta_clara + $cantidad_salida;
                             $actualizar = array(
                                 'stock_inicial_sta_clara'=> $stock_inicial_sta_clara,
-                                'precio_uni_inicial'=> $precio_unitario_anterior_especial
+                                // 'precio_uni_inicial'=> $precio_unitario_anterior_especial
                             );
                             $this->db->where('id_saldos_iniciales',$id_saldos_iniciales);
                             $this->db->update('saldos_iniciales', $actualizar);
@@ -4277,50 +4280,74 @@ class Model_comercial extends CI_Model {
                             $stock_inicial = $stock_inicial + $cantidad_salida;
                             $actualizar = array(
                                 'stock_inicial'=> $stock_inicial,
-                                'precio_uni_inicial'=> $precio_unitario_anterior_especial
+                                // 'precio_uni_inicial'=> $precio_unitario_anterior_especial
                             );
                             $this->db->where('id_saldos_iniciales',$id_saldos_iniciales);
                             $this->db->update('saldos_iniciales', $actualizar);
                         }
-                        // Actualizar monto final de cierre del mes
-                        $stock_general_cierre = $stock_inicial + $stock_inicial_sta_clara;
-                        $monto_parcial_producto_anterior = $precio_uni_inicial * $stock_general_cierre;
-                        $monto_parcial_producto_nuevo = $precio_unitario_anterior_especial * ($stock_general_cierre+$cantidad_salida);
-                        // Seleccionar el monto de cierre
-                        $this->db->select('fecha_cierre,monto_cierre_sta_anita,monto_cierre_sta_clara,fecha_auxiliar');
-                        $this->db->where('fecha_auxiliar',$fecha_formateada);
-                        $query = $this->db->get('monto_cierre');
-                        if($query->num_rows()>0){
-                            foreach($query->result() as $row){
-                                $fecha_cierre = $row->fecha_cierre;
-                                $monto_cierre_sta_anita = $row->monto_cierre_sta_anita;
-                                $monto_cierre_sta_clara = $row->monto_cierre_sta_clara;
-                                $fecha_auxiliar = $row->fecha_auxiliar;
-                            }
+                        /*
+                        $this->db->select('id_kardex_producto');
+                        $this->db->where('fecha_registro >=',$fecha_registro);
+                        $this->db->where('id_kardex_producto >',$id_kardex_producto_eliminado);
+                        $this->db->where('id_detalle_producto',$id_detalle_producto);
+                        $this->db->order_by("fecha_registro", "asc");
+                        $this->db->order_by("id_kardex_producto", "asc");
+                        $query_2 = $this->db->get('kardex_producto');
+                        if(count($query_2->result()) < 0){
                             if($almacen == 1){ // Sta. Clara
-                                $monto_cierre_sta_clara = $monto_cierre_sta_clara - $monto_parcial_producto_anterior;
-                                $monto_cierre_sta_clara = $monto_cierre_sta_clara + $monto_parcial_producto_nuevo;
-                                // Nuevo monto de cierre general
-                                $monto_general_actualizado = $monto_cierre_sta_clara + $monto_cierre_sta_anita;
                                 $actualizar = array(
-                                    'monto_cierre'=> $monto_general_actualizado,
-                                    'monto_cierre_sta_clara'=> $monto_cierre_sta_clara
+                                    'precio_uni_inicial'=> $precio_unitario_anterior_especial
                                 );
-                                $this->db->where('fecha_auxiliar',$fecha_formateada);
-                                $this->db->update('monto_cierre',$actualizar);
+                                $this->db->where('id_saldos_iniciales',$id_saldos_iniciales);
+                                $this->db->update('saldos_iniciales', $actualizar);
                             }else if($almacen == 2){ // Sta. anita
-                                $monto_cierre_sta_anita = $monto_cierre_sta_anita - $monto_parcial_producto_anterior;
-                                $monto_cierre_sta_anita = $monto_cierre_sta_anita + $monto_parcial_producto_nuevo;
-                                // Nuevo monto de cierre general
-                                $monto_general_actualizado = $monto_cierre_sta_anita + $monto_cierre_sta_clara;
                                 $actualizar = array(
-                                    'monto_cierre'=> $monto_general_actualizado,
-                                    'monto_cierre_sta_anita'=> $monto_cierre_sta_anita
+                                    'precio_uni_inicial'=> $precio_unitario_anterior_especial
                                 );
-                                $this->db->where('fecha_auxiliar',$fecha_formateada);
-                                $this->db->update('monto_cierre',$actualizar);
+                                $this->db->where('id_saldos_iniciales',$id_saldos_iniciales);
+                                $this->db->update('saldos_iniciales', $actualizar);
+                            }
+                            // Actualizar monto final de cierre del mes
+                            $stock_general_cierre = $stock_inicial + $stock_inicial_sta_clara;
+                            $monto_parcial_producto_anterior = $precio_uni_inicial * $stock_general_cierre;
+                            $monto_parcial_producto_nuevo = $precio_unitario_anterior_especial * ($stock_general_cierre + $cantidad_salida);
+                            // Seleccionar el monto de cierre
+                            $this->db->select('fecha_cierre,monto_cierre_sta_anita,monto_cierre_sta_clara,fecha_auxiliar');
+                            $this->db->where('fecha_auxiliar',$fecha_formateada);
+                            $query = $this->db->get('monto_cierre');
+                            if($query->num_rows()>0){
+                                foreach($query->result() as $row){
+                                    $fecha_cierre = $row->fecha_cierre;
+                                    $monto_cierre_sta_anita = $row->monto_cierre_sta_anita;
+                                    $monto_cierre_sta_clara = $row->monto_cierre_sta_clara;
+                                    $fecha_auxiliar = $row->fecha_auxiliar;
+                                }
+                                if($almacen == 1){ // Sta. Clara
+                                    $monto_cierre_sta_clara = $monto_cierre_sta_clara - $monto_parcial_producto_anterior;
+                                    $monto_cierre_sta_clara = $monto_cierre_sta_clara + $monto_parcial_producto_nuevo;
+                                    // Nuevo monto de cierre general
+                                    $monto_general_actualizado = $monto_cierre_sta_clara + $monto_cierre_sta_anita;
+                                    $actualizar = array(
+                                        'monto_cierre'=> $monto_general_actualizado,
+                                        'monto_cierre_sta_clara'=> $monto_cierre_sta_clara
+                                    );
+                                    $this->db->where('fecha_auxiliar',$fecha_formateada);
+                                    $this->db->update('monto_cierre',$actualizar);
+                                }else if($almacen == 2){ // Sta. anita
+                                    $monto_cierre_sta_anita = $monto_cierre_sta_anita - $monto_parcial_producto_anterior;
+                                    $monto_cierre_sta_anita = $monto_cierre_sta_anita + $monto_parcial_producto_nuevo;
+                                    // Nuevo monto de cierre general
+                                    $monto_general_actualizado = $monto_cierre_sta_anita + $monto_cierre_sta_clara;
+                                    $actualizar = array(
+                                        'monto_cierre'=> $monto_general_actualizado,
+                                        'monto_cierre_sta_anita'=> $monto_cierre_sta_anita
+                                    );
+                                    $this->db->where('fecha_auxiliar',$fecha_formateada);
+                                    $this->db->update('monto_cierre',$actualizar);
+                                }
                             }
                         }
+                        */
                         // Aumentar la fecha para la siguiente busqueda de cierre // Ya se tiene la fecha con el formato correcto
                         $elementos_act = explode("-", $fecha_formateada);
                         $anio = $elementos_act[0];
@@ -4353,6 +4380,7 @@ class Model_comercial extends CI_Model {
                 $query = $this->db->get('kardex_producto');
                 if(count($query->result()) > 0){
                     foreach($query->result() as $row_2){
+                        // Procedimiento
                         $id_kardex_producto = $row_2->id_kardex_producto; /* ID del movimiento en el kardex */
                         /* Obtener los datos del movimiento del kardex */
                         $this->db->select('stock_actual,precio_unitario_actual_promedio,precio_unitario_anterior,descripcion,stock_anterior,cantidad_salida,cantidad_ingreso,precio_unitario_actual,id_detalle_producto,fecha_registro');
@@ -4424,14 +4452,42 @@ class Model_comercial extends CI_Model {
                             if($descripcion_act == 'ENTRADA'){
                                 $new_precio_unitario_anterior_act = $precio_unitario_actual_promedio_final;
                                 $unidades_utilizadas = $cantidad_ingreso_act;
+                                $precio_antes_actualizacion = $precio_unitario_actual_promedio_act;
                             }else if($descripcion_act == 'SALIDA'){
                                 $new_precio_unitario_anterior_act = $precio_unitario_actual_final;
                                 $unidades_utilizadas = $cantidad_salida_act;
+                                $precio_antes_actualizacion = $precio_unitario_actual_act;
+                            }
+                            // Selecciono el ultimo id del periodo al que corresponde la fecha
+                            $elementos = explode("-", $fecha_registro_kardex_post);
+                            $anio = $elementos[0];
+                            $mes = $elementos[1];
+                            $dia = $elementos[2];
+                            if($mes == 12){
+                                $anio = $anio + 1;
+                                $mes_siguiente = 1;
+                                $dia = 1;
+                            }else if($mes <= 11 ){
+                                $mes_siguiente = $mes + 1;
+                                $dia = 1;
+                            }
+                            $array = array($anio, $mes_siguiente, $dia);
+                            $fecha_formateada_post = implode("-", $array);
+                            // Formato
+                            $this->db->select('id_kardex_producto');
+                            $this->db->where('fecha_registro >=',$fecha_registro_kardex_post);
+                            $this->db->where('fecha_registro <',date($fecha_formateada_post));
+                            $this->db->where('id_kardex_producto >',$id_kardex_producto_eliminado);
+                            $this->db->where('id_detalle_producto',$id_detalle_producto);
+                            $this->db->order_by("fecha_registro", "asc");
+                            $this->db->order_by("id_kardex_producto", "asc");
+                            $query = $this->db->get('kardex_producto');
+                            foreach($query->result() as $row_3){
+                                $id_kardex_producto_ultimo = $row_3->id_kardex_producto;
                             }
                         }
                         // LAS ACTUALIZACIONES DE LOS SALDOS INICIALES Y EL MONTO SE DEBE HACER POR RECORRIDO DE BUSQUEDA DE CADA REGISTRO DEL KARDEX
                         // Actualizar los datos de cierre de mes si la salida correspondia a un periodo ya cerrado
-                        /*
                         $elementos = explode("-", $fecha_registro_kardex_post);
                         $anio = $elementos[0];
                         $mes = $elementos[1];
@@ -4446,41 +4502,40 @@ class Model_comercial extends CI_Model {
                         }
                         $array = array($anio, $mes_siguiente, $dia);
                         $fecha_formateada = implode("-", $array);
-                        do{
-                            // Esta fecha me va a servir para ubicar el cierre del producto del mes posterior para su actualizacion
-                            // Realizar la actualización del monto de cierre del producto en funcion de la fecha de registro de la factura
-                            $this->db->select('id_saldos_iniciales,stock_inicial,stock_inicial_sta_clara,precio_uni_inicial');
-                            $this->db->where('id_pro',$id_producto);
-                            $this->db->where('fecha_cierre',$fecha_formateada);
-                            $query = $this->db->get('saldos_iniciales');
-                            if($query->num_rows()>0){
-                                foreach($query->result() as $row){
-                                    $id_saldos_iniciales = $row->id_saldos_iniciales;
-                                    $stock_inicial = $row->stock_inicial;
-                                    $stock_inicial_sta_clara = $row->stock_inicial_sta_clara;
-                                    $precio_uni_inicial = $row->precio_uni_inicial;
-                                }
-                                if($almacen == 1){ // Sta. Clara
-                                    $stock_inicial_sta_clara = $stock_inicial_sta_clara + $unidades_utilizadas;
-                                    $actualizar = array(
-                                        'stock_inicial_sta_clara'=> $stock_inicial_sta_clara,
-                                        'precio_uni_inicial'=> $new_precio_unitario_anterior_act
-                                    );
-                                    $this->db->where('id_saldos_iniciales',$id_saldos_iniciales);
-                                    $this->db->update('saldos_iniciales', $actualizar);
-                                }else if($almacen == 2){ // Sta. anita
-                                    $stock_inicial = $stock_inicial + $unidades_utilizadas;
-                                    $actualizar = array(
-                                        'stock_inicial'=> $stock_inicial,
-                                        'precio_uni_inicial'=> $new_precio_unitario_anterior_act
-                                    );
-                                    $this->db->where('id_saldos_iniciales',$id_saldos_iniciales);
-                                    $this->db->update('saldos_iniciales', $actualizar);
-                                }
-                                // Actualizar monto final de cierre del mes
-                                $stock_general_cierre = $stock_inicial + $stock_inicial_sta_clara;
-                                $monto_parcial_producto_anterior = $precio_uni_inicial * $stock_general_cierre;
-                                $monto_parcial_producto_nuevo = $new_precio_unitario_anterior_act * ($stock_general_cierre+$unidades_utilizadas);
+                        // Esta fecha me va a servir para ubicar el cierre del producto del mes posterior para su actualizacion
+                        // Realizar la actualización del monto de cierre del producto en funcion de la fecha de registro de la factura
+                        $this->db->select('id_saldos_iniciales,stock_inicial,stock_inicial_sta_clara,precio_uni_inicial');
+                        $this->db->where('id_pro',$id_producto);
+                        $this->db->where('fecha_cierre',$fecha_formateada);
+                        $query = $this->db->get('saldos_iniciales');
+                        if($query->num_rows()>0){
+                            foreach($query->result() as $row){
+                                $id_saldos_iniciales = $row->id_saldos_iniciales;
+                                $stock_inicial = $row->stock_inicial;
+                                $stock_inicial_sta_clara = $row->stock_inicial_sta_clara;
+                                $precio_uni_inicial = $row->precio_uni_inicial; // todavia no esta actualizado
+                            }
+                            if($almacen == 1){ // Sta. Clara
+                                $actualizar = array(
+                                    'precio_uni_inicial'=> $new_precio_unitario_anterior_act
+                                );
+                                $this->db->where('id_saldos_iniciales',$id_saldos_iniciales);
+                                $this->db->update('saldos_iniciales', $actualizar);
+                            }else if($almacen == 2){ // Sta. anita
+                                $actualizar = array(
+                                    'precio_uni_inicial'=> $new_precio_unitario_anterior_act
+                                );
+                                $this->db->where('id_saldos_iniciales',$id_saldos_iniciales);
+                                $this->db->update('saldos_iniciales', $actualizar);
+                            }
+
+                            // Actualizar monto final de cierre del mes
+                            // Obtengo los stock de cierre actualizados en el paso anterior
+                            $stock_general_cierre = $stock_inicial + $stock_inicial_sta_clara;
+                            $monto_parcial_producto_anterior = $precio_antes_actualizacion * ( $stock_general_cierre - $cantidad_salida );
+                            $monto_parcial_producto_nuevo = $new_precio_unitario_anterior_act * $stock_general_cierre;
+
+                            if($id_kardex_producto == $id_kardex_producto_ultimo){
                                 // Seleccionar el monto de cierre
                                 $this->db->select('fecha_cierre,monto_cierre_sta_anita,monto_cierre_sta_clara,fecha_auxiliar');
                                 $this->db->where('fecha_auxiliar',$fecha_formateada);
@@ -4497,6 +4552,7 @@ class Model_comercial extends CI_Model {
                                         $monto_cierre_sta_clara = $monto_cierre_sta_clara + $monto_parcial_producto_nuevo;
                                         // Nuevo monto de cierre general
                                         $monto_general_actualizado = $monto_cierre_sta_clara + $monto_cierre_sta_anita;
+                                        // echo ' 1. monto_general_actualizado '.$monto_cierre_sta_clara;
                                         $actualizar = array(
                                             'monto_cierre'=> $monto_general_actualizado,
                                             'monto_cierre_sta_clara'=> $monto_cierre_sta_clara
@@ -4516,26 +4572,15 @@ class Model_comercial extends CI_Model {
                                         $this->db->update('monto_cierre',$actualizar);
                                     }
                                 }
-                                // Aumentar la fecha para la siguiente busqueda de cierre // Ya se tiene la fecha con el formato correcto
-                                $elementos_act = explode("-", $fecha_formateada);
-                                $anio = $elementos_act[0];
-                                $mes = $elementos_act[1];
-                                $dia = $elementos_act[2];
-                                if($mes == 12){
-                                    $anio = $anio + 1;
-                                    $mes_siguiente = 01;
-                                    $dia = 1;
-                                }else if($mes <= 11 ){
-                                    $mes_siguiente = $mes + 1;
-                                    $dia = 1;
-                                }
-                                $array = array($anio, $mes_siguiente, $dia);
-                                $fecha_formateada = implode("-", $array);
-                            }else{
-                                $aux_bucle_saldos_ini = 1;
                             }
-                        }while($aux_bucle_saldos_ini == 0);
-                        */
+
+                            // Limpiar variabls
+                            $id_saldos_iniciales = " ";
+                            $stock_inicial = " ";
+                            $stock_inicial_sta_clara = " ";
+                            $precio_uni_inicial = " ";
+                        }
+                        
                     }
                 }
                 return true;
