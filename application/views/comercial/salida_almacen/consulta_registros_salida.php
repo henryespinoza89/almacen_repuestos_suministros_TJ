@@ -178,7 +178,8 @@
                 $("#finregistro").html('<strong>!La Salida del Producto ha sido eliminado correctamente!</strong>').dialog({
                   modal: true,position: 'center',width: 480,height: 125,resizable: false, title: '!Eliminación Conforme!',
                   buttons: { Ok: function(){
-                    window.location.href="<?php echo base_url();?>comercial/gestionconsultarSalidaRegistros";
+                    // window.location.href="<?php echo base_url();?>comercial/gestionconsultarSalidaRegistros";
+                    $("#finregistro").dialog('close');
                   }}
                 });
               }else{
