@@ -120,7 +120,7 @@
               });
               $(this).dialog('close');
 
-              setTimeout('window.location.href="<?php echo base_url(); ?>comercial/gestionconsultarRegistros"', 200);
+              //setTimeout('window.location.href="<?php echo base_url(); ?>comercial/gestionconsultarRegistros_optionsAdvanced"', 200);
         },
         'Cancelar': function () {
               $(this).dialog('close');

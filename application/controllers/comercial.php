@@ -7417,7 +7417,7 @@ class Comercial extends CI_Controller {
 	{
 		$almacen = $this->security->xss_clean($this->session->userdata('almacen'));
 		$id_registro_ingreso = $this->input->get('eliminar');
-		$this->model_comercial->eliminarRegistroIngreso($id_registro_ingreso,$almacen);
+		$this->model_comercial->eliminarRegistroIngreso_aleatorio($id_registro_ingreso,$almacen);
 	}
 
 	public function eliminarsalidaproducto()
