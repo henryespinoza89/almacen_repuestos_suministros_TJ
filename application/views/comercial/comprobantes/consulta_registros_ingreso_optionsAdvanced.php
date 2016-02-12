@@ -108,22 +108,37 @@
       buttons: {
         'Eliminar': function () {
           var parent = $(this).data('parent');
-              var id = $(this).data('delid');
-              var ruta = $(this).data('ruta');
-              //var idusuario = $(this).data('idusuario');
-              $.ajax({
-                   type: 'get',
-                   url: ruta,
-                    data: {
-                      'eliminar' : id
-                    }
-              });
-              $(this).dialog('close');
-
-              //setTimeout('window.location.href="<?php echo base_url(); ?>comercial/gestionconsultarRegistros_optionsAdvanced"', 200);
+          var id = $(this).data('delid');
+          var ruta = $(this).data('ruta');
+          $.ajax({
+            type: 'get',
+            url: ruta,
+            data: {
+              'eliminar' : id
+            },
+            success: function(msg){
+              if(msg == 1){
+                $("#finregistro").html('<strong>!La Factura ha sido eliminada correctamente!</strong>').dialog({
+                  modal: true,position: 'center',width: 480,height: 125,resizable: false, title: '!Eliminación Conforme!',
+                  buttons: { Ok: function(){
+                    // window.location.href="<?php echo base_url();?>comercial/gestionconsultarSalidaRegistros";
+                    $("#finregistro").dialog('close');
+                  }}
+                });
+              }else{
+                $("#modalerror").empty().append(msg).dialog({
+                  modal: true,position: 'center',width: 700,height: 125,resizable: false,title: '!No se puede eliminar la Salida!',
+                  buttons: { Ok: function() {$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );}}
+                });
+                $(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");
+              }
+            }
+          });
+          $(this).dialog('close');
+          //setTimeout('window.location.href="<?php echo base_url(); ?>comercial/gestionconsultarRegistros_optionsAdvanced"', 200);
         },
-        'Cancelar': function () {
-              $(this).dialog('close');
+        'Cancelar': function(){
+          $(this).dialog('close');
         }
       }
     });
@@ -250,6 +265,8 @@
     </div>
   </div>
   <div id="mdlMostrarDetalle"></div>
+  <div id="modalerror"></div>
+  <div id="finregistro"></div>
   <div style="display:none">
     <div id="direccionelim"><?php echo site_url('comercial/eliminarregistroingreso');?></div>
   </div>

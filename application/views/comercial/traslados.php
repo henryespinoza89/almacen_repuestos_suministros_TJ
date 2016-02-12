@@ -457,8 +457,11 @@
         <div id="retorno"></div>
       </div>
     <?php } ?>
-	<div id="tituloCont" style="margin-bottom: 0px;">Traslado de Productos</div>
+	<div id="tituloCont" style="margin-bottom: 7px;padding-bottom: 7px;">Traslado de Productos</div>
 	<div id="formFiltro">
+		<div id="options" style="border-bottom: 1px solid #000; padding-bottom: 10px; margin-bottom: 0;">
+        	<div class="newagente"><a href="<?php echo base_url(); ?>comercial/consultar_traslado_productos/">Consultar Traslados</a></div>
+      	</div>
 		<div style="width: 400px;float: left;background: whitesmoke;border-bottom: 1px solid #000;height: 170px;padding-top: 15px;padding-left: 15px;">
 			<table width="518" border="0" cellspacing="0" cellpadding="0">
 		        <tr>
