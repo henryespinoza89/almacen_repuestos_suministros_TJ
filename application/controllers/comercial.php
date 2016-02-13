@@ -1648,6 +1648,13 @@ class Comercial extends CI_Controller {
 		$this->load->view('comercial/salida_almacen/consulta_registros_salida', $data);
 	}
 
+	public function consultar_traslado_productos(){
+		$data['trasladoproducto']= $this->model_comercial->listaTrasladoProducto();
+		// $data['listaarea']= $this->model_comercial->listarArea();
+		$this->load->view('comercial/menu');
+		$this->load->view('comercial/consultar_traslado_productos', $data);
+	}
+
 	public function gestionconsultarRegistros_otros(){
 		$data['registros']= $this->model_comercial->listaRegistros_otros();
 		$data['listaproveedor']= $this->model_comercial->listaProveedor();
@@ -7417,7 +7424,12 @@ class Comercial extends CI_Controller {
 	{
 		$almacen = $this->security->xss_clean($this->session->userdata('almacen'));
 		$id_registro_ingreso = $this->input->get('eliminar');
-		$this->model_comercial->eliminarRegistroIngreso($id_registro_ingreso,$almacen);
+		$result = $this->model_comercial->eliminarRegistroIngreso_aleatorio($id_registro_ingreso,$almacen);
+		if(!$result){
+            echo '<b>--> No puede eliminar Registros de un periodo donde se ya realizo el Cierre Mensual de Almacén.</b>';
+        }else{
+        	echo '1';
+        }
 	}
 
 	public function eliminarsalidaproducto()
@@ -7425,6 +7437,18 @@ class Comercial extends CI_Controller {
 		$almacen = $this->security->xss_clean($this->session->userdata('almacen'));
 		$id_salida_producto = $this->input->get('eliminar');
 		$result = $this->model_comercial->eliminarSalidaProducto($id_salida_producto,$almacen);
+		if(!$result){
+            echo '<b>--> No puede eliminar Registros de un periodo donde se ya realizo el Cierre Mensual de Almacén.</b>';
+        }else{
+        	echo '1';
+        }
+	}
+
+	public function eliminartrasladoproducto()
+	{
+		$almacen = $this->security->xss_clean($this->session->userdata('almacen'));
+		$id_detalle_traslado = $this->input->get('eliminar');
+		$result = $this->model_comercial->eliminarTrasladoProducto($id_detalle_traslado,$almacen);
 		if(!$result){
             echo '<b>--> No puede eliminar Registros de un periodo donde se ya realizo el Cierre Mensual de Almacén.</b>';
         }else{
