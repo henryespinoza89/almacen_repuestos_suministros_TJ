@@ -7444,6 +7444,26 @@ class Comercial extends CI_Controller {
         }
 	}
 
+	public function procedimiento_eliminacion_salidas()
+	{
+		$almacen = $this->security->xss_clean($this->session->userdata('almacen'));
+		$fechainicial = $this->security->xss_clean($this->input->post("fechainicial"));
+		$fechafinal = $this->security->xss_clean($this->input->post("fechafinal"));
+		// Realizar  la consulta de las salidas a eliminar
+		$reg_salidas_eliminadas = $this->model_comercial->get_salidas_eliminar($fechainicial, $fechafinal);
+		foreach ($reg_salidas_eliminadas as $row){
+			$id_salida_producto = $row->id_salida_producto;
+			$fecha = $row->fecha;
+			$result = $this->model_comercial->eliminarSalidaProducto($id_salida_producto,$almacen);
+			var_dump($id_salida_producto.' ');
+		}
+		if(!$result){
+            echo '<b>--> No puede eliminar Registros de un periodo donde se ya realizo el Cierre Mensual de Almacén.</b>';
+        }else{
+        	echo '1';
+        }
+	}
+
 	public function eliminartrasladoproducto()
 	{
 		$almacen = $this->security->xss_clean($this->session->userdata('almacen'));

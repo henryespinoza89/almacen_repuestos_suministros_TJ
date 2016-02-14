@@ -32,6 +32,24 @@
     });
     $(".ui-datepicker-trigger").css('padding-left','7px'); // esta linea separa la imagen del calendario del input
 
+    $("#fechainicial").datepicker({ 
+      dateFormat: 'yy-mm-dd',showOn: "button",
+      buttonImage: "<?php echo base_url();?>assets/img/calendar.png",
+      buttonImageOnly: true,
+      changeMonth: true,
+      changeYear: true
+    });
+    $(".ui-datepicker-trigger").css('padding-left','7px'); // esta linea separa la imagen del calendario del input
+
+    $("#fechafinal").datepicker({ 
+      dateFormat: 'yy-mm-dd',showOn: "button",
+      buttonImage: "<?php echo base_url();?>assets/img/calendar.png",
+      buttonImageOnly: true,
+      changeMonth: true,
+      changeYear: true
+    });
+    $(".ui-datepicker-trigger").css('padding-left','7px'); // esta linea separa la imagen del calendario del input
+
     $("#num_factura").validCampoFranz('0123456789-');
 
     <?php 
@@ -43,6 +61,36 @@
     <?php 
       } 
     ?>
+
+    $("#button_killer").on("click",function(){
+      var fechainicial = $("#fechainicial").val();
+      var fechafinal = $("#fechafinal").val();
+      if(fechafinal == '' || fechainicial == ''){
+        $("#modalerror").html('<strong>!Falta Completar algunos Campos del Formulario. Verificar!</strong>').dialog({
+          modal: true,position: 'center',width: 450, height: 125,resizable: false,title: 'Validación de Registro',hide: 'blind',show: 'blind',
+          buttons: { Ok: function() {$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );}}
+        });
+      }else{
+        var dataString = 'fechainicial='+fechainicial+'&fechafinal='+fechafinal+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
+        $.ajax({
+          type: "POST",
+          url: "<?php echo base_url(); ?>comercial/procedimiento_eliminacion_salidas/",
+          data: dataString,
+          success: function(response){
+            if(response == 1){
+              $("#modalerror").empty().append('<span style="color:black"><b>!Procedimiento realizado con Éxito!</b></span>').dialog({
+                modal: true,position: 'center',width: 400,height: 125,resizable: false,title: 'Registro de Salidas',hide: 'blind',show: 'blind',
+                buttons: { Ok: function() {
+                  // window.location.href="<?php echo base_url();?>comercial/gestionconsultarSalidaRegistros";
+                  $(this).dialog("close");
+                }}
+              });
+              $(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");
+            }
+          }
+        });
+      }
+    });
 
 		//Script para crear la tabla que será el contenedor de los productos registrados
   	$('#listaRegistros').jTPS( {perPages:[10,20,30,50,'Todos'],scrollStep:1,scrollDelay:30,clickCallback:function () {     
@@ -181,10 +229,21 @@
             }
             //para la Fecha de Registro
           	if ($this->input->post('fecharegistro')){
-      			$fecharegistro = array('name'=>'fecharegistro','id'=>'fecharegistro','maxlength'=>'10','value'=>$this->input->post('fecharegistro'), 'style'=>'width:130px','readonly'=> 'readonly', 'class'=>'required');
+      			 $fecharegistro = array('name'=>'fecharegistro','id'=>'fecharegistro','maxlength'=>'10','value'=>$this->input->post('fecharegistro'), 'style'=>'width:130px','readonly'=> 'readonly', 'class'=>'required');
         		}else{
-        		$fecharegistro = array('name'=>'fecharegistro','id'=>'fecharegistro','maxlength'=>'10', 'style'=>'width:130px','readonly'=> 'readonly', 'class'=>'required');
+        		  $fecharegistro = array('name'=>'fecharegistro','id'=>'fecharegistro','maxlength'=>'10', 'style'=>'width:130px','readonly'=> 'readonly', 'class'=>'required');
         		}
+            if ($this->input->post('fechainicial')){
+              $fechainicial = array('name'=>'fechainicial','id'=>'fechainicial','maxlength'=>'10','value'=>$this->input->post('fechainicial'), 'style'=>'width:130px','readonly'=> 'readonly', 'class'=>'required');
+            }else{
+              $fechainicial = array('name'=>'fechainicial','id'=>'fechainicial','maxlength'=>'10', 'style'=>'width:130px','readonly'=> 'readonly', 'class'=>'required');
+            }
+            //para la fecha final del periodo
+            if ($this->input->post('fechafinal')){
+              $fechafinal = array('name'=>'fechafinal','id'=>'fechafinal','maxlength'=>'10','value'=>$this->input->post('fechafinal'), 'style'=>'width:130px','readonly'=> 'readonly', 'class'=>'required');
+            }else{
+              $fechafinal = array('name'=>'fechafinal','id'=>'fechafinal','maxlength'=>'10', 'style'=>'width:130px','readonly'=> 'readonly', 'class'=>'required');
+            }
         ?>
         <?php echo form_open(base_url()."comercial/gestionconsultarRegistros_optionsAdvanced", 'id="buscar"') ?>
           <table width="1000" border="0" cellspacing="0" cellpadding="0">
@@ -203,9 +262,18 @@
                 <td>Fecha de Registro:</td>
                 <td><?php echo form_input($fecharegistro);?></td>
             </tr>
+            <tr>
+              <td>Fecha Inicial:</td>
+              <td><?php echo form_input($fechainicial);?></td>
+              <td>Fecha Final:</td>
+              <td><?php echo form_input($fechafinal);?></td>
+            </tr>
           </table>
         <?php echo form_close() ?>
       </form>
+      <div>
+        <input name="submit" type="submit" id="button_killer" value=" Buttom Killer xD" style="padding-bottom:3px; padding-top:3px; margin-bottom: 15px; background-color: #CD0A0A; border-radius:6px; width: 150px;margin-right: 15px;" />
+      </div>
       <!--Iniciar listar-->
         <?php 
           $existe = count($registros);
