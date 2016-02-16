@@ -39,6 +39,65 @@
     }
   });
 
+  $("#button_killer").on("click",function(){
+    var fechainicial = $("#fechainicial").val();
+    var fechafinal = $("#fechafinal").val();
+    if(fechafinal == '' || fechainicial == ''){
+      $("#modalerror").html('<strong>!Falta Completar algunos Campos del Formulario. Verificar!</strong>').dialog({
+        modal: true,position: 'center',width: 450, height: 125,resizable: false,title: 'Validación de Registro',hide: 'blind',show: 'blind',
+        buttons: { Ok: function() {$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );}}
+      });
+    }else{
+      var dataString = 'fechainicial='+fechainicial+'&fechafinal='+fechafinal+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
+      $.ajax({
+        type: "POST",
+        url: "<?php echo base_url(); ?>comercial/procedimiento_eliminacion_salidas/",
+        data: dataString,
+        success: function(response){
+          if(response == 1){
+            $("#modalerror").empty().append('<span style="color:black"><b>!Procedimiento realizado con Éxito!</b></span>').dialog({
+              modal: true,position: 'center',width: 400,height: 125,resizable: false,title: 'Registro de Salidas',hide: 'blind',show: 'blind',
+              buttons: { Ok: function() {
+                // window.location.href="<?php echo base_url();?>comercial/gestionconsultarSalidaRegistros";
+                $(this).dialog("close");
+              }}
+            });
+            $(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");
+          }
+        }
+      });
+    }
+  });
+
+$("#actualizar_saldos_iniciales").on("click",function(){
+    var fechainicial = $("#fechainicial").val();
+    var fechafinal = $("#fechafinal").val();
+    if(fechafinal == '' || fechainicial == ''){
+      $("#modalerror").html('<strong>!Falta Completar algunos Campos del Formulario. Verificar!</strong>').dialog({
+        modal: true,position: 'center',width: 450, height: 125,resizable: false,title: 'Validación de Registro',hide: 'blind',show: 'blind',
+        buttons: { Ok: function() {$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );}}
+      });
+    }else{
+      var dataString = 'fechainicial='+fechainicial+'&fechafinal='+fechafinal+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
+      $.ajax({
+        type: "POST",
+        url: "<?php echo base_url(); ?>comercial/actualizar_saldos_iniciales_controller_version_2/",
+        data: dataString,
+        success: function(response){
+          if(response == 1){
+            $("#modalerror").empty().append('<span style="color:black"><b>!Procedimiento realizado con Éxito!</b></span>').dialog({
+              modal: true,position: 'center',width: 400,height: 125,resizable: false,title: 'Registro de Salidas',hide: 'blind',show: 'blind',
+              buttons: { Ok: function() {
+                $(this).dialog("close");
+              }}
+            });
+            $(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");
+          }
+        }
+      });
+    }
+  });
+
   $("#maquina").change(function() {
   $("#maquina option:selected").each(function() {
           maquina = $('#maquina').val();
@@ -337,11 +396,22 @@
           </div>
           <table>
             <tr style="height:30px;"> 
-              <td colspan="2" style=" padding-top: 5px; padding-left: 840px;"><input name="submit" type="submit" id="submit" value="Iniciar Búsqueda" style="padding-bottom:3px; padding-top:3px; margin-bottom: 4px; background-color: #005197; border-radius:6px; width: 150px;margin-right: 15px;" /><input name="reset" type="button" onclick="resetear()" value="Reestablecer" style="padding-bottom:3px; padding-top:3px; margin-bottom: 4px; background-color: #005197; border-radius:6px; width: 150px;" /></td>
+              <td colspan="2" style=" padding-top: 5px; padding-left: 840px;">
+                <input name="submit" type="submit" id="submit" value="Iniciar Búsqueda" style="padding-bottom:3px; padding-top:3px; margin-bottom: 4px; background-color: #005197; border-radius:6px; width: 150px;margin-right: 15px;" />
+                <input name="reset" type="button" onclick="resetear()" value="Reestablecer" style="padding-bottom:3px; padding-top:3px; margin-bottom: 4px; background-color: #005197; border-radius:6px; width: 150px;" />
+              </td>
             </tr>
           </table>
         <?php echo form_close() ?>
       </form>
+      <!--
+      <div>
+        <input name="submit" type="submit" id="button_killer" value=" Buttom Killer xD" style="padding-bottom:3px; padding-top:3px; margin-bottom: 15px; background-color: #CD0A0A; border-radius:6px; width: 150px;margin-right: 15px;" />
+      </div>
+      -->
+      <div>
+        <input name="submit" type="submit" id="actualizar_saldos_iniciales" value="Actualizar saldos iniciales" style="padding-bottom:3px; padding-top:3px; margin-bottom: 15px; background-color: #CD0A0A; border-radius:6px; width: 150px;margin-right: 15px;" />
+      </div>
       <?php 
       $existe = count($salidaproducto);
       if($existe <= 0){
