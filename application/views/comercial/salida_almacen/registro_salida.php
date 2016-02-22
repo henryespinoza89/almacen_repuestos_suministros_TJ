@@ -157,6 +157,63 @@ $(function() {
 	       	});
 	    }
 	});
+
+
+	$("#submit_finalizar_cuadre").on("click",function(){
+		var id_area = $("#area").val();
+		var fecharegistro = $("#fecharegistro").val();
+		/* Datos del producto */
+		var nombre_producto = $("#nombre_producto").val();
+		var cantidad = $("#cantidad").val();
+		// Validación contra campos vacios valores nulos
+		if(fecharegistro == '' || nombre_producto == '' || cantidad == ''){
+	        $("#modalerror").html('<strong>!Falta Completar algunos Campos del Formulario. Verificar!</strong>').dialog({
+	            modal: true,position: 'center',width: 450, height: 125,resizable: false,title: 'Validación de Registro',hide: 'blind',show: 'blind',
+	          	buttons: { Ok: function() {$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );}}
+	        });
+	    }else{
+	    	var dataString = 'fecharegistro='+fecharegistro+'&nombre_producto='+nombre_producto+'&cantidad='+cantidad+'&id_area='+id_area+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
+	    	$.ajax({
+	            type: "POST",
+	            url: "<?php echo base_url(); ?>comercial/finalizar_salida_cuadre_contabilidad/",
+	          	data: dataString,
+	          	success: function(response){
+	            if(response == 1){
+	              	$("#modalerror").empty().append('<span style="color:black"><b>!Salida Registrada con Éxito!</b></span>').dialog({
+	                	modal: true,position: 'center',width: 400,height: 125,resizable: false,title: 'Registro de Salidas',hide: 'blind',show: 'blind',
+	                	buttons: { Ok: function() {
+	                		window.location.href="<?php echo base_url();?>comercial/gestionsalida";
+	                	}}
+	              	});
+	              	$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");
+	            }else if(response == "error_stock"){
+	              	$("#modalerror").empty().append('<span style="color:red"><b>!No existe Stock Disponible!</b><br><b>Verificar la Cantidad Solicitada.</b></span>').dialog({
+	                	modal: true,position: 'center',width: 350,height: 145,resizable: false,title: 'Validación',hide: 'blind',show: 'blind',
+	                	buttons: { Ok: function() {
+	                		$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );
+	                	}}
+	              	});
+	              	$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");
+	            }else if(response == "no_existe_stock_disponible"){
+	              	$("#modalerror").empty().append('<span style="color:red"><b>!No se puede realizar el registro!</b><br><b>No Existe Stock disponible para la Fecha seleccionada</b><br><b>Verificar Kardex del Producto</b></span>').dialog({
+	                	modal: true,position: 'center',width: 500,height: 165,resizable: false,title: 'Validación',hide: 'blind',show: 'blind',
+	                	buttons: { Ok: function() {
+	                		$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );
+	                	}}
+	              	});
+	              	$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");
+	            }else{
+	            	console.log(response);
+	            	$("#modalerror").empty().append('<span style="color:red"><b>!ERROR!</b></span>').dialog({
+	                	modal: true,position: 'center',width: 480,height: 125,resizable: false,title: 'Error de Validación',hide: 'blind',show: 'blind',
+	                	buttons: { Ok: function() {$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );}}
+	              	});
+	              	$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");
+	                }
+	            }
+	       	});
+	    }
+	});
 	
 	$("#nombre_producto").autocomplete({
         source: function (request, respond) {
@@ -685,6 +742,11 @@ $(function() {
 				<tr style="height:30px;"> 
 		        	<td colspan="5" style=" padding-top: 5px; padding-left: 277px;"><input name="submit" type="submit" id="submit_finalizar" value="Registrar Salida" style="padding-bottom:3px; padding-top:3px; margin-bottom: 4px; background-color: #005197; border-radius:6px; width: 150px;" /></td>
 		        </tr>
+		        <!---
+		        <tr style="height:30px;"> 
+		        	<td colspan="5" style=" padding-top: 5px; padding-left: 277px;"><input name="submit" type="submit" id="submit_finalizar_cuadre" value="Registrar Salida Cuadre" style="padding-bottom:3px; padding-top:3px; margin-bottom: 4px; background-color: #005197; border-radius:6px; width: 150px;" /></td>
+		        </tr>
+		        -->
 			</table>
 		</div>
 		

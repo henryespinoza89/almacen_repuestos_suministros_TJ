@@ -367,8 +367,8 @@
   }
 
   // Editar Producto
-  function editar_producto(id_pro){
-        var urlMaq = '<?php echo base_url();?>comercial/editarproducto/'+id_pro;
+  function editar_producto(id_detalle_producto_area){
+        var urlMaq = '<?php echo base_url();?>comercial/editarproducto/'+id_detalle_producto_area;
         //alert(urlMaq);
         $("#mdlEditarProducto").load(urlMaq).dialog({
           modal: true, position: 'center', width: 350, height: 458, draggable: false, resizable: false, closeOnEscape: false,
@@ -389,7 +389,7 @@
               var dataString = 'editidprod='+editidprod+'&editnombreprod='+editnombreprod+'&editarea='+editarea+'&edittipoprod='+edittipoprod+'&editcat='+editcat+'&editunid_med='+editunid_med+'&editprocedencia='+editprocedencia+'&editobser='+editobser+'&editestado='+editestado+'&editindicador='+editindicador+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
               $.ajax({
                 type: "POST",
-                url: "<?php echo base_url(); ?>comercial/actualizarproducto/"+id_pro,
+                url: "<?php echo base_url(); ?>comercial/actualizarproducto/"+id_detalle_producto_area,
                 data: dataString,
                 success: function(msg){
                   if(msg == 1){
@@ -593,7 +593,7 @@
                 }
               ?>
             </td>
-            <td width="20" align="center"><img class="editar_producto" src="<?php echo base_url();?>assets/img/edit.png" width="20" height="20" title="Editar producto" onClick="editar_producto(<?php echo $listaproductos->id_pro; ?>)" /></td>
+            <td width="20" align="center"><img class="editar_producto" src="<?php echo base_url();?>assets/img/edit.png" width="20" height="20" title="Editar producto" onClick="editar_producto(<?php echo $listaproductos->id_detalle_producto_area; ?>)" /></td>
             <td width="20" align="center">
               <a href="" class="eliminar_producto" id="elim_<?php echo $listaproductos->id_pro; ?>">
               <img src="<?php echo base_url();?>assets/img/trash.png" width="20" height="20" title="Eliminar Producto"/></a>

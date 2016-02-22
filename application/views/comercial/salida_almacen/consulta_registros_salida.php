@@ -98,6 +98,42 @@ $("#actualizar_saldos_iniciales").on("click",function(){
     }
   });
 
+  $("#actualizar_precio_unitario").on("click",function(){
+    $.ajax({
+      type: "POST",
+      url: "<?php echo base_url(); ?>comercial/actualizar_saldos_iniciales_controller_version_3/",      
+      success: function(response){
+        if(response == 1){
+          $("#modalerror").empty().append('<span style="color:black"><b>!Procedimiento realizado con Éxito!</b></span>').dialog({
+            modal: true,position: 'center',width: 400,height: 125,resizable: false,title: 'Registro de Salidas',hide: 'blind',show: 'blind',
+            buttons: { Ok: function() {
+              $(this).dialog("close");
+            }}
+          });
+          $(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");
+        }
+      }
+    });
+  });
+
+  $("#actualizar_stock").on("click",function(){
+    $.ajax({
+      type: "POST",
+      url: "<?php echo base_url(); ?>comercial/actualizar_stock_controller_version_4/",      
+      success: function(response){
+        if(response == 1){
+          $("#modalerror").empty().append('<span style="color:black"><b>!Procedimiento realizado con Éxito!</b></span>').dialog({
+            modal: true,position: 'center',width: 400,height: 125,resizable: false,title: 'Registro de Salidas',hide: 'blind',show: 'blind',
+            buttons: { Ok: function() {
+              $(this).dialog("close");
+            }}
+          });
+          $(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");
+        }
+      }
+    });
+  });
+
   $("#maquina").change(function() {
   $("#maquina option:selected").each(function() {
           maquina = $('#maquina').val();
@@ -409,9 +445,21 @@ $("#actualizar_saldos_iniciales").on("click",function(){
         <input name="submit" type="submit" id="button_killer" value=" Buttom Killer xD" style="padding-bottom:3px; padding-top:3px; margin-bottom: 15px; background-color: #CD0A0A; border-radius:6px; width: 150px;margin-right: 15px;" />
       </div>
       -->
+      <!--
       <div>
         <input name="submit" type="submit" id="actualizar_saldos_iniciales" value="Actualizar saldos iniciales" style="padding-bottom:3px; padding-top:3px; margin-bottom: 15px; background-color: #CD0A0A; border-radius:6px; width: 150px;margin-right: 15px;" />
       </div>
+      -->
+      <!--
+      <div>
+        <input name="submit" type="submit" id="actualizar_precio_unitario" value="Actualizar Precio Unitario" style="padding-bottom:3px; padding-top:3px; margin-bottom: 15px; background-color: #CD0A0A; border-radius:6px; width: 150px;margin-right: 15px;" />
+      </div>
+      -->
+      <!--
+      <div>
+        <input name="submit" type="submit" id="actualizar_stock" value="Actualizar Stock" style="padding-bottom:3px; padding-top:3px; margin-bottom: 15px; background-color: #CD0A0A; border-radius:6px; width: 150px;margin-right: 15px;" />
+      </div>
+      -->
       <?php 
       $existe = count($salidaproducto);
       if($existe <= 0){
