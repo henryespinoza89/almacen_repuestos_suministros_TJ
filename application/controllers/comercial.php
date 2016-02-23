@@ -2290,17 +2290,11 @@ class Comercial extends CI_Controller {
 	}
 
 	public function editarproducto(){
-		$id_detalle_producto_area = $this->security->xss_clean($this->uri->segment(3));
-		// Seleccionar el id_pro
-		$this->db->select('id_pro');
-        $this->db->where('id_detalle_producto_area',$id_detalle_producto_area);
-        $query = $this->db->get('detalle_producto_area');
-        if(count($query->result()) > 0){
-        	foreach($query->result() as $row){
-        		$id_pro = $row->id_pro;
-        	}
-        }
-        // Cargar vista
+		$data = $this->security->xss_clean($this->uri->segment(3));
+		$data = json_decode($data, true);
+		$id_pro = $data[0];
+		$id_detalle_producto_area = $data[1];
+        // cargar vista
 		$data['listaarea']= $this->model_comercial->listarArea();
 		$data['listacat'] = $this->model_comercial->listarCategoria();
 		$data['listatipop'] = $this->model_comercial->listarTipoProdCombo($id_pro);
@@ -9323,6 +9317,7 @@ class Comercial extends CI_Controller {
 
 	    	if( count($saldos_iniciales) > 0 ){
 	    		foreach ($saldos_iniciales as $result) {
+	    			$total_saldos_iniciales = $result->stock_inicial + $result->stock_inicial_sta_clara;
 	    			/* Formato de Fecha */
 	    			$elementos = explode("-", $result->fecha_cierre);
 			        $anio = $elementos[0];
@@ -9335,21 +9330,21 @@ class Comercial extends CI_Controller {
 			    			     ->setCellValue('B14', " ")
 			    			     ->setCellValue('C14', "SI")
 			    			     ->setCellValue('D14', " ")
-			    			     ->setCellValue('E14', $result->stock_inicial)
+			    			     ->setCellValue('E14', $total_saldos_iniciales)
 			    			     ->setCellValue('F14', $result->precio_uni_inicial)
-			    			     ->setCellValue('G14', $result->stock_inicial*$result->precio_uni_inicial)
+			    			     ->setCellValue('G14', $total_saldos_iniciales*$result->precio_uni_inicial)
 			    			     ->setCellValueExplicit('H14', "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
 			    			     ->setCellValue('I14', $result->precio_uni_inicial)
 			    			     ->setCellValueExplicit('J14', "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
-			    			     ->setCellValue('K14', $result->stock_inicial)
+			    			     ->setCellValue('K14', $total_saldos_iniciales)
 			    			     ->setCellValue('L14', $result->precio_uni_inicial)
-			    			     ->setCellValue('M14', $result->stock_inicial*$result->precio_uni_inicial);
+			    			     ->setCellValue('M14', $total_saldos_iniciales*$result->precio_uni_inicial);
 				    /* ENTRADAS */
-					$sumatoria_cantidad_entradas = $sumatoria_cantidad_entradas + $result->stock_inicial;
-					$sumatoria_parciales_entradas = $sumatoria_parciales_entradas + ($result->stock_inicial * $result->precio_uni_inicial);
+					$sumatoria_cantidad_entradas = $sumatoria_cantidad_entradas + $total_saldos_iniciales;
+					$sumatoria_parciales_entradas = $sumatoria_parciales_entradas + ($total_saldos_iniciales * $result->precio_uni_inicial);
 					/* SALDOS */
-					$sumatoria_cantidad_saldos = $sumatoria_cantidad_saldos + $result->stock_inicial;
-					$sumatoria_parciales_saldos = $sumatoria_parciales_saldos + ($result->stock_inicial * $result->precio_uni_inicial);
+					$sumatoria_cantidad_saldos = $sumatoria_cantidad_saldos + $total_saldos_iniciales;
+					$sumatoria_parciales_saldos = $sumatoria_parciales_saldos + ($total_saldos_iniciales * $result->precio_uni_inicial);
 		    	}
 	    	}else{
 	    		$objWorkSheet->setCellValueExplicit('A14', $f_inicial)

@@ -367,57 +367,68 @@
   }
 
   // Editar Producto
-  function editar_producto(id_detalle_producto_area){
-        var urlMaq = '<?php echo base_url();?>comercial/editarproducto/'+id_detalle_producto_area;
-        //alert(urlMaq);
-        $("#mdlEditarProducto").load(urlMaq).dialog({
-          modal: true, position: 'center', width: 350, height: 458, draggable: false, resizable: false, closeOnEscape: false,
-          buttons: {
-            Actualizar: function() {
-            $(".ui-dialog-buttonpane button:contains('Actualizar')").button("disable");
-            $(".ui-dialog-buttonpane button:contains('Actualizar')").attr("disabled", true).addClass("ui-state-disabled");
-            //CONTROLO LAS VARIABLES
-            var editidprod = $('#editidprod').val(); editnombreprod = $('#editnombreprod').val(); editcat = $('#editcat').val(); editunid_med = $('#editunid_med').val(); 
-            var editobser = $('#editobser').val(); editprocedencia = $('#editprocedencia').val(); edittipoprod = $('#edittipoprod').val();
-            var editestado = $('#editestado').val(); editindicador = $('#editindicador').val(); editarea = $('#editarea').val();
-            if(editidprod == '' || editnombreprod == '' || editcat == '' || editprocedencia == '' || editunid_med == '' || edittipoprod == '' || editarea == ''){
-              $("#modalerror").html('<b>ERROR:</b> Faltan completar algunos campos del formulario, por favor verifique.').dialog({
-                modal: true,position: 'center',width: 500, height: 125,resizable: false, title: 'Validación',
-                buttons: { Ok: function() {$(".ui-dialog-buttonpane button:contains('Actualizar')").button("enable");$( this ).dialog( "close" );}}
-              });
-            }else{
-              var dataString = 'editidprod='+editidprod+'&editnombreprod='+editnombreprod+'&editarea='+editarea+'&edittipoprod='+edittipoprod+'&editcat='+editcat+'&editunid_med='+editunid_med+'&editprocedencia='+editprocedencia+'&editobser='+editobser+'&editestado='+editestado+'&editindicador='+editindicador+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
-              $.ajax({
-                type: "POST",
-                url: "<?php echo base_url(); ?>comercial/actualizarproducto/"+id_detalle_producto_area,
-                data: dataString,
-                success: function(msg){
-                  if(msg == 1){
-                    $("#finregistro").html('!El Producto ha sido actualizado con éxito!.').dialog({
-                      modal: true,position: 'center',width: 300,height: 125,resizable: false, title: 'Fin de Actualización',
-                      buttons: { Ok: function(){
-                        // window.location.href="<?php echo base_url();?>comercial/gestionproductos";
-                        $("#mdlEditarProducto").dialog("close");
-                        $( this ).dialog( "close" );
-                      }}
-                    });
-                  }else{
-                    $("#modalerror").empty().append(msg).dialog({
-                      modal: true,position: 'center',width: 500,height: 125,resizable: false,
-                      buttons: { Ok: function() {$(".ui-dialog-buttonpane button:contains('Actualizar')").button("enable");$( this ).dialog( "close" );}}
-                    });
-                    $(".ui-dialog-buttonpane button:contains('Actualizar')").button("enable");
-                  }
-                }
-              });
+  function editar_producto(id_pro,id_detalle_producto_area){
+    // pasamos un objeto como parametro
+    var array_json = Array();
+    array_json[0] = id_pro;
+    array_json[1] = id_detalle_producto_area;
+
+    // conviertier a objeto
+    var jObject = {};
+    for(i in array_json){
+        jObject[i] = array_json[i];
+    }
+    jObject= JSON.stringify(jObject);
+
+    var urlMaq = '<?php echo base_url();?>comercial/editarproducto/'+jObject;
+    $("#mdlEditarProducto").load(urlMaq).dialog({
+      modal: true, position: 'center', width: 350, height: 458, draggable: false, resizable: false, closeOnEscape: false,
+      buttons: {
+        Actualizar: function() {
+        $(".ui-dialog-buttonpane button:contains('Actualizar')").button("disable");
+        $(".ui-dialog-buttonpane button:contains('Actualizar')").attr("disabled", true).addClass("ui-state-disabled");
+        //CONTROLO LAS VARIABLES
+        var editidprod = $('#editidprod').val(); editnombreprod = $('#editnombreprod').val(); editcat = $('#editcat').val(); editunid_med = $('#editunid_med').val(); 
+        var editobser = $('#editobser').val(); editprocedencia = $('#editprocedencia').val(); edittipoprod = $('#edittipoprod').val();
+        var editestado = $('#editestado').val(); editindicador = $('#editindicador').val(); editarea = $('#editarea').val();
+        if(editidprod == '' || editnombreprod == '' || editcat == '' || editprocedencia == '' || editunid_med == '' || edittipoprod == '' || editarea == ''){
+          $("#modalerror").html('<b>ERROR:</b> Faltan completar algunos campos del formulario, por favor verifique.').dialog({
+            modal: true,position: 'center',width: 500, height: 125,resizable: false, title: 'Validación',
+            buttons: { Ok: function() {$(".ui-dialog-buttonpane button:contains('Actualizar')").button("enable");$( this ).dialog( "close" );}}
+          });
+        }else{
+          var dataString = 'editidprod='+editidprod+'&editnombreprod='+editnombreprod+'&editarea='+editarea+'&edittipoprod='+edittipoprod+'&editcat='+editcat+'&editunid_med='+editunid_med+'&editprocedencia='+editprocedencia+'&editobser='+editobser+'&editestado='+editestado+'&editindicador='+editindicador+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
+          $.ajax({
+            type: "POST",
+            url: "<?php echo base_url(); ?>comercial/actualizarproducto/"+jObject,
+            data: dataString,
+            success: function(msg){
+              if(msg == 1){
+                $("#finregistro").html('!El Producto ha sido actualizado con éxito!.').dialog({
+                  modal: true,position: 'center',width: 300,height: 125,resizable: false, title: 'Fin de Actualización',
+                  buttons: { Ok: function(){
+                    // window.location.href="<?php echo base_url();?>comercial/gestionproductos";
+                    $("#mdlEditarProducto").dialog("close");
+                    $( this ).dialog( "close" );
+                  }}
+                });
+              }else{
+                $("#modalerror").empty().append(msg).dialog({
+                  modal: true,position: 'center',width: 500,height: 125,resizable: false,
+                  buttons: { Ok: function() {$(".ui-dialog-buttonpane button:contains('Actualizar')").button("enable");$( this ).dialog( "close" );}}
+                });
+                $(".ui-dialog-buttonpane button:contains('Actualizar')").button("enable");
+              }
             }
-          },
-          Cancelar: function(){
-            $("#mdlEditarProducto").dialog("close");
-          }
-                }
-        });
+          });
+        }
+      },
+      Cancelar: function(){
+        $("#mdlEditarProducto").dialog("close");
       }
+            }
+    });
+  }
 
 
 </script>
@@ -566,7 +577,8 @@
           </thead>
           <?php
             $i = 1;
-            foreach($producto as $listaproductos){ 
+            foreach($producto as $listaproductos){
+              $vacio = 0;
           ?>  
           <tr class="contentTable">
             <td height="27"><?php echo str_pad($i, 4, 0, STR_PAD_LEFT); ?></td>
@@ -593,7 +605,9 @@
                 }
               ?>
             </td>
-            <td width="20" align="center"><img class="editar_producto" src="<?php echo base_url();?>assets/img/edit.png" width="20" height="20" title="Editar producto" onClick="editar_producto(<?php echo $listaproductos->id_detalle_producto_area; ?>)" /></td>
+            <td width="20" align="center">
+              <img class="editar_producto" src="<?php echo base_url();?>assets/img/edit.png" width="20" height="20" title="Editar producto" onClick="editar_producto(<?php echo $listaproductos->id_pro; ?>, <?php if($listaproductos->id_detalle_producto_area != ''){echo $listaproductos->id_detalle_producto_area;}else{echo $vacio;} ?>)" />
+            </td>
             <td width="20" align="center">
               <a href="" class="eliminar_producto" id="elim_<?php echo $listaproductos->id_pro; ?>">
               <img src="<?php echo base_url();?>assets/img/trash.png" width="20" height="20" title="Eliminar Producto"/></a>

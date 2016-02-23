@@ -483,8 +483,9 @@ $("#actualizar_saldos_iniciales").on("click",function(){
                 <td sort="procprod" width="90">Cantidad</td>
                 <!--
                 <td width="20">&nbsp;</td>
-                -->
+                
                 <td width="20">&nbsp;</td>
+                -->
               </tr>
           </thead>
           <?php 
@@ -504,10 +505,12 @@ $("#actualizar_saldos_iniciales").on("click",function(){
                 <!--
                 <td width="20" align="center"><img class="editar_producto" src="<?php echo base_url();?>assets/img/edit.png" width="20" height="20" title="Editar producto" onClick="editar_producto(<?php echo $listasalidaproductos->id_salida_producto; ?>)" /></td>
                 -->
+                <!--
                 <td width="20" align="center">
                   <a href="" class="eliminar_salida" id="elim_<?php echo $listasalidaproductos->id_salida_producto; ?>">
                   <img src="<?php echo base_url();?>assets/img/trash.png" width="20" height="20" title="Eliminar Salida"/></a>
                 </td>
+                -->
               </tr>
           <?php 
             $i++;
