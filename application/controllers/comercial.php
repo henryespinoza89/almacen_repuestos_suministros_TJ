@@ -3,20 +3,20 @@
 class Comercial extends CI_Controller {
 
 	/**
-	 * Index Page for this controller.
-	 *
-	 * Maps to the following URL
-	 * 		http://example.com/index.php/welcome
-	 *	- or -  
-	 * 		http://example.com/index.php/welcome/index
-	 *	- or -
-	 * Since this controller is set as the default controller in 
-	 * config/routes.php, it's displayed at http://example.com/
-	 *
-	 * So any other public methods not prefixed with an underscore will
-	 * map to /index.php/welcome/<method_name>
-	 * @see http://codeigniter.com/user_guide/general/urls.html
-	 */
+	* Index Page for this controller.
+	*
+	* Maps to the following URL
+	* 		http://example.com/index.php/welcome
+	*	- or -  
+	* 		http://example.com/index.php/welcome/index
+	*	- or -
+	* Since this controller is set as the default controller in 
+	* config/routes.php, it's displayed at http://example.com/
+	*
+	* So any other public methods not prefixed with an underscore will
+	* map to /index.php/welcome/<method_name>
+	* @see http://codeigniter.com/user_guide/general/urls.html
+	*/
 
 	public function __construct(){
 		parent::__construct();	
@@ -4347,7 +4347,7 @@ class Comercial extends CI_Controller {
 					        if($descripcion == 'SALIDA'){
 					            //$new_precio_unitario_especial = $precio_unitario_actual;
 					            $precio_unitario_anterior_especial = $precio_unitario_anterior;
-					        }else if($descripcion == 'ENTRADA'){
+					        }else if($descripcion == 'ENTRADA' || $descripcion == 'ORDEN INGRESO'){
 					            //$new_precio_unitario_especial = (($stock_actual*$precio_unitario_actual_promedio)+($item['qty']*$precio_unitario_soles))/($stock_actual+$item['qty']);
 					            $precio_unitario_anterior_especial = $precio_unitario_actual_promedio;
 					        }
@@ -4443,7 +4443,7 @@ class Comercial extends CI_Controller {
 			    		        $descripcion_actualizacion_registros = $row->descripcion;
 			    		        if($descripcion_actualizacion_registros == 'SALIDA'){
 			    		            $precio_unitario_actual_actualizacion_registros = $precio_unitario_anterior_actualizacion_registros;
-			    		        }else if($descripcion_actualizacion_registros == 'ENTRADA'){
+			    		        }else if($descripcion_actualizacion_registros == 'ENTRADA' || $descripcion_actualizacion_registros == 'ORDEN INGRESO'){
 			    		            $precio_unitario_actual_actualizacion_registros = $precio_unitario_actual_promedio_actualizacion_registros;
 			    		        }
 			    		    }
@@ -4474,7 +4474,7 @@ class Comercial extends CI_Controller {
 			    		                $cantidad_salida_act = $row->cantidad_salida;
 			    		                $cantidad_ingreso_act = $row->cantidad_ingreso;
 			    		                $precio_unitario_actual_act = $row->precio_unitario_actual;
-			    		                if($descripcion_act == 'ENTRADA'){
+			    		                if($descripcion_act == 'ENTRADA' || $descripcion_act == 'ORDEN INGRESO'){
 			    		                	if($auxiliar_contador == 0){
 			    		                        /* El stock anterior viene a ser el stock actual del movimiento anterior */
 			    		                        $new_stock_anterior_act_validacion = $stock_actual_actualizacion_registros; // stock_anterior
@@ -4535,7 +4535,7 @@ class Comercial extends CI_Controller {
 					    		                $precio_unitario_actual_act = $row_2->precio_unitario_actual;
 
 					    		                /* Actualización del registro */
-					    		                if($descripcion_act == 'ENTRADA'){
+					    		                if($descripcion_act == 'ENTRADA' || $descripcion_act == 'ORDEN INGRESO'){
 					    		                    if($auxiliar_contador == 0){
 					    		                        /* El stock anterior viene a ser el stock actual del movimiento anterior */
 					    		                        $new_stock_anterior_act = $stock_actual_actualizacion_registros; // stock_anterior
@@ -4586,7 +4586,7 @@ class Comercial extends CI_Controller {
 					    		                /* Dejar variables con el ultimo registro del stock y precio unitario obtenido */
 					    		                /* Este paso se realizo en la linea 4277 pero solo sirvio para un recorrido */
 					    		                $new_stock_anterior_act = $stock_actual_final;
-					    		                if($descripcion_act == 'ENTRADA'){
+					    		                if($descripcion_act == 'ENTRADA' || $descripcion_act == 'ORDEN INGRESO'){
 					    		                    $new_precio_unitario_anterior_act = $precio_unitario_actual_promedio_final;
 					    		                }else if($descripcion_act == 'SALIDA'){
 					    		                    $new_precio_unitario_anterior_act = $precio_unitario_actual_final;

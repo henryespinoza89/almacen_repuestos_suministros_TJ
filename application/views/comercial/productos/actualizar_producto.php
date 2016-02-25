@@ -31,7 +31,7 @@
 				foreach($datosprod as $prod){
 				#Datos del USUARIO
 				$editidprod = array('name'=>'editidprod','id'=>'editidprod','maxlength'=>'20', 'value'=>$prod->id_producto, 'style'=>'width:150px');
-				$editnombreprod = array('name'=>'editnombreprod','id'=>'editnombreprod','maxlength'=>'40', 'value'=>$prod->no_producto, 'style'=>'width:150px');
+				$editnombreprod = array('name'=>'editnombreprod','id'=>'editnombreprod','maxlength'=>'100', 'value'=>$prod->no_producto, 'style'=>'width:150px');
 				$editobser = array('name'=>'editobser','id'=>'editobser','maxlength'=>'60', 'value'=>$prod->observacion, 'style'=>'width:150px');
 				$editindicador = array('name'=>'editindicador','id'=>'editindicador','maxlength'=>'60', 'value'=>$prod->column_temp, 'style'=>'width:150px');
 				$editestado = array('t'=>'ACTIVO', 'f'=>'INACTIVO',);

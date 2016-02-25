@@ -7150,6 +7150,7 @@ class Model_comercial extends CI_Model {
                 $fr_venta = $row->fr_venta;
             }
             foreach ($carrito as $item) {
+                $new_stock_anterior_act = 0; // elimina el error en el kardex
                 // Obtener el monto total de la factura
                 $monto_total_factura = $this->cart->total();
                 // Obtengo el nombre del producto
@@ -7377,6 +7378,7 @@ class Model_comercial extends CI_Model {
                     if(count($query->result()) > 0){
                         foreach($query->result() as $row){
                             $id_kardex_producto = $row->id_kardex_producto; /* ID del movimiento en el kardex */
+                            //var_dump($id_detalle_producto.' -> '.$id_kardex_producto);
                             /* Obtener los datos del movimiento del kardex */
                             $this->db->select('stock_actual,precio_unitario_actual_promedio,precio_unitario_anterior,descripcion,stock_anterior,cantidad_salida,cantidad_ingreso,precio_unitario_actual');
                             $this->db->where('id_kardex_producto',$id_kardex_producto);
@@ -7641,7 +7643,7 @@ class Model_comercial extends CI_Model {
                     /* Se da paso a verificar si existen salidas posteriores a la fecha, para su actualización */
                     $this->db->select('id_kardex_producto');
                     $this->db->where('fecha_registro >',$fecharegistro);
-                    $this->db->where('id_kardex_producto >',$result_id_kardex);
+                    // $this->db->where('id_kardex_producto >',$result_id_kardex);
                     $this->db->where('id_detalle_producto',$id_detalle_producto);
                     $this->db->order_by("fecha_registro", "asc");
                     $this->db->order_by("id_kardex_producto", "asc");
@@ -7664,7 +7666,7 @@ class Model_comercial extends CI_Model {
                                 $cantidad_ingreso_act = $row->cantidad_ingreso;
                                 $precio_unitario_actual_act = $row->precio_unitario_actual;
                                 /* Actualización del registro */
-                                if($descripcion_act == 'ENTRADA' && $descripcion_act == 'ORDEN INGRESO'){
+                                if($descripcion_act == 'ENTRADA' || $descripcion_act == 'ORDEN INGRESO'){
                                     if($auxiliar_contador == 0){
                                         /* El stock anterior viene a ser el stock actual del movimiento anterior */
                                         $new_stock_anterior_act = $stock_actual_actualizacion_registros; // stock_anterior

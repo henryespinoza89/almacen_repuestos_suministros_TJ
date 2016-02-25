@@ -296,7 +296,7 @@
               <td sort="procprod" width="120">Monto Total</td>
               <td sort="procprod" width="180">Moneda</td>
               <td width="20">&nbsp;</td>
-              <!--<td width="20">&nbsp;</td>-->
+              <td width="20">&nbsp;</td>
             </tr>
           </thead>
           <?php
@@ -312,12 +312,10 @@
             <td><?php echo number_format($listaregistros->total,2,'.',','); ?></td>
             <td><?php echo $listaregistros->nombresimbolo; ?></td>
             <td width="20" align="center"><img class="mostrar_detalle" src="<?php echo base_url();?>assets/img/view.png" width="20" height="20" title="Mostrar Detalle" onClick="mostrar_detalle(<?php echo $listaregistros->id_ingreso_producto; ?>)" /></td>
-            <!--
             <td width="20" align="center">
-              <a href="" class="eliminar_registro" id="elim_<?php // echo $listaregistros->id_ingreso_producto; ?>">
-              <img src="<?php // echo base_url();?>assets/img/trash.png" width="20" height="20" title="Eliminar Registro"/></a>
+              <a href="" class="eliminar_registro" id="elim_<?php echo $listaregistros->id_ingreso_producto; ?>">
+              <img src="<?php echo base_url();?>assets/img/trash.png" width="20" height="20" title="Eliminar Registro"/></a>
             </td>
-            -->
           </tr>
           <?php 
           	$i++;
