@@ -158,7 +158,6 @@ $(function() {
 	    }
 	});
 
-
 	$("#submit_finalizar_cuadre").on("click",function(){
 		var id_area = $("#area").val();
 		var fecharegistro = $("#fecharegistro").val();

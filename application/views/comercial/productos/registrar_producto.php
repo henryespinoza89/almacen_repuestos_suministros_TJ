@@ -303,61 +303,104 @@
         // Eliminar Producto
         $('a.eliminar_producto').bind('click', function () {
           var ruta = $('#direccionelim').text();
-            var id = $(this).attr('id').replace('elim_', '');
-            var parent = $(this).parent().parent();
-            //var usuario = $('#us123').text();
-            $("#dialog-confirm").data({
-                  'delid': id,
-                  'parent': parent,
-                  'ruta': ruta
-                  //'idusuario': usuario
-            }).dialog('open');
-            return false;
+          var id = $(this).attr('id').replace('elim_', '');
+          var parent = $(this).parent().parent();
+          $("#dialog-confirm").data({
+            'delid': id,
+            'parent': parent,
+            'ruta': ruta
+          }).dialog('open');
+          return false;
         });
+
         $("#dialog-confirm").dialog({
-            resizable: false,
-            bgiframe: true,
-            autoOpen: false,
-            width: 400,
-            height: "auto",
-            zindex: 9998,
-            modal: false,
-            buttons: {
-              'Eliminar': function () {
-                var parent = $(this).data('parent');
-                var id = $(this).data('delid');
-                var ruta = $(this).data('ruta');
-                $.ajax({
-                  type: 'get',
-                  url: ruta,
-                  data: {
-                    'eliminar' : id
-                  },
-                  success: function(msg){
-                    if(msg == 1){
-                      $("#finregistro").html('<strong>!El Producto ha sido eliminado correctamente!</strong>').dialog({
-                        modal: true,position: 'center',width: 350,height: 125,resizable: false, title: '!Eliminación Conforme!',
-                        buttons: { Ok: function(){
-                          window.location.href="<?php echo base_url();?>comercial/gestionproductos";
-                        }}
-                      });
-                    }else{
-                      $("#modalerror").empty().append(msg).dialog({
-                        modal: true,position: 'center',width: 500,height: 125,resizable: false,title: '!No se puede eliminar el Producto!',
-                        buttons: { Ok: function() {$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );}}
-                      });
-                      $(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");
-                    }
+          resizable: false,bgiframe: true,autoOpen: false,width: 400,height: "auto",zindex: 9998,modal: false,
+          buttons: {
+            'Eliminar': function () {
+              var parent = $(this).data('parent');
+              var id = $(this).data('delid');
+              var ruta = $(this).data('ruta');
+              $.ajax({
+                type: 'get',
+                url: ruta,
+                data: {'eliminar' : id },
+                success: function(msg){
+                  if(msg == 1){
+                    $("#finregistro").html('<strong>!El Producto ha sido eliminado correctamente!</strong>').dialog({
+                      modal: true,position: 'center',width: 350,height: 125,resizable: false, title: '!Eliminación Conforme!',
+                      buttons: { Ok: function(){
+                        window.location.href="<?php echo base_url();?>comercial/gestionproductos";
+                      }}
+                    });
+                  }else{
+                    $("#modalerror").empty().append(msg).dialog({
+                      modal: true,position: 'center',width: 500,height: 125,resizable: false,title: '!No se puede eliminar el Producto!',
+                      buttons: { Ok: function() {$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );}}
+                    });
+                    $(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");
                   }
-                });
-                $(this).dialog('close');
-                //setTimeout('window.location.href="<?php echo base_url(); ?>comercial/gestionproductos"', 200);
-              },
-              'Cancelar': function () {
-                    $(this).dialog('close');
-              }
+                }
+              });
+              $(this).dialog('close');
+            },
+            'Cancelar': function () {
+                  $(this).dialog('close');
             }
+          }
         });
+
+        // Ruta para eliminacion de producto por area
+        $('a.eliminar_producto_area').bind('click', function () {
+          var ruta = $('#direccionelim_area').text();
+          var id_detalle_producto_area = $(this).attr('id').replace('elim_', '');
+          var parent = $(this).parent().parent();
+          $("#dialog-confirm").data({
+            'delid': id_detalle_producto_area,
+            'parent': parent,
+            'ruta': ruta
+          }).dialog('open');
+          return false;
+        });
+
+        $("#dialog-confirm").dialog({
+          resizable: false,bgiframe: true,autoOpen: false,width: 400,height: "auto",zindex: 9998,modal: false,
+          buttons: {
+            'Eliminar': function () {
+              var parent = $(this).data('parent');
+              var id_detalle_producto_area = $(this).data('delid');
+              var ruta = $(this).data('ruta');
+              $.ajax({
+                type: 'get',
+                url: ruta,
+                data: {'eliminar' : id_detalle_producto_area },
+                success: function(msg){
+                  if(msg == 1){
+                    $("#finregistro").html('<strong>!El Producto ha sido eliminado correctamente!</strong>').dialog({
+                      modal: true,position: 'center',width: 350,height: 125,resizable: false, title: '!Eliminación Conforme!',
+                      buttons: { Ok: function(){
+                        window.location.href="<?php echo base_url();?>comercial/gestionproductos";
+                      }}
+                    });
+                  }else{
+                    $("#modalerror").empty().append(msg).dialog({
+                      modal: true,position: 'center',width: 600,height: 125,resizable: false,title: '!No se puede eliminar el Producto!',
+                      buttons: { Ok: function() {$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );}}
+                    });
+                    $(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");
+                  }
+                }
+              });
+              $(this).dialog('close');
+            },
+            'Cancelar': function () {
+              $(this).dialog('close');
+            }
+          }
+        });
+
+
+
+        
         // FIN DE ELIMINAR
         
   });
@@ -542,7 +585,7 @@
         <div class="newprospect">Nuevo Producto</div>
         <div class="newct"><a href="<?php echo base_url(); ?>comercial/gestioncategoriaproductos/">Categoria de Producto</a></div>
         <div class="newtp"><a href="<?php echo base_url(); ?>comercial/gestiontipoproductos/">Tipo de Producto</a></div>
-        <!--<input name="export_excel" type="submit" id="export_excel" value="Exportar Resumen a Excel" style="padding-bottom:3px; padding-top:3px; background-color: #0B610B; border-radius:6px;width: 155px;float: right;" />-->
+        <input name="export_excel" type="submit" id="export_excel" value="Exportar Resumen a Excel" style="padding-bottom:3px; padding-top:3px; background-color: #0B610B; border-radius:6px;width: 155px;float: right;" />
         <!--<input name="eliminar_registros" type="submit" id="eliminar_registros" value="Eliminar registros" style="padding-bottom:3px; padding-top:3px; background-color: #0B610B; border-radius:6px;width: 155px;float: right;" />
         <input name="actualizar_saldos_iniciales" type="submit" id="actualizar_saldos_iniciales" value="Actualizar saldos iniciales" style="padding-bottom:3px; padding-top:3px; background-color: #0B610B; border-radius:6px;width: 155px;float: right;" />
         <!--<input name="consolidar" type="submit" id="consolidar" value="Consolidar Stock" style="padding-bottom:3px; padding-top:3px; background-color: #0B610B; border-radius:6px;width: 155px;float: right;" />-->
@@ -608,11 +651,23 @@
             <td width="20" align="center">
               <img class="editar_producto" src="<?php echo base_url();?>assets/img/edit.png" width="20" height="20" title="Editar producto" onClick="editar_producto(<?php echo $listaproductos->id_pro; ?>, <?php if($listaproductos->id_detalle_producto_area != ''){echo $listaproductos->id_detalle_producto_area;}else{echo $vacio;} ?>)" />
             </td>
-            <td width="20" align="center">
-              <a href="" class="eliminar_producto" id="elim_<?php echo $listaproductos->id_pro; ?>">
-              <img src="<?php echo base_url();?>assets/img/trash.png" width="20" height="20" title="Eliminar Producto"/></a>
-            </td>
+            <?php 
+              if($listaproductos->id_detalle_producto_area == ''){
+            ?>
+              <td width="20" align="center">
+                <a href="" class="eliminar_producto" id="elim_<?php echo $listaproductos->id_pro; ?>">
+                <img src="<?php echo base_url();?>assets/img/trash.png" width="20" height="20" title="Eliminar Producto"/></a>
+              </td>
+            <?php
+              }else{
+            ?>
+              <td width="20" align="center">
+                <a href="" class="eliminar_producto_area" id="elim_<?php echo $listaproductos->id_detalle_producto_area; ?>">
+                <img src="<?php echo base_url();?>assets/img/trash.png" width="20" height="20" title="Eliminar Producto"/></a>
+              </td>
+            <?php } ?>
           </tr>
+
           <?php
             $i++;
             } 
@@ -697,6 +752,9 @@
     <div id="finregistro"></div>
     <div style="display:none">
       <div id="direccionelim"><?php echo site_url('comercial/eliminarproducto');?></div>
+    </div>
+    <div style="display:none">
+      <div id="direccionelim_area"><?php echo site_url('comercial/eliminarproducto_area');?></div>
     </div>
     <div id="dialog-confirm" style="display: none;" title="Eliminar Producto">
       <p>

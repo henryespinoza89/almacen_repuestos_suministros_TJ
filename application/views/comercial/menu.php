@@ -226,7 +226,7 @@
 							<li><a href='<?php echo base_url();?>comercial/gestioninventarioalmacen'><span>Inventario de Almacén</span></a>
 						</ul>
 					</li>
-					<!--<li><a href='<?php echo base_url();?>comercial/gestioninterfaz'><span>Interfaz</span></a></li>-->
+					<li><a href='<?php echo base_url();?>comercial/gestioninterfaz'><span>Interfaz</span></a></li>
 					<!--<li><a href='<?php //echo base_url();?>comercial/backup'><span>Backup de la BD</span></a></li>-->
 					<li><a href="" style="width: 116px;"><span>Gestión Reportes</span></a>
 						<ul>

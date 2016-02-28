@@ -2934,7 +2934,7 @@ class Model_comercial extends CI_Model {
     }
 
     function listarResumenProductos_report_excel(){
-        $sql = "SELECT producto.id_pro,producto.id_producto,detalle_producto.no_producto,detalle_producto.stock,
+        $sql = "SELECT DISTINCT producto.id_pro,producto.id_producto,detalle_producto.no_producto,detalle_producto.stock,
         detalle_producto.precio_unitario,categoria.no_categoria,tipo_producto.no_tipo_producto,procedencia.no_procedencia,
         unidad_medida.nom_uni_med,area.no_area
         FROM
@@ -3209,10 +3209,14 @@ class Model_comercial extends CI_Model {
     }
 
     function get_all_productos(){
-        $sql = "SELECT DISTINCT detalle_producto.id_detalle_producto,detalle_producto.no_producto,producto.id_pro
+        $filtro = "";
+        $filtro .= " AND producto.estado = TRUE ";
+        $filtro .= " AND ( detalle_producto.stock > 0 OR detalle_producto.stock_sta_clara > 0 )";
+        $sql = "SELECT DISTINCT detalle_producto.id_detalle_producto,detalle_producto.no_producto,producto.id_pro,producto.estado,detalle_producto.stock,
+        detalle_producto.stock_sta_clara
         FROM detalle_producto
         INNER JOIN producto ON producto.id_detalle_producto = detalle_producto.id_detalle_producto
-        WHERE detalle_producto.id_detalle_producto IS NOT NULL";
+        WHERE detalle_producto.id_detalle_producto IS NOT NULL".$filtro;
         $query = $this->db->query($sql);
         if($query->num_rows()>0)
         {
@@ -4104,7 +4108,7 @@ class Model_comercial extends CI_Model {
         $this->db->select('id_detalle_producto');
         $this->db->where('id_detalle_producto',$id_dp);
         $query = $this->db->get('detalle_ingreso_producto');
-        if($query->num_rows()>0){
+        if($query->num_rows() > 0){
             return 'producto_factura';
         }else{
             $this->db->select('id_pro');
@@ -4118,10 +4122,52 @@ class Model_comercial extends CI_Model {
 
                 $sql = "DELETE FROM detalle_producto WHERE id_detalle_producto = " . $id_dp . "";
                 $query = $this->db->query($sql);
-                
                 return 'eliminacion_correcta';
             }
         }
+    }
+
+    function eliminarProducto_area($id_detalle_producto_area)
+    {
+        $this->db->select('id_area,id_pro,stock_area_sta_anita,stock_area_sta_clara');
+        $this->db->where('id_detalle_producto_area',$id_detalle_producto_area);
+        $query = $this->db->get('detalle_producto_area');
+        foreach($query->result() as $row){
+            $id_area = $row->id_area;
+            $id_pro = $row->id_pro;
+            $stock_area_sta_anita = $row->stock_area_sta_anita;
+            $stock_area_sta_clara = $row->stock_area_sta_clara;
+        }
+        if( $stock_area_sta_anita > 0 || $stock_area_sta_clara > 0 ){
+            return 'existe_stock';
+        }else{
+            $sql = "DELETE FROM detalle_producto_area WHERE id_detalle_producto_area = " . $id_detalle_producto_area . "";
+            $query = $this->db->query($sql);
+            return 'eliminacion_correcta';
+        }
+        // Se verifica si el producto esta asociado a una factura registrada
+        /*
+        $this->db->select('id_detalle_producto');
+        $this->db->where('id_detalle_producto',$id_dp);
+        $query = $this->db->get('detalle_ingreso_producto');
+        if($query->num_rows() > 0){
+            return 'producto_factura';
+        }else{
+            $this->db->select('id_pro');
+            $this->db->where('id_pro',$id_pro);
+            $query = $this->db->get('saldos_iniciales');
+            if($query->num_rows()>0){
+                return 'producto_saldo_inicial';
+            }else{
+                $sql = "DELETE FROM producto WHERE id_pro = " . $id_pro . "";
+                $query = $this->db->query($sql);
+
+                $sql = "DELETE FROM detalle_producto WHERE id_detalle_producto = " . $id_dp . "";
+                $query = $this->db->query($sql);
+                return 'eliminacion_correcta';
+            }
+        }
+        */
     }
 
     function validarRegistroCierre($fecha_registro)

@@ -43,40 +43,36 @@
 		        }}
 	    	});
 
-			$(".cambiarcontrasena").click(function() { //activacion de ventana modal
-				$("#mdlUpPass" ).dialog({  //declaracion de ventana modal
+			$(".cambiarcontrasena").click(function(){
+				$("#mdlUpPass" ).dialog({
 					modal: true,resizable: false,show: "blind",position: 'center',width: 370,height: 323,draggable: false,closeOnEscape: false, //Aumenta el marco general
 			        buttons: {
 			        Actualizar: function() {
 			            $(".ui-dialog-buttonpane button:contains('Registrar')").button("disable");
 			            $(".ui-dialog-buttonpane button:contains('Registrar')").attr("disabled", true).addClass("ui-state-disabled");
-			            //CONTROLO LAS VARIABLES
 			            var user = $('#user').val(); password = $('#password').val(); datacontrasena = $('#datacontrasena').val();
-			            
-			                //REGISTRO
-			                var dataString = 'user='+user+'&password='+password+'&datacontrasena='+datacontrasena+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
+			            var dataString = 'user='+user+'&password='+password+'&datacontrasena='+datacontrasena+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
 		                    $.ajax({
-		                      type: "POST",
-		                      url: "<?php echo base_url(); ?>comercial/UpdatePassword/",
-		                      data: dataString,
-		                      success: function(msg){
-		                        if(msg == 1){
-		                          $("#finregistro").html('!La Contraseña ha sido regristado con éxito!.').dialog({
-		                            modal: true,position: 'center',width: 330,height: 125,resizable: false, title: 'Fin de Registro',
-		                            buttons: { Ok: function(){
-		                              window.location.href="<?php echo base_url();?>comercial/gestioningreso";
-		                            }}
-		                          });
-		                        }else{
-		                          $("#modalerror").empty().append(msg).dialog({
-		                            modal: true,position: 'center',width: 500,height: 140,resizable: false,
-		                            buttons: { Ok: function() {$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );}}
-		                          });
-		                          $(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");
-		                        }
-		                      }
+		                      	type: "POST",
+		                      	url: "<?php echo base_url(); ?>comercial/UpdatePassword/",
+		                      	data: dataString,
+		                      	success: function(msg){
+			                        if(msg == 1){
+			                          	$("#finregistro").html('!La Contraseña ha sido regristado con éxito!.').dialog({
+				                            modal: true,position: 'center',width: 330,height: 125,resizable: false, title: 'Fin de Registro',
+				                            buttons: { Ok: function(){
+				                              	window.location.href="<?php echo base_url();?>comercial/gestioningreso";
+				                            }}
+			                          	});
+			                        }else{
+			                          	$("#modalerror").empty().append(msg).dialog({
+			                            	modal: true,position: 'center',width: 500,height: 140,resizable: false,
+			                            	buttons: { Ok: function() {$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );}}
+			                          	});
+			                          	$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");
+			                        }
+		                      	}
 		                    });
-			            
 			        },
 			        Cancelar: function(){
 			             $("#mdlUpPass").dialog("close");
@@ -185,7 +181,7 @@
 							<li><a href='<?php echo base_url();?>comercial/gestioninventarioalmacen'><span>Inventario de Almacén</span></a>
 						</ul>
 					</li>
-					<!--<li><a href='<?php echo base_url();?>comercial/gestioninterfaz'><span>Interfaz</span></a></li>-->
+					<li><a href='<?php echo base_url();?>comercial/gestioninterfaz'><span>Interfaz</span></a></li>
 					<!--<li><a href='<?php //echo base_url();?>comercial/backup'><span>Backup de la BD</span></a></li>-->
 					<li><a href="" style="width: 116px;"><span>Gestión Reportes</span></a>
 						<ul>

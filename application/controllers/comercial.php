@@ -2500,6 +2500,306 @@ class Comercial extends CI_Controller {
         }
 	}
 
+	public function gestioninterfaz()
+	{
+		$nombre = $this->security->xss_clean($this->session->userdata('nombre'));
+		$apellido = $this->security->xss_clean($this->session->userdata('apaterno'));
+		if($nombre == "" AND $apellido == ""){
+			$this->load->view('login');
+		}else{
+			$this->load->view('comercial/menu');
+			$this->load->view('comercial/interfaz');
+		}
+	}
+
+	public function actualizar_informacion_producto(){
+			$i = 1;
+			$cont = 1;
+			$cont_area = 1;
+			$mensaje_registro = 1;
+			$indicador_producto = TRUE;
+			$indicador_area = TRUE;
+			// Validar si los datos de los productos y areas corresponde a los de la BD
+			// Validando el nombre del producto
+			$filename = $_FILES['file']['tmp_name'];
+			if(($gestor = fopen($filename, "r")) !== FALSE){
+				while (($datos = fgetcsv($gestor,1000,",")) !== FALSE){
+					// Obtener los valores del numero de partida
+					$nombre_producto = utf8_decode(trim($datos[0]));
+					// ------------------------------------------
+					$this->db->select('id_detalle_producto');
+		            $this->db->where('no_producto',$nombre_producto);
+		            $query = $this->db->get('detalle_producto');
+		            if($query->num_rows() == 1){
+		            	$cont = $cont + 1;
+		            }else if($query->num_rows() == 2){
+		            	var_dump($nombre_producto.' DOS ');
+		            }else if($query->num_rows() == 0){
+		            	var_dump($nombre_producto.' DOS ');
+		            	$indicador_producto = FALSE;
+		            	$data['respuesta_validacion_producto_invalido'] = $cont;
+						$this->load->view('comercial/menu');
+						$this->load->view('comercial/interfaz', $data);
+						$mensaje_registro = 2;
+						break;
+		            }
+				}
+			}
+			// Validando el nombre del area
+			$filename = $_FILES['file']['tmp_name'];
+			if(($gestor = fopen($filename, "r")) !== FALSE){
+				while (($datos = fgetcsv($gestor,1000,",")) !== FALSE){
+					// Obtener los valores del numero de partida
+					$nombre_area = trim($datos[1]);
+					// ------------------------------------------
+					if($nombre_area != ""){
+						$this->db->select('id_area');
+			            $this->db->where('no_area',$nombre_area);
+			            $query = $this->db->get('area');
+			            if($query->num_rows() == 1){
+			            	$cont_area = $cont_area + 1;
+			            }else{
+			            	$indicador_area = FALSE;
+			            	$data['respuesta_validacion_area_invalido'] = $cont_area;
+							$this->load->view('comercial/menu');
+							$this->load->view('comercial/interfaz', $data);
+							$mensaje_registro = 2;
+							break;
+			            }
+			        }
+				}
+			}
+			/*
+			if($indicador_producto == TRUE && $indicador_area == TRUE){
+				$filename = $_FILES['file']['tmp_name'];
+				if(($gestor = fopen($filename, "r")) !== FALSE){
+					while (($datos = fgetcsv($gestor,1000,",")) !== FALSE){
+						// Obtener los valores de la hoja de excel
+						$nombre_producto = trim($datos[0]);
+						$nombre_area = trim($datos[1]);
+						// Obtener el ID del producto
+						$this->db->select('id_detalle_producto');
+		            	$this->db->where('no_producto',$nombre_producto);
+		            	$query = $this->db->get('detalle_producto');
+		            	foreach ($query->result() as $row) {
+		            		$id_detalle_producto = $row->id_detalle_producto;
+		            	}
+		            	$this->db->select('id_pro');
+		            	$this->db->where('id_detalle_producto',$id_detalle_producto);
+		            	$query = $this->db->get('producto');
+		            	foreach ($query->result() as $row) {
+		            		$id_pro = $row->id_pro;
+		            	}
+		            	// Obtener el ID del area
+		            	if($nombre_area != ""){
+		            		$this->db->select('id_area');
+			            	$this->db->where('no_area',$nombre_area);
+			            	$query = $this->db->get('area');
+			            	foreach ($query->result() as $row) {
+			            		$id_area = $row->id_area;
+			            	}
+			            	// verificar si el producto tiene un area asociado
+			            	// para realizar una actualizacion o una insercion
+
+
+
+
+		            	}
+
+						// Validacion de los valores de Código de Hilado - Ancho - Rendimiento y los ID de Clientes, Tejidos y Color
+						$this->db->select('id_codigo_hilado');
+			            $this->db->where('nombre_cod_hilado',$codigo_hilado);
+			            $query_hilado = $this->db->get('codigo_hilado');
+			            if($query_hilado->num_rows() > 0 || $codigo_hilado == null){
+							$this->db->select('id_rendimiento');
+				            $this->db->where('num_rendimiento',$rendimiento);
+				            $query_rendimiento = $this->db->get('rendimiento');
+							if($query_rendimiento->num_rows() > 0 || $rendimiento == null){
+								$this->db->select('id_ancho');
+					            $this->db->where('num_ancho',$ancho);
+					            $query_ancho = $this->db->get('ancho');
+					            if($query_ancho->num_rows() > 0 || $ancho == null){
+									// ------------------------------------------
+									$this->db->select('id_cliente');
+						            $this->db->where('razon_social',$nombre_cliente);
+						            $query_cliente = $this->db->get('cliente');
+						            if($query_cliente->num_rows() > 0){
+						            	foreach($query_cliente->result() as $row){
+						                	$id_cliente = $row->id_cliente;
+						            	}
+						            	// ------------------------------------------
+							            $this->db->select('id_tejido');
+							            $this->db->where('no_tejido',$nombre_tejido);
+							            $this->db->where('titulo_tejido',$titulo);
+							            $query = $this->db->get('tejido');
+							            if($query->num_rows() > 0){
+							            	foreach($query->result() as $row){
+								                $id_tejido = $row->id_tejido;
+								            }
+								            $this->db->select('id_color');
+								            $this->db->where('no_color',$nombre_color);
+								            $this->db->where('cod_color',$codigo_color);
+								            $query = $this->db->get('colores');
+								            if($query->num_rows() > 0 || $codigo_color == "SM"){
+								            	foreach($query->result() as $row){
+									                $id_color = $row->id_color;
+									            }
+									            $this->db->select('id_maquina_tejeduria');
+									            $this->db->where('no_maq_tejeduria',$maquina_tejido);
+									            $query = $this->db->get('maquina_tejeduria');
+									            if($query->num_rows() > 0 || $maquina_tejido == null){
+									            	foreach($query->result() as $row){
+										                $id_maquina_tejeduria = $row->id_maquina_tejeduria;
+										            }
+										            $this->db->select('id_maquina');
+										            $this->db->where('no_maquina',$maquina_tenido);
+										            $query = $this->db->get('maquina');
+										            if($query->num_rows() > 0 || $maquina_tenido == null){
+										            	foreach($query->result() as $row){
+											                $id_maquina = $row->id_maquina;
+											            }
+										            	$this->db->select('id_requerimiento');
+											            $this->db->where('nombre_requerimiento',$nombre_requerimiento);
+											            $query = $this->db->get('requerimiento');
+											            if($query->num_rows() > 0 || $nombre_requerimiento == null){
+											            	foreach($query->result() as $row){
+												                $id_requerimiento = $row->id_requerimiento;
+												            }
+																$a_data = array(
+																	'num_partida'=>$numero_partida,
+																	'id_cliente'=>$id_cliente,
+																	'id_color'=>$id_color,
+																	'cantidad_rollos'=>$cantidad_rollos,
+																	'longitud_malla'=>$longitud_malla,
+																	'rendimiento'=>$rendimiento,
+																	'id_tejido'=>$id_tejido,
+																	'ancho'=>$ancho,
+																	'orden_pedido'=>$orden_pedido,
+																	'fecha_registro'=>$fecha_req,
+																	'codigo_hilado'=>$codigo_hilado,
+																	'lote'=>$lote,
+																	'id_maquina_tejeduria'=>$id_maquina_tejeduria,
+																	'id_maquina'=>$id_maquina,
+																	'id_requerimiento'=>$id_requerimiento,
+																	'fecha_pedido'=>$fecha_pedido,
+																	'observacion'=>$observacion,
+																	'fecha_subida_data'=>$fecha_subida_data,
+																	'estado_guia'=>'CRUDO',
+																);
+																$id_insert = $this->model_pedido_crudo->save_informacion_masiva($a_data);
+																if($id_insert == 'error_insert_crudo'){
+																	$this->model_pedido_crudo->eliminar_data_subida_masiva_error_validacion($fecha_subida_data);
+																	$data['respuesta_validacion_insert_crudo'] = $i;
+													            	$this->load->view('pedido_crudo/menu');
+																	$this->load->view('pedido_crudo/interfaz', $data);
+																	$mensaje_registro = 2;
+																	break;
+																}else{
+																	$i = $i + 1;
+																	// Vacio las variables porque si no encuentra uno de los id que busco, se queda con el ultimo que encontro y lo registra
+																	$id_color = "";
+																	$id_tejido = "";
+																	$id_cliente = "";
+																	$id_maquina_tejeduria = "";
+																	$id_maquina = "";
+																	// $id_tipo_proceso = "";
+																	$id_requerimiento = "";
+																}
+											            }else{
+											            	$this->model_pedido_crudo->eliminar_data_subida_masiva_error_validacion($fecha_subida_data);
+											            	$data['respuesta_validacion_requerimiento'] = $i;
+											            	$this->load->view('pedido_crudo/menu');
+															$this->load->view('pedido_crudo/interfaz', $data);
+															$mensaje_registro = 2;
+															break;
+											            }
+										            }else{
+										            	$this->model_pedido_crudo->eliminar_data_subida_masiva_error_validacion($fecha_subida_data);
+										            	$data['respuesta_validacion_maquina_tintoreria'] = $i;
+										            	$this->load->view('pedido_crudo/menu');
+														$this->load->view('pedido_crudo/interfaz', $data);
+														$mensaje_registro = 2;
+														break;
+										            }
+									            }else{
+									            	$this->model_pedido_crudo->eliminar_data_subida_masiva_error_validacion($fecha_subida_data);
+									            	$data['respuesta_validacion_maquina_tejeduria'] = $i;
+									            	$this->load->view('pedido_crudo/menu');
+													$this->load->view('pedido_crudo/interfaz', $data);
+													$mensaje_registro = 2;
+													break;
+									            }
+								            }else{
+								            	$this->model_pedido_crudo->eliminar_data_subida_masiva_error_validacion($fecha_subida_data);
+								            	$data['respuesta_validacion_color'] = $i;
+								            	$this->load->view('pedido_crudo/menu');
+												$this->load->view('pedido_crudo/interfaz', $data);
+												$mensaje_registro = 2;
+												break;
+								            }
+							            }else{
+							            	$this->model_pedido_crudo->eliminar_data_subida_masiva_error_validacion($fecha_subida_data);
+							            	$data['respuesta_validacion_tejido'] = $i;
+							            	$this->load->view('pedido_crudo/menu');
+											$this->load->view('pedido_crudo/interfaz', $data);
+											$mensaje_registro = 2;
+											break;
+							            }
+						            }else{
+						            	$this->model_pedido_crudo->eliminar_data_subida_masiva_error_validacion($fecha_subida_data);
+						            	$data['respuesta_validacion_cliente'] = $i;
+						            	$this->load->view('pedido_crudo/menu');
+										$this->load->view('pedido_crudo/interfaz', $data);
+										$mensaje_registro = 2;
+										break;
+						            }
+						        }else{
+						            $this->model_pedido_crudo->eliminar_data_subida_masiva_error_validacion($fecha_subida_data);
+						            $data['respuesta_validacion_ancho'] = $i;
+						            $this->load->view('pedido_crudo/menu');
+									$this->load->view('pedido_crudo/interfaz', $data);
+									$mensaje_registro = 2;
+									break;
+						        }
+						    }else{
+						    	$this->model_pedido_crudo->eliminar_data_subida_masiva_error_validacion($fecha_subida_data);
+					            $data['respuesta_validacion_rendimiento'] = $i;
+					            $this->load->view('pedido_crudo/menu');
+								$this->load->view('pedido_crudo/interfaz', $data);
+								$mensaje_registro = 2;
+								break;
+						    }
+						}else{
+					    	$this->model_pedido_crudo->eliminar_data_subida_masiva_error_validacion($fecha_subida_data);
+				            $data['respuesta_validacion_hilado'] = $i;
+				            $this->load->view('pedido_crudo/menu');
+							$this->load->view('pedido_crudo/interfaz', $data);
+							$mensaje_registro = 2;
+							break;
+					    }
+					}
+				}
+			}
+			if($mensaje_registro == 1){
+				$i = $i - 1;
+				$data['respuesta_registro_realizados'] = $i;
+	        	$this->load->view('pedido_crudo/menu');
+				$this->load->view('pedido_crudo/interfaz', $data);
+			}
+			*/
+		}
+
+	public function eliminarproducto_area()
+	{
+		$id_detalle_producto_area = $this->input->get('eliminar');
+		$result = $this->model_comercial->eliminarProducto_area($id_detalle_producto_area);
+		if($result == 'existe_stock'){
+            echo '<b>--> No se puede eliminar el Registro. El Producto tiene Stock Asignado para esa Área</b>';
+        }else if($result == 'eliminacion_correcta'){
+        	echo '1';
+        }
+	}
+
 	public function eliminaragente()
 	{
 		$idagente = $this->input->get('eliminar');
@@ -8251,6 +8551,58 @@ class Comercial extends CI_Controller {
 		echo '1';
 	}
 
+	public function actualizar_stock_controller_version_5(){
+		// Importante esta funcion me sirve tambien para verificar si existen productos con areas duplicadas
+		// Realizar un consulta de todos los productos registrados en el sistema
+		// para verificar los movimientos de esos productos en el kardex y seleccionar el ultimo movimiento
+		// para obtener el stock y el precio final para el cierre del mes
+		$almacen = $this->security->xss_clean($this->session->userdata('almacen'));
+		$data_product = $this->model_comercial->get_all_productos();
+		foreach ($data_product as $row){
+			$id_detalle_producto = $row->id_detalle_producto;
+			$id_pro = $row->id_pro;
+			// Obtener el stock actual de la tabla detalle_producto
+			$this->db->select('stock,stock_sta_clara');
+			$this->db->where('id_detalle_producto',$id_detalle_producto);
+			$query = $this->db->get('detalle_producto');
+			foreach($query->result() as $row){
+			    $stock = $row->stock;
+			    $stock_sta_clara = $row->stock_sta_clara;
+			}
+			// Identificar si el producto solo tiene un area asignada
+			$this->db->select('id_area');
+			$this->db->where('id_pro',$id_pro);
+			$query = $this->db->get('detalle_producto_area');
+			if(count($query->result()) == 1){
+				foreach($query->result() as $row){
+				    $id_area = $row->id_area;
+				}
+				if($almacen == 1){
+					// Actualizo el stock del area segun el almacen al que pertenece
+					$actualizar = array(
+			    	    'stock_area_sta_clara'=> $stock_sta_clara
+			    	);
+			    	$this->db->where('id_area',$id_area);
+			    	$this->db->where('id_pro',$id_pro);
+			    	$this->db->update('detalle_producto_area', $actualizar);
+				}else if($almacen == 2){
+					// Actualizo el stock del area segun el almacen al que pertenece
+					$actualizar = array(
+			    	    'stock_area_sta_anita'=> $stock
+			    	);
+			    	$this->db->where('id_area',$id_area);
+			    	$this->db->where('id_pro',$id_pro);
+			    	$this->db->update('detalle_producto_area', $actualizar);
+				}
+				var_dump('Producto actualizado id_dp '.$id_detalle_producto.' Producto id_pro '.$id_pro);
+			}else if(count($query->result()) == 0){
+				// var_dump('Evaluar producto id_dp '.$id_detalle_producto.' Evaluar producto id_pro '.$id_pro);
+			}else if(count($query->result()) == 2){
+				// var_dump('Evaluar producto con 2 id_area id_dp '.$id_detalle_producto.' Evaluar producto id_pro '.$id_pro);
+			}
+		}
+		echo '1';
+	}
 
 	public function eliminartrasladoproducto()
 	{
