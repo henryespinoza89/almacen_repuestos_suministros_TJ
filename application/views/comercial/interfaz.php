@@ -18,7 +18,7 @@
       }}
     });
   <?php } ?>
-  /* ------------ FIN DE VALIDACIÓN DE PRODUCTOS ------------ */
+  // ------------ FIN DE VALIDACIÓN DE PRODUCTOS ------------
 
   /* ------------ VALIDACIÓN DE DATOS DE PRODUCTOS ------------ */
   <?php if(!empty($respuesta_validacion_area_invalido)){ ?>
@@ -26,7 +26,7 @@
   <?php } ?>
 
   <?php if(!empty($respuesta_validacion_area_invalido)){ ?>
-    $("#error_respuesta_validacion_area_invalido").html('<strong>! Se encontro un Error en el Producto en la Fila '+ area_erroneo + ' !<br> Verificar el Archivo Excel/Csv y volver a Cargar la Data.</strong>').dialog({
+    $("#error_respuesta_validacion_area_invalido").html('<strong>! Se encontro un Error en el Área en la Fila '+ area_erroneo + ' !<br> Verificar el Archivo Excel/Csv y volver a Cargar la Data.</strong>').dialog({
       modal: true,position: 'center',width: 500,height: 138, resizable: false, title: 'Error de Validación',hide: 'scale',show: 'scale',
       buttons: { Ok: function(){
         $(this).dialog('close');
@@ -34,7 +34,6 @@
     });
   <?php } ?>
   /* ------------ FIN DE VALIDACIÓN DE PRODUCTOS ------------ */
-
 
   });
 </script>

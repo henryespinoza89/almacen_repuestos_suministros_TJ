@@ -10,7 +10,6 @@
     }, select: function (event, ui) {
       var selectedObj = ui.item;
       var nombre_producto = selectedObj.nombre_producto;
-
       $("#nombre_producto").val(nombre_producto);
       nombre_producto = $("#nombre_producto").val();
       var ruta = $('#direccion_traer_unidad_medida').text();
@@ -215,58 +214,55 @@ $("#actualizar_saldos_iniciales").on("click",function(){
   });
   $(".ui-datepicker-trigger").css('padding-left','7px'); // esta linea separa la imagen del calendario del input
 
-//Script para crear la tabla que será el contenedor de los productos registrados
-    $('#listarSalidaProductos').jTPS( {perPages:[10,20,30,50,'Todos'],scrollStep:1,scrollDelay:30,clickCallback:function () {     
-        // target table selector
-        var table = '#listarSalidaProductos';
-        // store pagination + sort in cookie 
-        document.cookie = 'jTPS=sortasc:' + $(table + ' .sortableHeader').index($(table + ' .sortAsc')) + ',' +
-                'sortdesc:' + $(table + ' .sortableHeader').index($(table + ' .sortDesc')) + ',' +
-                'page:' + $(table + ' .pageSelector').index($(table + ' .hilightPageSelector')) + ';';
-        }
-    });
-
-    // reinstate sort and pagination if cookie exists
-    var cookies = document.cookie.split(';');
-    for (var ci = 0, cie = cookies.length; ci < cie; ci++) {
-            var cookie = cookies[ci].split('=');
-            if (cookie[0] == 'jTPS') {
-                    var commands = cookie[1].split(',');
-                    for (var cm = 0, cme = commands.length; cm < cme; cm++) {
-                            var command = commands[cm].split(':');
-                            if (command[0] == 'sortasc' && parseInt(command[1]) >= 0) {
-                                    $('#listarSalidaProductos .sortableHeader:eq(' + parseInt(command[1]) + ')').click();
-                            } else if (command[0] == 'sortdesc' && parseInt(command[1]) >= 0) {
-                                    $('#listarSalidaProductos .sortableHeader:eq(' + parseInt(command[1]) + ')').click().click();
-                            } else if (command[0] == 'page' && parseInt(command[1]) >= 0) {
-                                    $('#listarSalidaProductos .pageSelector:eq(' + parseInt(command[1]) + ')').click();
-                            }
-                    }
-            }
+  //Script para crear la tabla que será el contenedor de los productos registrados
+  $('#listarSalidaProductos').jTPS( {perPages:[10,20,30,50,'Todos'],scrollStep:1,scrollDelay:30,clickCallback:function(){
+    // target table selector
+    var table = '#listarSalidaProductos';
+    // store pagination + sort in cookie 
+    document.cookie = 'jTPS=sortasc:' + $(table + ' .sortableHeader').index($(table + ' .sortAsc')) + ',' +
+      'sortdesc:' + $(table + ' .sortableHeader').index($(table + ' .sortDesc')) + ',' +
+      'page:' + $(table + ' .pageSelector').index($(table + ' .hilightPageSelector')) + ';';
     }
+  });
 
-    // bind mouseover for each tbody row and change cell (td) hover style
-    $('#listarSalidaProductos tbody tr:not(.stubCell)').bind('mouseover mouseout',
-            function (e) {
-                    // hilight the row
-                    e.type == 'mouseover' ? $(this).children('td').addClass('hilightRow') : $(this).children('td').removeClass('hilightRow');
-            }
-    );
+  // reinstate sort and pagination if cookie exists
+  var cookies = document.cookie.split(';');
+  for(var ci = 0, cie = cookies.length; ci < cie; ci++) {
+    var cookie = cookies[ci].split('=');
+    if(cookie[0] == 'jTPS') {
+      var commands = cookie[1].split(',');
+      for(var cm = 0, cme = commands.length; cm < cme; cm++) {
+        var command = commands[cm].split(':');
+        if(command[0] == 'sortasc' && parseInt(command[1]) >= 0) {
+          $('#listarSalidaProductos .sortableHeader:eq(' + parseInt(command[1]) + ')').click();
+        }else if (command[0] == 'sortdesc' && parseInt(command[1]) >= 0) {
+          $('#listarSalidaProductos .sortableHeader:eq(' + parseInt(command[1]) + ')').click().click();
+        }else if (command[0] == 'page' && parseInt(command[1]) >= 0) {
+          $('#listarSalidaProductos .pageSelector:eq(' + parseInt(command[1]) + ')').click();
+        }
+      }
+    }
+  }
 
-    /* Eliminar Salida */
-    $('a.eliminar_salida').bind('click', function () {
-      var ruta = $('#direccionelim').text();
-        var id = $(this).attr('id').replace('elim_', '');
-        var parent = $(this).parent().parent();
-        //var usuario = $('#us123').text();
-        $("#dialog-confirm").data({
-              'delid': id,
-              'parent': parent,
-              'ruta': ruta
-              //'idusuario': usuario
-        }).dialog('open');
-        return false;
-    });
+  // bind mouseover for each tbody row and change cell (td) hover style
+  $('#listarSalidaProductos tbody tr:not(.stubCell)').bind('mouseover mouseout',
+    function (e) {
+      e.type == 'mouseover' ? $(this).children('td').addClass('hilightRow') : $(this).children('td').removeClass('hilightRow');
+    }
+  );
+
+  /* Eliminar Salida */
+  $('a.eliminar_salida').bind('click', function () {
+    var ruta = $('#direccionelim').text();
+    var id = $(this).attr('id').replace('elim_', '');
+    var parent = $(this).parent().parent();
+    $("#dialog-confirm").data({
+      'delid': id,
+      'parent': parent,
+      'ruta': ruta
+    }).dialog('open');
+    return false;
+  });
     $("#dialog-confirm").dialog({
       resizable: false,
       bgiframe: true,
@@ -478,9 +474,11 @@ $("#actualizar_saldos_iniciales").on("click",function(){
         <input name="submit" type="submit" id="actualizar_stock" value="Actualizar Stock" style="padding-bottom:3px; padding-top:3px; margin-bottom: 15px; background-color: #CD0A0A; border-radius:6px; width: 150px;margin-right: 15px;" />
       </div>
       -->
+      <!--
       <div>
         <input name="submit" type="submit" id="actualizar_stock_area" value="Actualizar Stock por Área" style="padding-bottom:3px; padding-top:3px; margin-bottom: 15px; background-color: #CD0A0A; border-radius:6px; width: 150px;margin-right: 15px;" />
       </div>
+      -->
       <?php 
       $existe = count($salidaproducto);
       if($existe <= 0){
@@ -526,12 +524,12 @@ $("#actualizar_saldos_iniciales").on("click",function(){
                 <!--
                 <td width="20" align="center"><img class="editar_producto" src="<?php echo base_url();?>assets/img/edit.png" width="20" height="20" title="Editar producto" onClick="editar_producto(<?php echo $listasalidaproductos->id_salida_producto; ?>)" /></td>
                 -->
-                <!--
+                
                 <td width="20" align="center">
                   <a href="" class="eliminar_salida" id="elim_<?php echo $listasalidaproductos->id_salida_producto; ?>">
                   <img src="<?php echo base_url();?>assets/img/trash.png" width="20" height="20" title="Eliminar Salida"/></a>
                 </td>
-                -->
+                
               </tr>
           <?php 
             $i++;
@@ -539,7 +537,7 @@ $("#actualizar_saldos_iniciales").on("click",function(){
           ?> 
           <tfoot class="nav">
             <tr>
-              <td colspan=12>
+              <td colspan=13>
                 <div class="pagination"></div>
                 <div class="paginationTitle">Página</div>
                 <div class="selectPerPage"></div>

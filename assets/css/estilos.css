@@ -201,9 +201,9 @@ ul, ol
 
 #userlogin{
 	width: 260px;
-	height: 45px;
+	height: 60px;
 	float: right;
-	margin-top: 25px;
+	margin-top: 15px;
 	margin-right: 85px;
 	overflow: hidden; /*Esta línea oculta los datos de cambiar contraseña y cerrar sesión*/
 }

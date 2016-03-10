@@ -998,6 +998,24 @@ class Model_comercial extends CI_Model {
         }
     }
 
+    function get_nombre_solicitante_autocomplete_salida($nombre_solicitante){
+        try {
+            $filtro = "";
+            $filtro .= "LIMIT 10";
+            $sql = "SELECT DISTINCT salida_producto.solicitante
+                    FROM salida_producto
+                    WHERE salida_producto.solicitante ILIKE '%".$nombre_solicitante."%'".$filtro;
+            $query = $this->db->query($sql);
+
+            if($query->num_rows()>0)
+            {
+                return $query->result_array();
+            }
+        } catch (Exception $e) {
+            throw new Exception('Error Inesperado');
+            return false;
+        }
+    }
 
     function get_nombre_producto_autocomplete($nombre_producto){
         try {
@@ -1100,13 +1118,11 @@ class Model_comercial extends CI_Model {
         try {
             $id_almacen = $this->security->xss_clean($this->session->userdata('almacen'));
             $filtro = "";
-            /*
             if($id_almacen == 1){
                 $filtro .= " AND detalle_producto_area.stock_area_sta_clara > 0 ";
             }else if($id_almacen == 2){
                 $filtro .= " AND detalle_producto_area.stock_area_sta_anita > 0 ";
             }
-            */
             $filtro .= " AND detalle_producto_area.id_area =".(int)$id_area;
             $filtro .= " AND producto.estado = TRUE ";
             $filtro .= "LIMIT 10";
@@ -1571,7 +1587,6 @@ class Model_comercial extends CI_Model {
             return false;
         }
     }
-
     
     public function saveRegistroIngreso(){
         $cantidad = $this->security->xss_clean($this->input->post('cantidad'));
@@ -2538,7 +2553,7 @@ class Model_comercial extends CI_Model {
             $filtro .= " AND serie_maquina.id_serie_maquina =".(int)$this->security->xss_clean($this->input->post('serie')); 
         }
         $filtro .= " ORDER BY area.no_area ASC";
-        $filtro .= " LIMIT 100";
+        // $filtro .= " LIMIT 100";
         $sql = "SELECT salida_producto.id_salida_producto,salida_producto.solicitante,salida_producto.fecha,detalle_producto.no_producto,
         salida_producto.cantidad_salida,area.no_area,nombre_maquina.nombre_maquina,marca_maquina.no_marca,modelo_maquina.no_modelo,
         serie_maquina.no_serie
@@ -2933,10 +2948,10 @@ class Model_comercial extends CI_Model {
         */
     }
 
-    function listarResumenProductos_report_excel(){
+    function listarResumenProductos_report_excel_anita(){
         $sql = "SELECT DISTINCT producto.id_pro,producto.id_producto,detalle_producto.no_producto,detalle_producto.stock,
         detalle_producto.precio_unitario,categoria.no_categoria,tipo_producto.no_tipo_producto,procedencia.no_procedencia,
-        unidad_medida.nom_uni_med,area.no_area
+        unidad_medida.nom_uni_med,area.no_area,detalle_producto.stock_sta_clara,producto.id_almacen
         FROM
         producto
         INNER JOIN detalle_producto ON producto.id_detalle_producto = detalle_producto.id_detalle_producto
@@ -4940,7 +4955,7 @@ class Model_comercial extends CI_Model {
         }else{
             // ubicar los datos de la tabla que asocia una salida con una factura
             // regresar el stock referencial de la factura que se uso
-            /*
+            
             $this->db->select('cantidad_utilizada,id_ingreso_producto');
             $this->db->where('id_salida_producto',$id_salida_producto);
             $query = $this->db->get('adm_facturas_asociadas');
@@ -4964,12 +4979,12 @@ class Model_comercial extends CI_Model {
                 $this->db->where('id_detalle_producto',$id_detalle_producto);
                 $this->db->update('detalle_ingreso_producto', $actualizar_referencia);
             }
-            */
+            
             // Eliminar el registro de la factura asociada a la salida
-            /*
+            
             $sql = "DELETE FROM adm_facturas_asociadas WHERE id_salida_producto = " . $id_salida_producto . "";
             $query = $this->db->query($sql);
-            */
+            
             /* Seleccionar el id_kardex_producto a eliminar */
             $this->db->select('id_kardex_producto');
             $this->db->where('num_comprobante',$id_salida_producto);
@@ -4985,7 +5000,7 @@ class Model_comercial extends CI_Model {
             $sql = "DELETE FROM salida_producto WHERE id_salida_producto = " . $id_salida_producto . "";
             $query = $this->db->query($sql);
             /* Actualizar el stock del producto general */
-            /*
+            
             if($almacen == 1){
                 $stock_sta_clara = $stock_sta_clara + $cantidad_salida;
                 $actualizar = array(
@@ -4999,10 +5014,10 @@ class Model_comercial extends CI_Model {
             }
             $this->db->where('id_detalle_producto',$id_detalle_producto);
             $this->db->update('detalle_producto', $actualizar);
-            */
+            
             /* Fin de actualizacion */
             // Actualizar el stock del producto por area
-            /*
+            
             $this->db->select('stock_area_sta_clara,stock_area_sta_anita,id_detalle_producto_area');
             $this->db->where('id_area',$id_area);
             $this->db->where('id_pro',$id_producto);
@@ -5025,7 +5040,7 @@ class Model_comercial extends CI_Model {
             }
             $this->db->where('id_detalle_producto_area',$id_detalle_producto_area);
             $this->db->update('detalle_producto_area', $actualizar_stock_area);
-            */
+            
             // reorganizar los datos del kardex considerando movimientos en el mismo dia y posterior
             // Obtener el ultimo id de registro para la fecha
             $this->db->select('id_kardex_producto');
@@ -7366,11 +7381,11 @@ class Model_comercial extends CI_Model {
                         $a_data_kardex = array('fecha_registro' => $fecharegistro,
                                         'descripcion' => "ENTRADA",
                                         'id_detalle_producto' => $id_detalle_producto,
-                                        'stock_anterior' => $stock_general,
-                                        'precio_unitario_anterior' => $precio_unitario,
+                                        'stock_anterior' => 0,
+                                        'precio_unitario_anterior' => 0,
                                         'cantidad_ingreso' => $item['qty'],
-                                        'stock_actual' => $stock_actualizado,
-                                        'precio_unitario_actual_promedio' => $nuevo_precio_unitario,
+                                        'stock_actual' => $item['qty'],
+                                        'precio_unitario_actual_promedio' => $precio_unitario_soles,
                                         'precio_unitario_actual' => $precio_unitario_soles,
                                         'num_comprobante' => $numcomprobante,
                                         'serie_comprobante' => $seriecomprobante,
@@ -7608,7 +7623,7 @@ class Model_comercial extends CI_Model {
                         if($descripcion == 'SALIDA'){
                             $new_precio_unitario_especial = (($stock_actual*$precio_unitario_anterior)+($item['qty']*$precio_unitario_soles))/($stock_actual+$item['qty']);
                             $precio_unitario_anterior_especial = $precio_unitario_anterior;
-                        }else if($descripcion == 'ENTRADA' && $descripcion== 'ORDEN INGRESO'){
+                        }else if($descripcion == 'ENTRADA' || $descripcion == 'ORDEN INGRESO'){
                             $new_precio_unitario_especial = (($stock_actual*$precio_unitario_actual_promedio)+($item['qty']*$precio_unitario_soles))/($stock_actual+$item['qty']);
                             $precio_unitario_anterior_especial = $precio_unitario_actual_promedio;
                         }
@@ -7639,11 +7654,11 @@ class Model_comercial extends CI_Model {
                         $a_data_kardex = array('fecha_registro' => $fecharegistro,
                                         'descripcion' => "ENTRADA",
                                         'id_detalle_producto' => $id_detalle_producto,
-                                        'stock_anterior' => $stock_general,
-                                        'precio_unitario_anterior' => $precio_unitario,
+                                        'stock_anterior' => 0,
+                                        'precio_unitario_anterior' => 0,
                                         'cantidad_ingreso' => $item['qty'],
-                                        'stock_actual' => $stock_actualizado,
-                                        'precio_unitario_actual_promedio' => $nuevo_precio_unitario,
+                                        'stock_actual' => $item['qty'],
+                                        'precio_unitario_actual_promedio' => $precio_unitario_soles,
                                         'precio_unitario_actual' => $precio_unitario_soles,
                                         'num_comprobante' => $numcomprobante,
                                         'serie_comprobante' => $seriecomprobante,

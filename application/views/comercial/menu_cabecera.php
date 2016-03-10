@@ -133,7 +133,7 @@
 	</div>
 	<div class="view_invoice" id="view_invoice"></div>
 	<div id="userlogin">
-		<img src="<?php echo base_url();?>assets/img/user.jpg" width="45px" height="45px" title="Usuario" class="image">
+		<img src="<?php echo base_url();?>assets/img/user.png" width="45px" height="45px" title="Usuario" class="image" style="border-radius: 50%;margin-left: 10px;margin-top: 5px;margin-right: 15px;">
 		<div class="username">
 			<span><?php echo $this->session->userdata('nombre') ." ". $this->session->userdata('apaterno') ?></span> <img src="<?php echo base_url();?>assets/img/arrow-down.png" width="20px" height="20px" id="optionsuser">
 			<nav>
@@ -181,7 +181,7 @@
 							<li><a href='<?php echo base_url();?>comercial/gestioninventarioalmacen'><span>Inventario de Almacén</span></a>
 						</ul>
 					</li>
-					<li><a href='<?php echo base_url();?>comercial/gestioninterfaz'><span>Interfaz</span></a></li>
+					<!--<li><a href='<?php echo base_url();?>comercial/gestioninterfaz'><span>Interfaz</span></a></li>-->
 					<!--<li><a href='<?php //echo base_url();?>comercial/backup'><span>Backup de la BD</span></a></li>-->
 					<li><a href="" style="width: 116px;"><span>Gestión Reportes</span></a>
 						<ul>

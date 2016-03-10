@@ -213,6 +213,18 @@ $(function() {
 	       	});
 	    }
 	});
+
+	$("#solicitante").autocomplete({
+        source: function (request, respond) {
+        	$.post("<?php echo base_url('comercial/traer_solicitante_autocomplete'); ?>", {<?php echo $this->security->get_csrf_token_name(); ?>: "<?php echo $this->security->get_csrf_hash(); ?>", q: request.term},
+	        function (response) {
+	            respond(response);
+	        }, 'json');
+        }, select: function (event, ui) {
+	        var selectedObj = ui.item;
+	        $("#solicitante").val(selectedObj.nombre_solicitante);
+        }
+    });
 	
 	$("#nombre_producto").autocomplete({
         source: function (request, respond) {
