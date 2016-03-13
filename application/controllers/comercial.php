@@ -236,7 +236,7 @@ class Comercial extends CI_Controller {
 				die();
 			}
 
-			/*
+			
 			if($indicador == TRUE){
 				// Validar si existe un error en AREAS asignadas a cada producto
 				$filename = $_FILES['file']['tmp_name'];
@@ -271,10 +271,10 @@ class Comercial extends CI_Controller {
 					die();
 				}
 			}
-			*/
+			
 
-			// if( $indicador == TRUE && $indicador_area == TRUE ){
-			if( $indicador == TRUE ){
+			if( $indicador == TRUE && $indicador_area == TRUE ){
+				//if( $indicador == TRUE ){
 				/* Guardo los datos generales de la factura */
 				/* Agregamos el registro_ingreso a la bd */
 				$datos = array(
@@ -317,24 +317,25 @@ class Comercial extends CI_Controller {
 						die();
 					}
 
-					/*
-					// Validar si existe un error en los productos a registrar
-					$filename = $_FILES['file']['tmp_name'];
 					if(($gestor = fopen($filename, "r")) !== FALSE){
 						while (($datos = fgetcsv($gestor,1000,",")) !== FALSE){
 							// Obtener los valores de la hoja de excel
 							$codigo_producto = trim($datos[0]);
 							$cantidad_ingreso = trim($datos[1]);
 							$precio_ingreso = trim($datos[2]);
+							// Obtener los ID de Clientes, Tejidos y Color
 							// ------------------------------------------
 							$this->db->select('id_detalle_producto');
 				            $this->db->where('id_producto',$codigo_producto);
 				            $query = $this->db->get('producto');
-				            if($query->num_rows() > 0){
-				            	$i = $i + 1;
-				            }else{
-				            	$indicador = FALSE;
-				            	$data['respuesta_validacion_facturas_importadas'] = $i;
+				            foreach($query->result() as $row){
+				                $id_detalle_producto = $row->id_detalle_producto;
+				            }
+							$id_insert = $this->model_comercial->actualizar_detalle_kardex_importado($id_proveedor,$id_comprobante,$suma_parciales_factura,$id_detalle_producto,$cantidad_ingreso,$precio_ingreso,$fecharegistro,$seriecomprobante,$numcomprobante,$total_factura_contabilidad,$almacen);
+							if($id_insert == true){
+								$y = $y + 1;
+							}else if($id_insert == 'no_se_encontro_factura_importada'){
+				            	$data['respuesta_validacion_actualizacion_importadas'] = '<span style="color:red"><b>ERROR:</b> no_se_encontro_factura_importada </span>';
 								$data['listaagente']= $this->model_comercial->listaAgenteAduana();
 								$data['listaproveedor']= $this->model_comercial->listaProveedor();
 								$data['listasimmon']= $this->model_comercial->listaSimMon();
@@ -343,88 +344,15 @@ class Comercial extends CI_Controller {
 								$this->load->view('comercial/menu_cabecera');
 								$this->load->view('comercial/comprobantes/facturas_opcion_masiva', $data);
 								break;
-				            }
+							}
+							// Limpio la variable porque si no encuentra uno de los id que busco, se queda con el ultimo que encontro y lo registra
+							$id_detalle_producto = "";
 						}
 					}else{
 						echo "No se cargo el archivo CSV";
 						die();
 					}
 
-					if($indicador == TRUE){
-						// Validar si existe un error en AREAS asignadas a cada producto
-						$filename = $_FILES['file']['tmp_name'];
-						if(($gestor = fopen($filename, "r")) !== FALSE){
-							while (($datos = fgetcsv($gestor,1000,",")) !== FALSE){
-								// Obtener los valores de la hoja de excel
-								$codigo_producto = trim($datos[0]);
-								$cantidad_ingreso = trim($datos[1]);
-								$precio_ingreso = trim($datos[2]);
-								$nombre_area = trim($datos[3]);
-								// ------------------------------------------
-								$this->db->select('id_area');
-					            $this->db->where('no_area',$nombre_area);
-					            $query = $this->db->get('area');
-					            if($query->num_rows() > 0){
-					            	$cont_area = $cont_area + 1;
-					            }else{
-					            	$indicador_area = FALSE;
-					            	$data['respuesta_validacion_areas_productos_importadas'] = $cont_area;
-									$data['listaagente']= $this->model_comercial->listaAgenteAduana();
-									$data['listaproveedor']= $this->model_comercial->listaProveedor();
-									$data['listasimmon']= $this->model_comercial->listaSimMon();
-									$data['listacomprobante']= $this->model_comercial->listaComprobante_importado();
-									$this->load->view('comercial/menu_script');
-									$this->load->view('comercial/menu_cabecera');
-									$this->load->view('comercial/comprobantes/facturas_opcion_masiva', $data);
-									break;
-					            }
-							}
-						}else{
-							echo "No se cargo el archivo CSV";
-							die();
-						}
-					}
-					*/
-
-					// if($indicador_area == TRUE){
-						// if($indicador == TRUE){
-							if(($gestor = fopen($filename, "r")) !== FALSE){
-								while (($datos = fgetcsv($gestor,1000,",")) !== FALSE){
-									// Obtener los valores de la hoja de excel
-									$codigo_producto = trim($datos[0]);
-									$cantidad_ingreso = trim($datos[1]);
-									$precio_ingreso = trim($datos[2]);
-									// Obtener los ID de Clientes, Tejidos y Color
-									// ------------------------------------------
-									$this->db->select('id_detalle_producto');
-						            $this->db->where('id_producto',$codigo_producto);
-						            $query = $this->db->get('producto');
-						            foreach($query->result() as $row){
-						                $id_detalle_producto = $row->id_detalle_producto;
-						            }
-									$id_insert = $this->model_comercial->actualizar_detalle_kardex_importado($id_proveedor,$id_comprobante,$suma_parciales_factura,$id_detalle_producto,$cantidad_ingreso,$precio_ingreso,$fecharegistro,$seriecomprobante,$numcomprobante,$total_factura_contabilidad,$almacen);
-									if($id_insert == true){
-										$y = $y + 1;
-									}else if($id_insert == 'no_se_encontro_factura_importada'){
-						            	$data['respuesta_validacion_actualizacion_importadas'] = '<span style="color:red"><b>ERROR:</b> no_se_encontro_factura_importada </span>';
-										$data['listaagente']= $this->model_comercial->listaAgenteAduana();
-										$data['listaproveedor']= $this->model_comercial->listaProveedor();
-										$data['listasimmon']= $this->model_comercial->listaSimMon();
-										$data['listacomprobante']= $this->model_comercial->listaComprobante_importado();
-										$this->load->view('comercial/menu_script');
-										$this->load->view('comercial/menu_cabecera');
-										$this->load->view('comercial/comprobantes/facturas_opcion_masiva', $data);
-										break;
-									}
-									// Limpio la variable porque si no encuentra uno de los id que busco, se queda con el ultimo que encontro y lo registra
-									$id_detalle_producto = "";
-								}
-							}else{
-								echo "No se cargo el archivo CSV";
-								die();
-							}
-						// }
-					// }
 					if($y != 0){
 						$data['respuesta_registro_satisfactorio'] = $y;
 						$data['listaagente']= $this->model_comercial->listaAgenteAduana();
@@ -450,108 +378,37 @@ class Comercial extends CI_Controller {
 							die();
 						}
 
-						/* Validar si existe un error en los productos a registrar */
-						$filename = $_FILES['file']['tmp_name'];
 						if(($gestor = fopen($filename, "r")) !== FALSE){
 							while (($datos = fgetcsv($gestor,1000,",")) !== FALSE){
 								// Obtener los valores de la hoja de excel
 								$codigo_producto = trim($datos[0]);
 								$cantidad_ingreso = trim($datos[1]);
 								$precio_ingreso = trim($datos[2]);
+								$nombre_area = trim($datos[3]);
 								/* ------------------------------------------ */
 								$this->db->select('id_detalle_producto');
 					            $this->db->where('id_producto',$codigo_producto);
 					            $query = $this->db->get('producto');
-					            if($query->num_rows() > 0){
-					            	$i = $i + 1;
-					            }else{
-					            	$indicador = FALSE;
-					            	$data['respuesta_validacion_facturas_importadas'] = $i;
-									$data['listaagente']= $this->model_comercial->listaAgenteAduana();
-									$data['listaproveedor']= $this->model_comercial->listaProveedor();
-									$data['listasimmon']= $this->model_comercial->listaSimMon();
-									$data['listacomprobante']= $this->model_comercial->listaComprobante_importado();
-									$this->load->view('comercial/menu_script');
-									$this->load->view('comercial/menu_cabecera');
-									$this->load->view('comercial/comprobantes/facturas_opcion_masiva', $data);
-									break;
+					            foreach($query->result() as $row){
+					                $id_detalle_producto = $row->id_detalle_producto;
 					            }
+					            /* ------------------------------------------ */
+								$a_data = array(
+												'unidades'=>$cantidad_ingreso,
+												'id_detalle_producto'=>$id_detalle_producto,
+												'precio'=>$precio_ingreso,
+												'id_ingreso_producto'=>$id_ingreso_producto,
+												);
+								$id_insert = $this->model_comercial->inserta_factura_masiva($nombre_area,$id_comprobante,$suma_parciales_factura,$a_data,$id_detalle_producto,$cantidad_ingreso,$precio_ingreso,$fecharegistro,$seriecomprobante,$numcomprobante,0,$almacen);
+								if($id_insert == true){
+									$y = $y + 1;
+								}
+								/* Limpio la variable porque si no encuentra uno de los id que busco, se queda con el ultimo que encontro y lo registra */
+								$id_detalle_producto = "";
 							}
 						}else{
 							echo "No se cargo el archivo CSV";
 							die();
-						}
-
-						if($indicador == TRUE){
-							/* Validar si existe un error en AREAS asignadas a cada producto */
-							$filename = $_FILES['file']['tmp_name'];
-							if(($gestor = fopen($filename, "r")) !== FALSE){
-								while (($datos = fgetcsv($gestor,1000,",")) !== FALSE){
-									// Obtener los valores de la hoja de excel
-									$codigo_producto = trim($datos[0]);
-									$cantidad_ingreso = trim($datos[1]);
-									$precio_ingreso = trim($datos[2]);
-									$nombre_area = trim($datos[3]);
-									/* ------------------------------------------ */
-									$this->db->select('id_area');
-						            $this->db->where('no_area',$nombre_area);
-						            $query = $this->db->get('area');
-						            if($query->num_rows() > 0){
-						            	$cont_area = $cont_area + 1;
-						            }else{
-						            	$indicador_area = FALSE;
-						            	$data['respuesta_validacion_areas_productos_importadas'] = $cont_area;
-										$data['listaagente']= $this->model_comercial->listaAgenteAduana();
-										$data['listaproveedor']= $this->model_comercial->listaProveedor();
-										$data['listasimmon']= $this->model_comercial->listaSimMon();
-										$data['listacomprobante']= $this->model_comercial->listaComprobante_importado();
-										$this->load->view('comercial/menu_script');
-										$this->load->view('comercial/menu_cabecera');
-										$this->load->view('comercial/comprobantes/facturas_opcion_masiva', $data);
-										break;
-						            }
-								}
-							}else{
-								echo "No se cargo el archivo CSV";
-								die();
-							}
-						}
-
-						if($indicador_area == TRUE){
-							if($indicador == TRUE){
-								if(($gestor = fopen($filename, "r")) !== FALSE){
-									while (($datos = fgetcsv($gestor,1000,",")) !== FALSE){
-										// Obtener los valores de la hoja de excel
-										$codigo_producto = trim($datos[0]);
-										$cantidad_ingreso = trim($datos[1]);
-										$precio_ingreso = trim($datos[2]);
-										$nombre_area = trim($datos[3]);
-										/* ------------------------------------------ */
-										$this->db->select('id_detalle_producto');
-							            $this->db->where('id_producto',$codigo_producto);
-							            $query = $this->db->get('producto');
-							            foreach($query->result() as $row){
-							                $id_detalle_producto = $row->id_detalle_producto;
-							            }
-							            /* ------------------------------------------ */
-										$a_data = array(
-														'unidades'=>$cantidad_ingreso,
-														'id_detalle_producto'=>$id_detalle_producto,
-														'precio'=>$precio_ingreso,
-														'id_ingreso_producto'=>$id_ingreso_producto,
-														);
-										$id_insert = $this->model_comercial->inserta_factura_masiva($nombre_area,$id_comprobante,$suma_parciales_factura,$a_data,$id_detalle_producto,$cantidad_ingreso,$precio_ingreso,$fecharegistro,$seriecomprobante,$numcomprobante,0,$almacen);
-										if($id_insert == true){
-											$y = $y + 1;
-										}
-										/* Limpio la variable porque si no encuentra uno de los id que busco, se queda con el ultimo que encontro y lo registra */
-										$id_detalle_producto = "";
-									}
-								}else{
-									echo "No se cargo el archivo CSV";
-									die();
-								}
-							}
 						}
 
 						if($y != 0){

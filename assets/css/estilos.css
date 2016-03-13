@@ -200,7 +200,7 @@ ul, ol
 }
 
 #userlogin{
-	width: 260px;
+	/* width: 260px; */
 	height: 60px;
 	float: right;
 	margin-top: 15px;

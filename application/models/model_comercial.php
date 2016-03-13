@@ -610,6 +610,7 @@ class Model_comercial extends CI_Model {
 
     public function inserta_factura_masiva($nombre_area,$id_comprobante,$suma_parciales_factura,$a_data,$id_detalle_producto,$cantidad_ingreso,$precio_ingreso,$fecharegistro,$seriecomprobante,$numcomprobante,$total_factura_contabilidad,$almacen)
     {
+        $auxiliar_contador = 0;
         /* Realizo el registro del detalle de la factura */
         $insert = $this->db->insert('detalle_ingreso_producto', $a_data);
         //if($insert) return  $this->db->insert_id();
@@ -694,39 +695,337 @@ class Model_comercial extends CI_Model {
             $this->db->update('detalle_producto', $actualizar);
             /* Realizar registro para el kardex */ /* en el kardex el precio unitario del producto debe ir en soles */
             if($id_comprobante == 4){
-                $a_data_kardex = array('fecha_registro' => $fecharegistro,
-                                'descripcion' => "IMPORTACION",
-                                'id_detalle_producto' => $id_detalle_producto,
-                                'stock_anterior' => $stock_general,
-                                'precio_unitario_anterior' => $nuevo_precio_unitario,
-                                'cantidad_ingreso' => $cantidad_ingreso,
-                                'stock_actual' => $stock_actualizado,
-                                'precio_unitario_actual_promedio' => $nuevo_precio_unitario,
-                                'precio_unitario_actual' => $nuevo_precio_unitario,
-                                'num_comprobante' => $numcomprobante,
-                                'serie_comprobante' => $seriecomprobante,
+                // Gestión de kardex para el registro
+                $this->db->select('id_kardex_producto');
+                $this->db->where('fecha_registro <=',$fecharegistro);
+                // $this->db->where('id_kardex_producto <',$id_kardex_producto);
+                $this->db->where('id_detalle_producto',$id_detalle_producto);
+                $this->db->order_by("fecha_registro", "asc");
+                $this->db->order_by("id_kardex_producto", "asc");
+                $query = $this->db->get('kardex_producto');
+                if(count($query->result()) > 0){
+                    foreach($query->result() as $row){
+                        $auxiliar = $row->id_kardex_producto; // devuelve el ultimo id que no necesariamente es el mayor
+                    }
+                    // Obtener los datos del ultimo registro de la fecha
+                    $this->db->select('stock_actual,precio_unitario_actual_promedio,precio_unitario_anterior,descripcion');
+                    $this->db->where('id_kardex_producto',$auxiliar);
+                    $query = $this->db->get('kardex_producto');
+                    foreach($query->result() as $row){
+                        $stock_actual = $row->stock_actual;
+                        $precio_unitario_actual_promedio = $row->precio_unitario_actual_promedio;
+                        $precio_unitario_anterior = $row->precio_unitario_anterior;
+                        $descripcion = $row->descripcion;
+                    }
+
+                    $new_stock = $stock_actual + $cantidad_ingreso;
+
+                    $a_data_kardex = array('fecha_registro' => $fecharegistro,
+                                    'descripcion' => "IMPORTACION",
+                                    'id_detalle_producto' => $id_detalle_producto,
+                                    'stock_anterior' => $stock_actual,
+                                    'precio_unitario_anterior' => $nuevo_precio_unitario,
+                                    'cantidad_ingreso' => $cantidad_ingreso,
+                                    'stock_actual' => $new_stock,
+                                    'precio_unitario_actual_promedio' => $nuevo_precio_unitario,
+                                    'precio_unitario_actual' => $nuevo_precio_unitario,
+                                    'num_comprobante' => $numcomprobante,
+                                    'serie_comprobante' => $seriecomprobante,
+                                    );
+                    $result_kardex = $this->model_comercial->saveSalidaProductoKardex($a_data_kardex,true);
+                    // $this->db->insert('kardex_producto', $a_data_kardex);
+                    /* End registro para el kardex */
+                }else{
+                    $a_data_kardex = array('fecha_registro' => $fecharegistro,
+                                    'descripcion' => "IMPORTACION",
+                                    'id_detalle_producto' => $id_detalle_producto,
+                                    'stock_anterior' => 0,
+                                    'precio_unitario_anterior' => 0,
+                                    'cantidad_ingreso' => $cantidad_ingreso,
+                                    'stock_actual' => $cantidad_ingreso,
+                                    'precio_unitario_actual_promedio' => $nuevo_precio_unitario,
+                                    'precio_unitario_actual' => $nuevo_precio_unitario,
+                                    'num_comprobante' => $numcomprobante,
+                                    'serie_comprobante' => $seriecomprobante,
+                                    );
+                    $result_kardex = $this->model_comercial->saveSalidaProductoKardex($a_data_kardex,true);
+                }
+                // Actualizar movimientos posteriores
+                $this->db->select('id_kardex_producto');
+                $this->db->where('fecha_registro >',$fecharegistro);
+                $this->db->where('id_detalle_producto',$id_detalle_producto);
+                $this->db->order_by("fecha_registro", "asc");
+                $this->db->order_by("id_kardex_producto", "asc");
+                $query = $this->db->get('kardex_producto');
+                if(count($query->result()) > 0){
+                    foreach($query->result() as $row){
+                        $id_kardex_producto = $row->id_kardex_producto; /* ID del movimiento en el kardex */
+                        // Obtener detalle del movimiento
+                        $this->db->select('stock_actual,precio_unitario_actual_promedio,precio_unitario_anterior,descripcion,stock_anterior,cantidad_salida,cantidad_ingreso,precio_unitario_actual');
+                        $this->db->where('id_kardex_producto',$id_kardex_producto);
+                        $query = $this->db->get('kardex_producto');
+                        foreach($query->result() as $row){
+                            $stock_actual_act = $row->stock_actual;
+                            $precio_unitario_actual_promedio_act = $row->precio_unitario_actual_promedio;
+                            $precio_unitario_anterior_act = $row->precio_unitario_anterior;
+                            $descripcion_act = $row->descripcion;
+                            $stock_anterior_act = $row->stock_anterior;
+                            $cantidad_salida_act = $row->cantidad_salida;
+                            $cantidad_ingreso_act = $row->cantidad_ingreso;
+                            $precio_unitario_actual_act = $row->precio_unitario_actual;
+                            // Actualizacion de registros
+                            if($descripcion_act == 'ENTRADA' || $descripcion_act == 'ORDEN INGRESO'){
+                                if($auxiliar_contador == 0){
+                                    /* El stock anterior viene a ser el stock actual del movimiento anterior */
+                                    $new_stock_anterior_act = $new_stock; // stock_anterior
+                                    $new_precio_unitario_anterior_act = $nuevo_precio_unitario; // precio_unitario_anterior
+                                    $auxiliar_contador++;
+                                }
+                                /* Actualizar los datos para una entrada */
+                                $stock_actual_final = $new_stock_anterior_act + $cantidad_ingreso_act;
+                                $precio_unitario_actual_promedio_final = (($new_stock_anterior_act*$new_precio_unitario_anterior_act)+($cantidad_ingreso_act*$precio_unitario_actual_act))/($new_stock_anterior_act+$cantidad_ingreso_act);
+                                /* Actualizar BD */
+                                $actualizar = array(
+                                    'stock_anterior'=> $new_stock_anterior_act,
+                                    'precio_unitario_anterior'=> $new_precio_unitario_anterior_act,
+                                    'stock_actual'=> $stock_actual_final,
+                                    'precio_unitario_actual_promedio'=> $precio_unitario_actual_promedio_final
                                 );
-                //$result_kardex = $this->model_comercial->saveSalidaProductoKardex($a_data_kardex,true);
-                $this->db->insert('kardex_producto', $a_data_kardex);
-                /* End registro para el kardex */
+                                $this->db->where('id_kardex_producto',$id_kardex_producto);
+                                $this->db->update('kardex_producto', $actualizar);
+                                /* fin de actualizar */
+                                /* Actualizar el precio unitario del producto */
+                                $actualizar_p_u_2 = array(
+                                    'precio_unitario'=> $precio_unitario_actual_promedio_final
+                                );
+                                $this->db->where('id_detalle_producto',$id_detalle_producto);
+                                $this->db->update('detalle_producto', $actualizar_p_u_2);
+                            }else if($descripcion_act == 'SALIDA'){
+                                if($auxiliar_contador == 0){
+                                    /* El stock anterior viene a ser el stock actual del movimiento anterior */
+                                    $new_stock_anterior_act = $new_stock; // stock_anterior
+                                    $new_precio_unitario_anterior_act = $nuevo_precio_unitario; // precio_unitario_anterior
+                                    $auxiliar_contador++;
+                                }
+                                /* Actualizar los datos para una salida */
+                                $stock_actual_final = $new_stock_anterior_act - $cantidad_salida_act;
+                                $precio_unitario_actual_final = $new_precio_unitario_anterior_act;
+                                $precio_unitario_anterior_final = $new_precio_unitario_anterior_act;
+                                /* Actualizar BD */
+                                $actualizar = array(
+                                    'stock_anterior'=> $new_stock_anterior_act,
+                                    'precio_unitario_anterior'=> $precio_unitario_anterior_final,
+                                    'stock_actual'=> $stock_actual_final,
+                                    'precio_unitario_actual'=> $precio_unitario_actual_final
+                                );
+                                $this->db->where('id_kardex_producto',$id_kardex_producto);
+                                $this->db->update('kardex_producto', $actualizar);
+                                /* fin de actualizar */
+                            }else if($descripcion_act == 'IMPORTACION'){
+                                if($auxiliar_contador == 0){
+                                    /* El stock anterior viene a ser el stock actual del movimiento anterior */
+                                    $new_stock_anterior_act = $new_stock; // stock_anterior
+                                    $new_precio_unitario_anterior_act = $nuevo_precio_unitario; // precio_unitario_anterior
+                                    $auxiliar_contador++;
+                                }
+                                /* Actualizar los datos para una entrada */
+                                $stock_actual_final = $new_stock_anterior_act + $cantidad_ingreso_act;
+                                $precio_unitario_actual_promedio_final = 0;
+                                /* Actualizar BD */
+                                $actualizar = array(
+                                    'stock_anterior'=> $new_stock_anterior_act,
+                                    'precio_unitario_anterior'=> $new_precio_unitario_anterior_act,
+                                    'stock_actual'=> $stock_actual_final,
+                                    'precio_unitario_actual_promedio'=> $precio_unitario_actual_promedio_final
+                                );
+                                $this->db->where('id_kardex_producto',$id_kardex_producto);
+                                $this->db->update('kardex_producto', $actualizar);
+                                /* fin de actualizar */
+                                /* Actualizar el precio unitario del producto */
+                                $actualizar_p_u_2 = array(
+                                    'precio_unitario'=> $precio_unitario_actual_promedio_final,
+                                    'stock' => $stock_actual_final
+                                );
+                                $this->db->where('id_detalle_producto',$id_detalle_producto);
+                                $this->db->update('detalle_producto', $actualizar_p_u_2);
+                            }
+                            // Dejar variables con el ultimo registro del stock y precio unitario obtenido
+                            $new_stock_anterior_act = $stock_actual_final;
+                            if($descripcion_act == 'ENTRADA' || $descripcion_act == 'ORDEN INGRESO'){
+                                $new_precio_unitario_anterior_act = $precio_unitario_actual_promedio_final;
+                            }else if($descripcion_act == 'SALIDA'){
+                                $new_precio_unitario_anterior_act = $precio_unitario_actual_final;
+                            }else if($descripcion_act == 'IMPORTACION'){
+                                $new_precio_unitario_anterior_act = 0;
+                            }
+                        }
+                    }
+                }
             }else if($id_comprobante == 2){
-                $a_data_kardex = array('fecha_registro' => $fecharegistro,
-                                'descripcion' => "ENTRADA",
-                                'id_detalle_producto' => $id_detalle_producto,
-                                'stock_anterior' => $stock_general,
-                                'precio_unitario_anterior' => $precio_unitario,
-                                'cantidad_ingreso' => $cantidad_ingreso,
-                                'stock_actual' => $stock_actualizado,
-                                'precio_unitario_actual_promedio' => $nuevo_precio_unitario,
-                                'precio_unitario_actual' => $p_u_gastos,
-                                'num_comprobante' => $numcomprobante,
-                                'serie_comprobante' => $seriecomprobante,
+                // Gestión de kardex para el registro
+                $this->db->select('id_kardex_producto');
+                $this->db->where('fecha_registro <=',$fecharegistro);
+                // $this->db->where('id_kardex_producto <',$id_kardex_producto);
+                $this->db->where('id_detalle_producto',$id_detalle_producto);
+                $this->db->order_by("fecha_registro", "asc");
+                $this->db->order_by("id_kardex_producto", "asc");
+                $query = $this->db->get('kardex_producto');
+                if(count($query->result()) > 0){
+                    foreach($query->result() as $row){
+                        $auxiliar = $row->id_kardex_producto; // devuelve el ultimo id que no necesariamente es el mayor
+                    }
+                    // Obtener los datos del ultimo registro de la fecha
+                    $this->db->select('stock_actual,precio_unitario_actual_promedio,precio_unitario_anterior,descripcion');
+                    $this->db->where('id_kardex_producto',$auxiliar);
+                    $query = $this->db->get('kardex_producto');
+                    foreach($query->result() as $row){
+                        $stock_actual = $row->stock_actual;
+                        $precio_unitario_actual_promedio = $row->precio_unitario_actual_promedio;
+                        $precio_unitario_anterior = $row->precio_unitario_anterior;
+                        $descripcion = $row->descripcion;
+                    }
+                    $new_stock = $stock_actual + $cantidad_ingreso;
+                    // Registro en la tabla del kardex
+                    $a_data_kardex = array('fecha_registro' => $fecharegistro,
+                                    'descripcion' => "ENTRADA",
+                                    'id_detalle_producto' => $id_detalle_producto,
+                                    'stock_anterior' => $stock_actual,
+                                    'precio_unitario_anterior' => $precio_unitario_anterior,
+                                    'cantidad_ingreso' => $cantidad_ingreso,
+                                    'stock_actual' => $new_stock,
+                                    'precio_unitario_actual_promedio' => $nuevo_precio_unitario,
+                                    'precio_unitario_actual' => $p_u_gastos,
+                                    'num_comprobante' => $numcomprobante,
+                                    'serie_comprobante' => $seriecomprobante,
+                                    );
+                    $result_kardex = $this->model_comercial->saveSalidaProductoKardex($a_data_kardex,true);
+                }else{
+                    $a_data_kardex = array('fecha_registro' => $fecharegistro,
+                                    'descripcion' => "ENTRADA",
+                                    'id_detalle_producto' => $id_detalle_producto,
+                                    'stock_anterior' => 0,
+                                    'precio_unitario_anterior' => 0,
+                                    'cantidad_ingreso' => $cantidad_ingreso,
+                                    'stock_actual' => $cantidad_ingreso,
+                                    'precio_unitario_actual_promedio' => $nuevo_precio_unitario,
+                                    'precio_unitario_actual' => $p_u_gastos,
+                                    'num_comprobante' => $numcomprobante,
+                                    'serie_comprobante' => $seriecomprobante,
+                                    );
+                    $result_kardex = $this->model_comercial->saveSalidaProductoKardex($a_data_kardex,true);
+                }
+                // Actualizar movimientos posteriores
+                $this->db->select('id_kardex_producto');
+                $this->db->where('fecha_registro >',$fecharegistro);
+                $this->db->where('id_detalle_producto',$id_detalle_producto);
+                $this->db->order_by("fecha_registro", "asc");
+                $this->db->order_by("id_kardex_producto", "asc");
+                $query = $this->db->get('kardex_producto');
+                if(count($query->result()) > 0){
+                    foreach($query->result() as $row){
+                        $id_kardex_producto = $row->id_kardex_producto; /* ID del movimiento en el kardex */
+                        // Obtener detalle del movimiento
+                        $this->db->select('stock_actual,precio_unitario_actual_promedio,precio_unitario_anterior,descripcion,stock_anterior,cantidad_salida,cantidad_ingreso,precio_unitario_actual');
+                        $this->db->where('id_kardex_producto',$id_kardex_producto);
+                        $query = $this->db->get('kardex_producto');
+                        foreach($query->result() as $row){
+                            $stock_actual_act = $row->stock_actual;
+                            $precio_unitario_actual_promedio_act = $row->precio_unitario_actual_promedio;
+                            $precio_unitario_anterior_act = $row->precio_unitario_anterior;
+                            $descripcion_act = $row->descripcion;
+                            $stock_anterior_act = $row->stock_anterior;
+                            $cantidad_salida_act = $row->cantidad_salida;
+                            $cantidad_ingreso_act = $row->cantidad_ingreso;
+                            $precio_unitario_actual_act = $row->precio_unitario_actual;
+                            // Actualizacion de registros
+                            if($descripcion_act == 'ENTRADA' || $descripcion_act == 'ORDEN INGRESO'){
+                                if($auxiliar_contador == 0){
+                                    /* El stock anterior viene a ser el stock actual del movimiento anterior */
+                                    $new_stock_anterior_act = $new_stock; // stock_anterior
+                                    $new_precio_unitario_anterior_act = $nuevo_precio_unitario; // precio_unitario_anterior
+                                    $auxiliar_contador++;
+                                }
+                                /* Actualizar los datos para una entrada */
+                                $stock_actual_final = $new_stock_anterior_act + $cantidad_ingreso_act;
+                                $precio_unitario_actual_promedio_final = (($new_stock_anterior_act*$new_precio_unitario_anterior_act)+($cantidad_ingreso_act*$precio_unitario_actual_act))/($new_stock_anterior_act+$cantidad_ingreso_act);
+                                /* Actualizar BD */
+                                $actualizar = array(
+                                    'stock_anterior'=> $new_stock_anterior_act,
+                                    'precio_unitario_anterior'=> $new_precio_unitario_anterior_act,
+                                    'stock_actual'=> $stock_actual_final,
+                                    'precio_unitario_actual_promedio'=> $precio_unitario_actual_promedio_final
                                 );
-                //$result_kardex = $this->model_comercial->saveSalidaProductoKardex($a_data_kardex,true);
-                $this->db->insert('kardex_producto', $a_data_kardex);
-                /* End registro para el kardex */
+                                $this->db->where('id_kardex_producto',$id_kardex_producto);
+                                $this->db->update('kardex_producto', $actualizar);
+                                /* fin de actualizar */
+                                /* Actualizar el precio unitario del producto */
+                                $actualizar_p_u_2 = array(
+                                    'precio_unitario'=> $precio_unitario_actual_promedio_final
+                                );
+                                $this->db->where('id_detalle_producto',$id_detalle_producto);
+                                $this->db->update('detalle_producto', $actualizar_p_u_2);
+                            }else if($descripcion_act == 'SALIDA'){
+                                if($auxiliar_contador == 0){
+                                    /* El stock anterior viene a ser el stock actual del movimiento anterior */
+                                    $new_stock_anterior_act = $new_stock; // stock_anterior
+                                    $new_precio_unitario_anterior_act = $nuevo_precio_unitario; // precio_unitario_anterior
+                                    $auxiliar_contador++;
+                                }
+                                /* Actualizar los datos para una salida */
+                                $stock_actual_final = $new_stock_anterior_act - $cantidad_salida_act;
+                                $precio_unitario_actual_final = $new_precio_unitario_anterior_act;
+                                $precio_unitario_anterior_final = $new_precio_unitario_anterior_act;
+                                /* Actualizar BD */
+                                $actualizar = array(
+                                    'stock_anterior'=> $new_stock_anterior_act,
+                                    'precio_unitario_anterior'=> $precio_unitario_anterior_final,
+                                    'stock_actual'=> $stock_actual_final,
+                                    'precio_unitario_actual'=> $precio_unitario_actual_final
+                                );
+                                $this->db->where('id_kardex_producto',$id_kardex_producto);
+                                $this->db->update('kardex_producto', $actualizar);
+                                /* fin de actualizar */
+                            }else if($descripcion_act == 'IMPORTACION'){
+                                if($auxiliar_contador == 0){
+                                    /* El stock anterior viene a ser el stock actual del movimiento anterior */
+                                    $new_stock_anterior_act = $new_stock; // stock_anterior
+                                    $new_precio_unitario_anterior_act = $nuevo_precio_unitario; // precio_unitario_anterior
+                                    $auxiliar_contador++;
+                                }
+                                /* Actualizar los datos para una entrada */
+                                $stock_actual_final = $new_stock_anterior_act + $cantidad_ingreso_act;
+                                $precio_unitario_actual_promedio_final = 0;
+                                /* Actualizar BD */
+                                $actualizar = array(
+                                    'stock_anterior'=> $new_stock_anterior_act,
+                                    'precio_unitario_anterior'=> $new_precio_unitario_anterior_act,
+                                    'stock_actual'=> $stock_actual_final,
+                                    'precio_unitario_actual_promedio'=> $precio_unitario_actual_promedio_final
+                                );
+                                $this->db->where('id_kardex_producto',$id_kardex_producto);
+                                $this->db->update('kardex_producto', $actualizar);
+                                /* fin de actualizar */
+                                /* Actualizar el precio unitario del producto */
+                                $actualizar_p_u_2 = array(
+                                    'precio_unitario'=> $precio_unitario_actual_promedio_final,
+                                    'stock' => $stock_actual_final
+                                );
+                                $this->db->where('id_detalle_producto',$id_detalle_producto);
+                                $this->db->update('detalle_producto', $actualizar_p_u_2);
+                            }
+                            // Dejar variables con el ultimo registro del stock y precio unitario obtenido
+                            $new_stock_anterior_act = $stock_actual_final;
+                            if($descripcion_act == 'ENTRADA' || $descripcion_act == 'ORDEN INGRESO'){
+                                $new_precio_unitario_anterior_act = $precio_unitario_actual_promedio_final;
+                            }else if($descripcion_act == 'SALIDA'){
+                                $new_precio_unitario_anterior_act = $precio_unitario_actual_final;
+                            }else if($descripcion_act == 'IMPORTACION'){
+                                $new_precio_unitario_anterior_act = 0;
+                            }
+                        }
+                    }
+                }
             }
-            
         }else if($almacen == 2){ /* Sta. Anita */
             $stock_general = $stock_sta_clara_actual + $stock_sta_anita_actual; /* Stock general actual */
             $stock_sta_anita = $stock_sta_anita_actual + $cantidad_ingreso; /* Stock actualizado del almacen de sta anita */
@@ -745,39 +1044,340 @@ class Model_comercial extends CI_Model {
             );
             $this->db->where('id_detalle_producto',$id_detalle_producto);
             $this->db->update('detalle_producto', $actualizar);
-            /* Realizar registro para el kardex */ /* en el kardex el precio unitario del producto debe ir en soles */
+            // Realizar registro para el kardex // en el kardex el precio unitario del producto debe ir en soles
             if($id_comprobante == 4){
-                $a_data_kardex = array('fecha_registro' => $fecharegistro,
-                                'descripcion' => "IMPORTACION",
-                                'id_detalle_producto' => $id_detalle_producto,
-                                'stock_anterior' => $stock_general,
-                                'precio_unitario_anterior' => $nuevo_precio_unitario,
-                                'cantidad_ingreso' => $cantidad_ingreso,
-                                'stock_actual' => $stock_actualizado,
-                                'precio_unitario_actual_promedio' => $nuevo_precio_unitario,
-                                'precio_unitario_actual' => $nuevo_precio_unitario,
-                                'num_comprobante' => $numcomprobante,
-                                'serie_comprobante' => $seriecomprobante,
+                // Gestión de kardex para el registro
+                $this->db->select('id_kardex_producto');
+                $this->db->where('fecha_registro <=',$fecharegistro);
+                // $this->db->where('id_kardex_producto <',$id_kardex_producto);
+                $this->db->where('id_detalle_producto',$id_detalle_producto);
+                $this->db->order_by("fecha_registro", "asc");
+                $this->db->order_by("id_kardex_producto", "asc");
+                $query = $this->db->get('kardex_producto');
+                if(count($query->result()) > 0){
+                    foreach($query->result() as $row){
+                        $auxiliar = $row->id_kardex_producto; // devuelve el ultimo id que no necesariamente es el mayor
+                    }
+                    // Obtener los datos del ultimo registro de la fecha
+                    $this->db->select('stock_actual,precio_unitario_actual_promedio,precio_unitario_anterior,descripcion');
+                    $this->db->where('id_kardex_producto',$auxiliar);
+                    $query = $this->db->get('kardex_producto');
+                    foreach($query->result() as $row){
+                        $stock_actual = $row->stock_actual;
+                        $precio_unitario_actual_promedio = $row->precio_unitario_actual_promedio;
+                        $precio_unitario_anterior = $row->precio_unitario_anterior;
+                        $descripcion = $row->descripcion;
+                    }
+
+                    $new_stock = $stock_actual + $cantidad_ingreso;
+
+                    $a_data_kardex = array('fecha_registro' => $fecharegistro,
+                                    'descripcion' => "IMPORTACION",
+                                    'id_detalle_producto' => $id_detalle_producto,
+                                    'stock_anterior' => $stock_actual,
+                                    'precio_unitario_anterior' => $nuevo_precio_unitario,
+                                    'cantidad_ingreso' => $cantidad_ingreso,
+                                    'stock_actual' => $new_stock,
+                                    'precio_unitario_actual_promedio' => $nuevo_precio_unitario,
+                                    'precio_unitario_actual' => $nuevo_precio_unitario,
+                                    'num_comprobante' => $numcomprobante,
+                                    'serie_comprobante' => $seriecomprobante,
+                                    );
+                    $result_kardex = $this->model_comercial->saveSalidaProductoKardex($a_data_kardex,true);
+                    // $this->db->insert('kardex_producto', $a_data_kardex);
+                    // End registro para el kardex
+                }else{
+                    /* Realizar registro para el kardex */ /* en el kardex el precio unitario del producto debe ir en soles */
+                    $a_data_kardex = array('fecha_registro' => $fecharegistro,
+                                    'descripcion' => "IMPORTACION",
+                                    'id_detalle_producto' => $id_detalle_producto,
+                                    'stock_anterior' => 0,
+                                    'precio_unitario_anterior' => 0,
+                                    'cantidad_ingreso' => $cantidad_ingreso,
+                                    'stock_actual' => $cantidad_ingreso,
+                                    'precio_unitario_actual_promedio' => $nuevo_precio_unitario,
+                                    'precio_unitario_actual' => $nuevo_precio_unitario,
+                                    'num_comprobante' => $numcomprobante,
+                                    'serie_comprobante' => $seriecomprobante,
+                                    );
+                    $result_kardex = $this->model_comercial->saveSalidaProductoKardex($a_data_kardex,true);
+                    /* End registro para el kardex */
+                }
+                // Actualizar movimientos posteriores
+                $this->db->select('id_kardex_producto');
+                $this->db->where('fecha_registro >',$fecharegistro);
+                $this->db->where('id_detalle_producto',$id_detalle_producto);
+                $this->db->order_by("fecha_registro", "asc");
+                $this->db->order_by("id_kardex_producto", "asc");
+                $query = $this->db->get('kardex_producto');
+                if(count($query->result()) > 0){
+                    foreach($query->result() as $row){
+                        $id_kardex_producto = $row->id_kardex_producto; /* ID del movimiento en el kardex */
+                        // Obtener detalle del movimiento
+                        $this->db->select('stock_actual,precio_unitario_actual_promedio,precio_unitario_anterior,descripcion,stock_anterior,cantidad_salida,cantidad_ingreso,precio_unitario_actual');
+                        $this->db->where('id_kardex_producto',$id_kardex_producto);
+                        $query = $this->db->get('kardex_producto');
+                        foreach($query->result() as $row){
+                            $stock_actual_act = $row->stock_actual;
+                            $precio_unitario_actual_promedio_act = $row->precio_unitario_actual_promedio;
+                            $precio_unitario_anterior_act = $row->precio_unitario_anterior;
+                            $descripcion_act = $row->descripcion;
+                            $stock_anterior_act = $row->stock_anterior;
+                            $cantidad_salida_act = $row->cantidad_salida;
+                            $cantidad_ingreso_act = $row->cantidad_ingreso;
+                            $precio_unitario_actual_act = $row->precio_unitario_actual;
+                            // Actualizacion de registros
+                            if($descripcion_act == 'ENTRADA' || $descripcion_act == 'ORDEN INGRESO'){
+                                if($auxiliar_contador == 0){
+                                    /* El stock anterior viene a ser el stock actual del movimiento anterior */
+                                    $new_stock_anterior_act = $new_stock; // stock_anterior
+                                    $new_precio_unitario_anterior_act = $nuevo_precio_unitario; // precio_unitario_anterior
+                                    $auxiliar_contador++;
+                                }
+                                /* Actualizar los datos para una entrada */
+                                $stock_actual_final = $new_stock_anterior_act + $cantidad_ingreso_act;
+                                $precio_unitario_actual_promedio_final = (($new_stock_anterior_act*$new_precio_unitario_anterior_act)+($cantidad_ingreso_act*$precio_unitario_actual_act))/($new_stock_anterior_act+$cantidad_ingreso_act);
+                                /* Actualizar BD */
+                                $actualizar = array(
+                                    'stock_anterior'=> $new_stock_anterior_act,
+                                    'precio_unitario_anterior'=> $new_precio_unitario_anterior_act,
+                                    'stock_actual'=> $stock_actual_final,
+                                    'precio_unitario_actual_promedio'=> $precio_unitario_actual_promedio_final
                                 );
-                //$result_kardex = $this->model_comercial->saveSalidaProductoKardex($a_data_kardex,true);
-                $this->db->insert('kardex_producto', $a_data_kardex);
-                /* End registro para el kardex */
+                                $this->db->where('id_kardex_producto',$id_kardex_producto);
+                                $this->db->update('kardex_producto', $actualizar);
+                                /* fin de actualizar */
+                                /* Actualizar el precio unitario del producto */
+                                $actualizar_p_u_2 = array(
+                                    'precio_unitario'=> $precio_unitario_actual_promedio_final
+                                );
+                                $this->db->where('id_detalle_producto',$id_detalle_producto);
+                                $this->db->update('detalle_producto', $actualizar_p_u_2);
+                            }else if($descripcion_act == 'SALIDA'){
+                                if($auxiliar_contador == 0){
+                                    /* El stock anterior viene a ser el stock actual del movimiento anterior */
+                                    $new_stock_anterior_act = $new_stock; // stock_anterior
+                                    $new_precio_unitario_anterior_act = $nuevo_precio_unitario; // precio_unitario_anterior
+                                    $auxiliar_contador++;
+                                }
+                                /* Actualizar los datos para una salida */
+                                $stock_actual_final = $new_stock_anterior_act - $cantidad_salida_act;
+                                $precio_unitario_actual_final = $new_precio_unitario_anterior_act;
+                                $precio_unitario_anterior_final = $new_precio_unitario_anterior_act;
+                                /* Actualizar BD */
+                                $actualizar = array(
+                                    'stock_anterior'=> $new_stock_anterior_act,
+                                    'precio_unitario_anterior'=> $precio_unitario_anterior_final,
+                                    'stock_actual'=> $stock_actual_final,
+                                    'precio_unitario_actual'=> $precio_unitario_actual_final
+                                );
+                                $this->db->where('id_kardex_producto',$id_kardex_producto);
+                                $this->db->update('kardex_producto', $actualizar);
+                                /* fin de actualizar */
+                            }else if($descripcion_act == 'IMPORTACION'){
+                                if($auxiliar_contador == 0){
+                                    /* El stock anterior viene a ser el stock actual del movimiento anterior */
+                                    $new_stock_anterior_act = $new_stock; // stock_anterior
+                                    $new_precio_unitario_anterior_act = $nuevo_precio_unitario; // precio_unitario_anterior
+                                    $auxiliar_contador++;
+                                }
+                                /* Actualizar los datos para una entrada */
+                                $stock_actual_final = $new_stock_anterior_act + $cantidad_ingreso_act;
+                                $precio_unitario_actual_promedio_final = 0;
+                                /* Actualizar BD */
+                                $actualizar = array(
+                                    'stock_anterior'=> $new_stock_anterior_act,
+                                    'precio_unitario_anterior'=> $new_precio_unitario_anterior_act,
+                                    'stock_actual'=> $stock_actual_final,
+                                    'precio_unitario_actual_promedio'=> $precio_unitario_actual_promedio_final
+                                );
+                                $this->db->where('id_kardex_producto',$id_kardex_producto);
+                                $this->db->update('kardex_producto', $actualizar);
+                                /* fin de actualizar */
+                                /* Actualizar el precio unitario del producto */
+                                $actualizar_p_u_2 = array(
+                                    'precio_unitario'=> $precio_unitario_actual_promedio_final,
+                                    'stock' => $stock_actual_final
+                                );
+                                $this->db->where('id_detalle_producto',$id_detalle_producto);
+                                $this->db->update('detalle_producto', $actualizar_p_u_2);
+                            }
+                            // Dejar variables con el ultimo registro del stock y precio unitario obtenido
+                            $new_stock_anterior_act = $stock_actual_final;
+                            if($descripcion_act == 'ENTRADA' || $descripcion_act == 'ORDEN INGRESO'){
+                                $new_precio_unitario_anterior_act = $precio_unitario_actual_promedio_final;
+                            }else if($descripcion_act == 'SALIDA'){
+                                $new_precio_unitario_anterior_act = $precio_unitario_actual_final;
+                            }else if($descripcion_act == 'IMPORTACION'){
+                                $new_precio_unitario_anterior_act = 0;
+                            }
+                        }
+                    }
+                }
             }else if($id_comprobante == 2){
-                $a_data_kardex = array('fecha_registro' => $fecharegistro,
-                                'descripcion' => "ENTRADA",
-                                'id_detalle_producto' => $id_detalle_producto,
-                                'stock_anterior' => $stock_general,
-                                'precio_unitario_anterior' => $precio_unitario,
-                                'cantidad_ingreso' => $cantidad_ingreso,
-                                'stock_actual' => $stock_actualizado,
-                                'precio_unitario_actual_promedio' => $nuevo_precio_unitario,
-                                'precio_unitario_actual' => $p_u_gastos,
-                                'num_comprobante' => $numcomprobante,
-                                'serie_comprobante' => $seriecomprobante,
+                // Gestión de kardex para el registro
+                $this->db->select('id_kardex_producto');
+                $this->db->where('fecha_registro <=',$fecharegistro);
+                // $this->db->where('id_kardex_producto <',$id_kardex_producto);
+                $this->db->where('id_detalle_producto',$id_detalle_producto);
+                $this->db->order_by("fecha_registro", "asc");
+                $this->db->order_by("id_kardex_producto", "asc");
+                $query = $this->db->get('kardex_producto');
+                if(count($query->result()) > 0){
+                    foreach($query->result() as $row){
+                        $auxiliar = $row->id_kardex_producto; // devuelve el ultimo id que no necesariamente es el mayor
+                    }
+                    // Obtener los datos del ultimo registro de la fecha
+                    $this->db->select('stock_actual,precio_unitario_actual_promedio,precio_unitario_anterior,descripcion');
+                    $this->db->where('id_kardex_producto',$auxiliar);
+                    $query = $this->db->get('kardex_producto');
+                    foreach($query->result() as $row){
+                        $stock_actual = $row->stock_actual;
+                        $precio_unitario_actual_promedio = $row->precio_unitario_actual_promedio;
+                        $precio_unitario_anterior = $row->precio_unitario_anterior;
+                        $descripcion = $row->descripcion;
+                    }
+                    $new_stock = $stock_actual + $cantidad_ingreso;
+                    // Registro en la tabla del kardex
+                    $a_data_kardex = array('fecha_registro' => $fecharegistro,
+                                    'descripcion' => "ENTRADA",
+                                    'id_detalle_producto' => $id_detalle_producto,
+                                    'stock_anterior' => $stock_actual,
+                                    'precio_unitario_anterior' => $precio_unitario_anterior,
+                                    'cantidad_ingreso' => $cantidad_ingreso,
+                                    'stock_actual' => $new_stock,
+                                    'precio_unitario_actual_promedio' => $nuevo_precio_unitario,
+                                    'precio_unitario_actual' => $p_u_gastos,
+                                    'num_comprobante' => $numcomprobante,
+                                    'serie_comprobante' => $seriecomprobante,
+                                    );
+                    $result_kardex = $this->model_comercial->saveSalidaProductoKardex($a_data_kardex,true);
+                }else{
+                    $a_data_kardex = array('fecha_registro' => $fecharegistro,
+                                    'descripcion' => "ENTRADA",
+                                    'id_detalle_producto' => $id_detalle_producto,
+                                    'stock_anterior' => 0,
+                                    'precio_unitario_anterior' => 0,
+                                    'cantidad_ingreso' => $cantidad_ingreso,
+                                    'stock_actual' => $cantidad_ingreso,
+                                    'precio_unitario_actual_promedio' => $nuevo_precio_unitario,
+                                    'precio_unitario_actual' => $p_u_gastos,
+                                    'num_comprobante' => $numcomprobante,
+                                    'serie_comprobante' => $seriecomprobante,
+                                    );
+                    $result_kardex = $this->model_comercial->saveSalidaProductoKardex($a_data_kardex,true);
+                }
+                // Actualizar movimientos posteriores
+                $this->db->select('id_kardex_producto');
+                $this->db->where('fecha_registro >',$fecharegistro);
+                $this->db->where('id_detalle_producto',$id_detalle_producto);
+                $this->db->order_by("fecha_registro", "asc");
+                $this->db->order_by("id_kardex_producto", "asc");
+                $query = $this->db->get('kardex_producto');
+                if(count($query->result()) > 0){
+                    foreach($query->result() as $row){
+                        $id_kardex_producto = $row->id_kardex_producto; /* ID del movimiento en el kardex */
+                        // Obtener detalle del movimiento
+                        $this->db->select('stock_actual,precio_unitario_actual_promedio,precio_unitario_anterior,descripcion,stock_anterior,cantidad_salida,cantidad_ingreso,precio_unitario_actual');
+                        $this->db->where('id_kardex_producto',$id_kardex_producto);
+                        $query = $this->db->get('kardex_producto');
+                        foreach($query->result() as $row){
+                            $stock_actual_act = $row->stock_actual;
+                            $precio_unitario_actual_promedio_act = $row->precio_unitario_actual_promedio;
+                            $precio_unitario_anterior_act = $row->precio_unitario_anterior;
+                            $descripcion_act = $row->descripcion;
+                            $stock_anterior_act = $row->stock_anterior;
+                            $cantidad_salida_act = $row->cantidad_salida;
+                            $cantidad_ingreso_act = $row->cantidad_ingreso;
+                            $precio_unitario_actual_act = $row->precio_unitario_actual;
+                            // Actualizacion de registros
+                            if($descripcion_act == 'ENTRADA' || $descripcion_act == 'ORDEN INGRESO'){
+                                if($auxiliar_contador == 0){
+                                    /* El stock anterior viene a ser el stock actual del movimiento anterior */
+                                    $new_stock_anterior_act = $new_stock; // stock_anterior
+                                    $new_precio_unitario_anterior_act = $nuevo_precio_unitario; // precio_unitario_anterior
+                                    $auxiliar_contador++;
+                                }
+                                /* Actualizar los datos para una entrada */
+                                $stock_actual_final = $new_stock_anterior_act + $cantidad_ingreso_act;
+                                $precio_unitario_actual_promedio_final = (($new_stock_anterior_act*$new_precio_unitario_anterior_act)+($cantidad_ingreso_act*$precio_unitario_actual_act))/($new_stock_anterior_act+$cantidad_ingreso_act);
+                                /* Actualizar BD */
+                                $actualizar = array(
+                                    'stock_anterior'=> $new_stock_anterior_act,
+                                    'precio_unitario_anterior'=> $new_precio_unitario_anterior_act,
+                                    'stock_actual'=> $stock_actual_final,
+                                    'precio_unitario_actual_promedio'=> $precio_unitario_actual_promedio_final
                                 );
-                //$result_kardex = $this->model_comercial->saveSalidaProductoKardex($a_data_kardex,true);
-                $this->db->insert('kardex_producto', $a_data_kardex);
-                /* End registro para el kardex */
+                                $this->db->where('id_kardex_producto',$id_kardex_producto);
+                                $this->db->update('kardex_producto', $actualizar);
+                                /* fin de actualizar */
+                                /* Actualizar el precio unitario del producto */
+                                $actualizar_p_u_2 = array(
+                                    'precio_unitario'=> $precio_unitario_actual_promedio_final
+                                );
+                                $this->db->where('id_detalle_producto',$id_detalle_producto);
+                                $this->db->update('detalle_producto', $actualizar_p_u_2);
+                            }else if($descripcion_act == 'SALIDA'){
+                                if($auxiliar_contador == 0){
+                                    /* El stock anterior viene a ser el stock actual del movimiento anterior */
+                                    $new_stock_anterior_act = $new_stock; // stock_anterior
+                                    $new_precio_unitario_anterior_act = $nuevo_precio_unitario; // precio_unitario_anterior
+                                    $auxiliar_contador++;
+                                }
+                                /* Actualizar los datos para una salida */
+                                $stock_actual_final = $new_stock_anterior_act - $cantidad_salida_act;
+                                $precio_unitario_actual_final = $new_precio_unitario_anterior_act;
+                                $precio_unitario_anterior_final = $new_precio_unitario_anterior_act;
+                                /* Actualizar BD */
+                                $actualizar = array(
+                                    'stock_anterior'=> $new_stock_anterior_act,
+                                    'precio_unitario_anterior'=> $precio_unitario_anterior_final,
+                                    'stock_actual'=> $stock_actual_final,
+                                    'precio_unitario_actual'=> $precio_unitario_actual_final
+                                );
+                                $this->db->where('id_kardex_producto',$id_kardex_producto);
+                                $this->db->update('kardex_producto', $actualizar);
+                                /* fin de actualizar */
+                            }else if($descripcion_act == 'IMPORTACION'){
+                                if($auxiliar_contador == 0){
+                                    /* El stock anterior viene a ser el stock actual del movimiento anterior */
+                                    $new_stock_anterior_act = $new_stock; // stock_anterior
+                                    $new_precio_unitario_anterior_act = $nuevo_precio_unitario; // precio_unitario_anterior
+                                    $auxiliar_contador++;
+                                }
+                                /* Actualizar los datos para una entrada */
+                                $stock_actual_final = $new_stock_anterior_act + $cantidad_ingreso_act;
+                                $precio_unitario_actual_promedio_final = 0;
+                                /* Actualizar BD */
+                                $actualizar = array(
+                                    'stock_anterior'=> $new_stock_anterior_act,
+                                    'precio_unitario_anterior'=> $new_precio_unitario_anterior_act,
+                                    'stock_actual'=> $stock_actual_final,
+                                    'precio_unitario_actual_promedio'=> $precio_unitario_actual_promedio_final
+                                );
+                                $this->db->where('id_kardex_producto',$id_kardex_producto);
+                                $this->db->update('kardex_producto', $actualizar);
+                                /* fin de actualizar */
+                                /* Actualizar el precio unitario del producto */
+                                $actualizar_p_u_2 = array(
+                                    'precio_unitario'=> $precio_unitario_actual_promedio_final,
+                                    'stock' => $stock_actual_final
+                                );
+                                $this->db->where('id_detalle_producto',$id_detalle_producto);
+                                $this->db->update('detalle_producto', $actualizar_p_u_2);
+                            }
+                            // Dejar variables con el ultimo registro del stock y precio unitario obtenido
+                            $new_stock_anterior_act = $stock_actual_final;
+                            if($descripcion_act == 'ENTRADA' || $descripcion_act == 'ORDEN INGRESO'){
+                                $new_precio_unitario_anterior_act = $precio_unitario_actual_promedio_final;
+                            }else if($descripcion_act == 'SALIDA'){
+                                $new_precio_unitario_anterior_act = $precio_unitario_actual_final;
+                            }else if($descripcion_act == 'IMPORTACION'){
+                                $new_precio_unitario_anterior_act = 0;
+                            }
+                        }
+                    }
+                }
             }
         }
         return true;

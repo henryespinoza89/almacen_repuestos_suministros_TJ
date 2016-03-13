@@ -168,6 +168,10 @@
 		-webkit-transition: .4s ease-out;
 		transition: .4s linear;
 	}
+
+		body{
+			zoom: 85% !important;
+		}
 	</style>
 </head>
 <body>
@@ -178,7 +182,7 @@
 	</div>
 	<div class="view_invoice" id="view_invoice"></div>
 	<div id="userlogin">
-		<img src="<?php echo base_url();?>assets/img/user.png" width="45px" height="45px" title="Usuario" class="image" style="border-radius: 50%;margin-left: 10px;margin-top: 5px;margin-right: 15px;">
+		<img src="<?php echo base_url();?>assets/img/user.png" width="45px" height="45px" title="Usuario" class="image" style="border-radius: 50%;margin-top: 5px;margin-right: 15px;">
 		<div class="username">
 			<span><?php echo $this->session->userdata('nombre') ." ". $this->session->userdata('apaterno') ?></span> <img src="<?php echo base_url();?>assets/img/arrow-down.png" width="20px" height="20px" id="optionsuser">
 			<nav>
