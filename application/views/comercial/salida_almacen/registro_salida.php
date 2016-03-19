@@ -673,7 +673,7 @@ $(function() {
 	<div id="formFiltro">
 		<div id="options" style="border-bottom: 1px solid #000; padding-bottom: 10px;margin-bottom: 0px;">
 			<div class="newarea"><a href="<?php echo base_url(); ?>comercial/gestionarea/">Gestionar Área y Responsable</a></div>
-			<div class="newsalida"><a href="<?php echo base_url(); ?>comercial/gestionconsultarSalidaRegistros/">Consultar Registro de Salida</a></div>
+			<div class="newsalida"><a href="<?php echo base_url(); ?>comercial/gestion_consultar_salida_registros/">Consultar Registro de Salida</a></div>
 			<!--<div class="reportOut"><a href="<?php //echo base_url(); ?>comercial/gestionreportesalida/">Gestionar Reporte de Salidas</a></div>-->
 		</div>
 		<div id="datosalida">

@@ -45,7 +45,7 @@ class Comercial extends CI_Controller {
 		$data['listaarea']= $this->model_comercial->listarArea();
 		$data['almacen']= $this->model_comercial->listarAlmacen();
 		$data['producto']= $this->model_comercial->listarProducto();
-		$data['listamaquina']= $this->model_comercial->listarMaquinas();
+		$data['liseditar_productotamaquina']= $this->model_comercial->listarMaquinas();
 		$data['listacategoria'] = $this->model_comercial->listarCategoria();
 		$data['listaprocedencia'] = $this->model_comercial->listarProcedencia();
 		$this->load->view('comercial/menu');
@@ -1521,7 +1521,7 @@ class Comercial extends CI_Controller {
 		redirect('comercial/gestiontraslados');
 	}
 
-	public function gestionconsultarSalidaRegistros(){
+	public function gestion_consultar_salida_registros(){
 		$data['salidaproducto']= $this->model_comercial->listaSalidaProducto();
 		$data['listaarea']= $this->model_comercial->listarArea();
 		$data['listamaquina']= $this->model_comercial->listarMaquinas();
@@ -5148,6 +5148,7 @@ class Comercial extends CI_Controller {
 								$this->db->insert('adm_facturas_asociadas', $registro_data_u);
 							}
 						}else if($contador_facturas == 1){
+							// var_dump('opcion_factura_1');
 							foreach ($invoice as $row) {
 								$id_ingreso_producto = $row->id_ingreso_producto;
 								// Seleccionar unidades referencial
@@ -10122,11 +10123,11 @@ class Comercial extends CI_Controller {
 
 		/* propiedades de la celda */
 		$objPHPExcel->getActiveSheet()->getRowDimension('1')->setRowHeight(15);
-		$objPHPExcel->getActiveSheet()->getStyle('A1:K1')->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
+		$objPHPExcel->getActiveSheet()->getStyle('A1:L1')->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
 
-		$objPHPExcel->getActiveSheet()->getStyle('A1:K1')->applyFromArray($style);
-		$objPHPExcel->getActiveSheet()->getStyle('A1:K1')->applyFromArray($borders);
-		$objPHPExcel->getActiveSheet()->getStyle('A1:K1')->applyFromArray($styleArray);
+		$objPHPExcel->getActiveSheet()->getStyle('A1:L1')->applyFromArray($style);
+		$objPHPExcel->getActiveSheet()->getStyle('A1:L1')->applyFromArray($borders);
+		$objPHPExcel->getActiveSheet()->getStyle('A1:L1')->applyFromArray($styleArray);
 		
 
 		$objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(10);
@@ -10140,6 +10141,7 @@ class Comercial extends CI_Controller {
 		$objPHPExcel->getActiveSheet()->getColumnDimension('I')->setWidth(25);
 		$objPHPExcel->getActiveSheet()->getColumnDimension('J')->setWidth(25);
 		$objPHPExcel->getActiveSheet()->getColumnDimension('K')->setWidth(25);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('L')->setWidth(25);
 
 		//Write cells
 	    $objWorkSheet->setCellValue('A1', 'ITEM')
@@ -10152,7 +10154,8 @@ class Comercial extends CI_Controller {
 	            	 ->setCellValue('H1', 'PRODUCTO')
 	            	 ->setCellValue('I1', 'UNID. MEDIDA')
 	            	 ->setCellValue('J1', 'CANTIDAD SALIDA')
-	            	 ->setCellValue('K1', 'VALORIZADO');
+	            	 ->setCellValue('K1', 'VALORIZADO')
+	            	 ->setCellValue('L1', 'SOLICITANTE');
 
 	    /* Traer informacion de la BD */
 	    $movimientos_salida = $this->model_comercial->traer_movimientos_salidas_facturas($f_inicial,$f_final);
@@ -10178,6 +10181,7 @@ class Comercial extends CI_Controller {
 	    		$objPHPExcel->getActiveSheet()->getStyle('I'.$p)->applyFromArray($style);
 	    		$objPHPExcel->getActiveSheet()->getStyle('J'.$p)->applyFromArray($style);
 	    		$objPHPExcel->getActiveSheet()->getStyle('K'.$p)->applyFromArray($style);
+	    		$objPHPExcel->getActiveSheet()->getStyle('L'.$p)->applyFromArray($style);
 
 	    		/* border */
 	    		$objPHPExcel->getActiveSheet()->getStyle('A'.$p)->applyFromArray($borders);
@@ -10191,6 +10195,7 @@ class Comercial extends CI_Controller {
 	    		$objPHPExcel->getActiveSheet()->getStyle('I'.$p)->applyFromArray($borders);
 	    		$objPHPExcel->getActiveSheet()->getStyle('J'.$p)->applyFromArray($borders);
 	    		$objPHPExcel->getActiveSheet()->getStyle('K'.$p)->applyFromArray($borders);
+	    		$objPHPExcel->getActiveSheet()->getStyle('L'.$p)->applyFromArray($borders);
 
 	    		$objWorkSheet->setCellValue('A'.$p, $i)
 	    					 ->setCellValue('B'.$p, $data->fecha)
@@ -10202,7 +10207,8 @@ class Comercial extends CI_Controller {
 	    					 ->setCellValue('H'.$p, $data->no_producto)
 	    					 ->setCellValue('I'.$p, $data->nom_uni_med)
 	    					 ->setCellValue('J'.$p, $data->cantidad_salida)
-	    					 ->setCellValue('K'.$p, $data->cantidad_salida*$data->p_u_salida);
+	    					 ->setCellValue('K'.$p, $data->cantidad_salida*$data->p_u_salida)
+	    					 ->setCellValue('L'.$p, $data->solicitante);
 	    		$p = $p + 1;
 	    		$i = $i + 1;
 	    		$sumatoria_totales = $sumatoria_totales + ($data->cantidad_salida*$data->p_u_salida);
@@ -10230,7 +10236,8 @@ class Comercial extends CI_Controller {
 		    		 ->setCellValue('H'.$p, "")
 		    		 ->setCellValue('I'.$p, "")
 		    		 ->setCellValue('J'.$p, "TOTALES")
-		    		 ->setCellValue('K'.$p, $sumatoria_totales); // colocar lo siguiente me da un error: ->setCellValue('G'.$p, "S/. ".$suma_soles); al insertar el icono de soles, convierte todo los valores en texto y no lo puedo pasar a numerico
+		    		 ->setCellValue('K'.$p, $sumatoria_totales)
+		    		 ->setCellValue('L'.$p, ""); // colocar lo siguiente me da un error: ->setCellValue('G'.$p, "S/. ".$suma_soles); al insertar el icono de soles, convierte todo los valores en texto y no lo puedo pasar a numerico
 		/* ---------------------------------------------------------------------- */
 	    /* Rename sheet */
 	    $objWorkSheet->setTitle("Reporte de Salidas");

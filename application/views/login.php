@@ -53,6 +53,10 @@
 		.fa-cog{
 			color: white;
 		}
+
+		body{
+			zoom: 90% !important;
+		}
 	</style>
 
 <script type="text/javascript">

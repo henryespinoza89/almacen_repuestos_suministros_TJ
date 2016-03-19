@@ -3153,7 +3153,7 @@ class Model_comercial extends CI_Model {
             $filtro .= " AND serie_maquina.id_serie_maquina =".(int)$this->security->xss_clean($this->input->post('serie')); 
         }
         $filtro .= " ORDER BY area.no_area ASC";
-        // $filtro .= " LIMIT 100";
+        $filtro .= " LIMIT 100";
         $sql = "SELECT salida_producto.id_salida_producto,salida_producto.solicitante,salida_producto.fecha,detalle_producto.no_producto,
         salida_producto.cantidad_salida,area.no_area,nombre_maquina.nombre_maquina,marca_maquina.no_marca,modelo_maquina.no_modelo,
         serie_maquina.no_serie
