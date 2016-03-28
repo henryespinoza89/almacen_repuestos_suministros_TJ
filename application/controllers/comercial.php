@@ -168,6 +168,7 @@ class Comercial extends CI_Controller {
 				$data['listaproveedor']= $this->model_comercial->listaProveedor();
 				$data['listasimmon']= $this->model_comercial->listaSimMon();
 				$data['listacomprobante']= $this->model_comercial->listaComprobante_importado();
+				$data['factura_import']= $this->model_comercial->get_facturas_importadas_pendientes();
 				$this->load->view('comercial/menu_script');
 				$this->load->view('comercial/menu_cabecera');
 				$this->load->view('comercial/comprobantes/facturas_opcion_masiva', $data);
@@ -225,6 +226,7 @@ class Comercial extends CI_Controller {
 						$data['listaproveedor']= $this->model_comercial->listaProveedor();
 						$data['listasimmon']= $this->model_comercial->listaSimMon();
 						$data['listacomprobante']= $this->model_comercial->listaComprobante_importado();
+						$data['factura_import']= $this->model_comercial->get_facturas_importadas_pendientes();
 						$this->load->view('comercial/menu_script');
 						$this->load->view('comercial/menu_cabecera');
 						$this->load->view('comercial/comprobantes/facturas_opcion_masiva', $data);
@@ -260,6 +262,7 @@ class Comercial extends CI_Controller {
 							$data['listaproveedor']= $this->model_comercial->listaProveedor();
 							$data['listasimmon']= $this->model_comercial->listaSimMon();
 							$data['listacomprobante']= $this->model_comercial->listaComprobante_importado();
+							$data['factura_import']= $this->model_comercial->get_facturas_importadas_pendientes();
 							$this->load->view('comercial/menu_script');
 							$this->load->view('comercial/menu_cabecera');
 							$this->load->view('comercial/comprobantes/facturas_opcion_masiva', $data);
@@ -297,6 +300,7 @@ class Comercial extends CI_Controller {
 					$data['listaproveedor']= $this->model_comercial->listaProveedor();
 					$data['listasimmon']= $this->model_comercial->listaSimMon();
 					$data['listacomprobante']= $this->model_comercial->listaComprobante_importado();
+					$data['factura_import']= $this->model_comercial->get_facturas_importadas_pendientes();
 					$this->load->view('comercial/menu_script');
 					$this->load->view('comercial/menu_cabecera');
 					$this->load->view('comercial/comprobantes/facturas_opcion_masiva', $data);
@@ -340,6 +344,7 @@ class Comercial extends CI_Controller {
 								$data['listaproveedor']= $this->model_comercial->listaProveedor();
 								$data['listasimmon']= $this->model_comercial->listaSimMon();
 								$data['listacomprobante']= $this->model_comercial->listaComprobante_importado();
+								$data['factura_import']= $this->model_comercial->get_facturas_importadas_pendientes();
 								$this->load->view('comercial/menu_script');
 								$this->load->view('comercial/menu_cabecera');
 								$this->load->view('comercial/comprobantes/facturas_opcion_masiva', $data);
@@ -359,6 +364,7 @@ class Comercial extends CI_Controller {
 						$data['listaproveedor']= $this->model_comercial->listaProveedor();
 						$data['listasimmon']= $this->model_comercial->listaSimMon();
 						$data['listacomprobante']= $this->model_comercial->listaComprobante_importado();
+						$data['factura_import']= $this->model_comercial->get_facturas_importadas_pendientes();
 						$this->load->view('comercial/menu_script');
 						$this->load->view('comercial/menu_cabecera');
 						$this->load->view('comercial/comprobantes/facturas_opcion_masiva', $data);
@@ -398,6 +404,7 @@ class Comercial extends CI_Controller {
 												'id_detalle_producto'=>$id_detalle_producto,
 												'precio'=>$precio_ingreso,
 												'id_ingreso_producto'=>$id_ingreso_producto,
+												'unidades_referencial'=>$cantidad_ingreso,
 												);
 								$id_insert = $this->model_comercial->inserta_factura_masiva($nombre_area,$id_comprobante,$suma_parciales_factura,$a_data,$id_detalle_producto,$cantidad_ingreso,$precio_ingreso,$fecharegistro,$seriecomprobante,$numcomprobante,0,$almacen);
 								if($id_insert == true){
@@ -417,6 +424,7 @@ class Comercial extends CI_Controller {
 							$data['listaproveedor']= $this->model_comercial->listaProveedor();
 							$data['listasimmon']= $this->model_comercial->listaSimMon();
 							$data['listacomprobante']= $this->model_comercial->listaComprobante_importado();
+							$data['factura_import']= $this->model_comercial->get_facturas_importadas_pendientes();
 							$this->load->view('comercial/menu_script');
 							$this->load->view('comercial/menu_cabecera');
 							$this->load->view('comercial/comprobantes/facturas_opcion_masiva', $data);
@@ -436,117 +444,47 @@ class Comercial extends CI_Controller {
 							die();
 						}
 
-						/* Validar si existe un error en los productos a registrar */
-						$filename = $_FILES['file']['tmp_name'];
 						if(($gestor = fopen($filename, "r")) !== FALSE){
 							while (($datos = fgetcsv($gestor,1000,",")) !== FALSE){
 								// Obtener los valores de la hoja de excel
 								$codigo_producto = trim($datos[0]);
 								$cantidad_ingreso = trim($datos[1]);
 								$precio_ingreso = trim($datos[2]);
-								/* ------------------------------------------ */
+								$nombre_area = trim($datos[3]);
+								// Obtener los ID de Clientes, Tejidos y Color
 								$this->db->select('id_detalle_producto');
 					            $this->db->where('id_producto',$codigo_producto);
 					            $query = $this->db->get('producto');
-					            if($query->num_rows() > 0){
-					            	$i = $i + 1;
-					            }else{
-					            	$indicador = FALSE;
-					            	$data['respuesta_validacion_facturas_importadas'] = $i;
-									$data['listaagente']= $this->model_comercial->listaAgenteAduana();
-									$data['listaproveedor']= $this->model_comercial->listaProveedor();
-									$data['listasimmon']= $this->model_comercial->listaSimMon();
-									$data['listacomprobante']= $this->model_comercial->listaComprobante_importado();
-									$this->load->view('comercial/menu_script');
-									$this->load->view('comercial/menu_cabecera');
-									$this->load->view('comercial/comprobantes/facturas_opcion_masiva', $data);
-									break;
+					            foreach($query->result() as $row){
+					                $id_detalle_producto = $row->id_detalle_producto;
 					            }
+					            // ------------------------------------------
+								$a_data = array(
+												'unidades'=>$cantidad_ingreso,
+												'id_detalle_producto'=>$id_detalle_producto,
+												'precio'=>$precio_ingreso,
+												'id_ingreso_producto'=>$id_ingreso_producto,
+												'unidades_referencial'=>$cantidad_ingreso,
+												);
+								$id_insert = $this->model_comercial->inserta_factura_masiva($nombre_area,$id_comprobante,$suma_parciales_factura,$a_data,$id_detalle_producto,$cantidad_ingreso,$precio_ingreso,$fecharegistro,$seriecomprobante,$numcomprobante,$total_factura_contabilidad,$almacen);
+								if($id_insert == true){
+									$y = $y + 1;
+								}
+								// Limpio la variable porque si no encuentra uno de los id que busco, se queda con el ultimo que encontro y lo registra
+								$id_detalle_producto = "";
 							}
 						}else{
 							echo "No se cargo el archivo CSV";
 							die();
 						}
-
-						if($indicador == TRUE){
-							/* Validar si existe un error en AREAS asignadas a cada producto */
-							$filename = $_FILES['file']['tmp_name'];
-							if(($gestor = fopen($filename, "r")) !== FALSE){
-								while (($datos = fgetcsv($gestor,1000,",")) !== FALSE){
-									// Obtener los valores de la hoja de excel
-									$codigo_producto = trim($datos[0]);
-									$cantidad_ingreso = trim($datos[1]);
-									$precio_ingreso = trim($datos[2]);
-									$nombre_area = trim($datos[3]);
-									/* ------------------------------------------ */
-									$this->db->select('id_area');
-						            $this->db->where('no_area',$nombre_area);
-						            $query = $this->db->get('area');
-						            if($query->num_rows() > 0){
-						            	$cont_area = $cont_area + 1;
-						            }else{
-						            	$indicador_area = FALSE;
-						            	$data['respuesta_validacion_areas_productos_importadas'] = $cont_area;
-										$data['listaagente']= $this->model_comercial->listaAgenteAduana();
-										$data['listaproveedor']= $this->model_comercial->listaProveedor();
-										$data['listasimmon']= $this->model_comercial->listaSimMon();
-										$data['listacomprobante']= $this->model_comercial->listaComprobante_importado();
-										$this->load->view('comercial/menu_script');
-										$this->load->view('comercial/menu_cabecera');
-										$this->load->view('comercial/comprobantes/facturas_opcion_masiva', $data);
-										break;
-						            }
-								}
-							}else{
-								echo "No se cargo el archivo CSV";
-								die();
-							}
-						}
-
-						if($indicador_area == TRUE){
-							if($indicador == TRUE){
-								if(($gestor = fopen($filename, "r")) !== FALSE){
-									while (($datos = fgetcsv($gestor,1000,",")) !== FALSE){
-										// Obtener los valores de la hoja de excel
-										$codigo_producto = trim($datos[0]);
-										$cantidad_ingreso = trim($datos[1]);
-										$precio_ingreso = trim($datos[2]);
-										$nombre_area = trim($datos[3]);
-										// Obtener los ID de Clientes, Tejidos y Color
-										/* ------------------------------------------ */
-										$this->db->select('id_detalle_producto');
-							            $this->db->where('id_producto',$codigo_producto);
-							            $query = $this->db->get('producto');
-							            foreach($query->result() as $row){
-							                $id_detalle_producto = $row->id_detalle_producto;
-							            }
-							            /* ------------------------------------------ */
-										$a_data = array(
-														'unidades'=>$cantidad_ingreso,
-														'id_detalle_producto'=>$id_detalle_producto,
-														'precio'=>$precio_ingreso,
-														'id_ingreso_producto'=>$id_ingreso_producto,
-														);
-										$id_insert = $this->model_comercial->inserta_factura_masiva($nombre_area,$id_comprobante,$suma_parciales_factura,$a_data,$id_detalle_producto,$cantidad_ingreso,$precio_ingreso,$fecharegistro,$seriecomprobante,$numcomprobante,$total_factura_contabilidad,$almacen);
-										if($id_insert == true){
-											$y = $y + 1;
-										}
-										/* Limpio la variable porque si no encuentra uno de los id que busco, se queda con el ultimo que encontro y lo registra */
-										$id_detalle_producto = "";
-									}
-								}else{
-									echo "No se cargo el archivo CSV";
-									die();
-								}
-							}
-						}
-
+						
 						if($y != 0){
 							$data['respuesta_registro_satisfactorio'] = $y;
 							$data['listaagente']= $this->model_comercial->listaAgenteAduana();
 							$data['listaproveedor']= $this->model_comercial->listaProveedor();
 							$data['listasimmon']= $this->model_comercial->listaSimMon();
 							$data['listacomprobante']= $this->model_comercial->listaComprobante_importado();
+							$data['factura_import']= $this->model_comercial->get_facturas_importadas_pendientes();
 							$this->load->view('comercial/menu_script');
 							$this->load->view('comercial/menu_cabecera');
 							$this->load->view('comercial/comprobantes/facturas_opcion_masiva', $data);
@@ -611,11 +549,34 @@ class Comercial extends CI_Controller {
 			$data['listaproveedor']= $this->model_comercial->listaProveedor();
 			$data['listasimmon']= $this->model_comercial->listaSimMon();
 			$data['listacomprobante']= $this->model_comercial->listaComprobante_importado();
+			$data['factura_import']= $this->model_comercial->get_facturas_importadas_pendientes();
 			$this->load->view('comercial/menu_script');
 			$this->load->view('comercial/menu_cabecera');
 			$this->load->view('comercial/comprobantes/facturas_opcion_masiva', $data);
 		}
 	}
+
+	public function obtener_datos_importacion(){
+        $id_ingreso_producto = $this->input->post('id_ingreso_producto');
+        $resultado = $this->model_comercial->get_datos_detalle_pedido($id_ingreso_producto);
+        if (count($resultado) > 0){
+            foreach ($resultado as $data) {
+                $array = array(
+                    "id_comprobante" => $data['id_comprobante'],
+                    "nro_comprobante" => $data['nro_comprobante'],
+                    "serie_comprobante" => $data['serie_comprobante'],
+                    "id_moneda" => $data['id_moneda'],
+                    "razon_social" => $data['razon_social'],
+                    "fecha" => $data['fecha'],
+                    "id_agente" => $data['id_agente'],
+                    "id_ingreso_producto" => $data['id_ingreso_producto'],
+                );
+            }
+            echo '' . json_encode($array) . '';
+        }else{
+            echo 'vacio';
+        }
+    }
 
 	public function registrarcategoriaproducto()
 	{
@@ -3760,7 +3721,7 @@ class Comercial extends CI_Controller {
 
 	}
 
-	public function cuadrar_producto_area_almacen(){
+	public function cuadrar_producto_area_almacen_version_inicial(){
 		$aux_parametro_cuadre = 0;
 		$auxiliar_last_kardex = 0;
 		$auxiliar_last_salida = 0;
@@ -3977,6 +3938,7 @@ class Comercial extends CI_Controller {
 				}
 	        }else if($id_almacen == 2){
 	        	// Actualizar stock del producto por area
+	        	// La cantidad ingresada por el usuario se envia directamente al campo de la tabla
 	        	$result_update = $this->model_comercial->actualizar_stock_producto_area($id_pro,$area,$id_almacen,$cantidad);
 	        	// Obtener la suma total de stock del producto distribuido en areas ya actualizado
 	        	$this->db->select('stock_area_sta_anita');
@@ -3989,6 +3951,7 @@ class Comercial extends CI_Controller {
         		if($result_update){
         			// El stock del sistema supera al stock fisico
         			if($stockactual > $suma_stock_producto_areas){
+        				var_dump('El stock del sistema supera al stock fisico');
 		        		$unidad_base_salida = $stockactual - $suma_stock_producto_areas;
 		        		// Realizar la salida con la cantidad necesaria para cuadrar el producto en el almacen
 						// tabla salida_producto
@@ -4042,7 +4005,7 @@ class Comercial extends CI_Controller {
 								echo '1';
 		    				}else if($stock_actualizado > $suma_stock_producto_areas){
 		    					$unidad_base_salida = $stock_actualizado - $suma_stock_producto_areas;
-	    						//$unidad_base_salida = $cantidad_salida_kardex - $unidad_base_salida;
+	    						// $unidad_base_salida = $cantidad_salida_kardex - $unidad_base_salida;
 	    						// Eliminar salida // registro del kardex // actualizar stock
 		    					$this->model_comercial->update_stock_general_cuadre($id_detalle_producto,$stock_actualizado,$id_almacen);
 		    					$this->model_comercial->eliminar_insert_kardex($auxiliar_last_kardex);
@@ -4125,6 +4088,244 @@ class Comercial extends CI_Controller {
 		    		}else{
 		    			$aux_parametro_cuadre = 1;
 		    			echo '1';
+		    		}
+        		}
+	        }
+        }while($aux_parametro_cuadre == 0);
+	}
+
+	public function cuadrar_producto_area_almacen(){
+		$aux_parametro_cuadre = 0;
+		$auxiliar_last_kardex = 0;
+		$auxiliar_last_salida = 0;
+		$nombre_producto = $this->security->xss_clean($this->input->post('nombre_producto'));
+		$area = $this->security->xss_clean($this->input->post('area'));
+		$cantidad = $this->security->xss_clean($this->input->post('cantidad'));
+		$id_almacen = $this->security->xss_clean($this->session->userdata('almacen'));
+		// Obtengo los datos del producto
+		$this->db->select('id_detalle_producto');
+        $this->db->where('no_producto',$nombre_producto);
+        $query = $this->db->get('detalle_producto');
+        foreach($query->result() as $row){
+            $id_detalle_producto = $row->id_detalle_producto;
+        }
+        // Obtengo los datos del producto
+		$this->db->select('id_pro');
+        $this->db->where('id_detalle_producto',$id_detalle_producto);
+        $query = $this->db->get('producto');
+        foreach($query->result() as $row){
+            $id_pro = $row->id_pro;
+        }
+        // Generar el ciclo
+        do{
+        	$suma_stock_producto_areas = 0;
+        	// Obtener stock del general del producto - de acuerdo al almacen
+        	$this->db->select('stock,precio_unitario,stock_sta_clara');
+	        $this->db->where('id_detalle_producto',$id_detalle_producto);
+	        $query = $this->db->get('detalle_producto');
+	        foreach($query->result() as $row){
+	        	$stockactual = $row->stock; // Sta. anita
+	        	$stock_sta_clara = $row->stock_sta_clara; // Sta. clara
+	        	$precio_unitario = $row->precio_unitario;
+	        }
+	        // Obtener la ultima salida del producto de la tabla salida_producto y kardex_producto
+	        // kardex_producto
+	        $this->db->select('id_kardex_producto,cantidad_salida,descripcion,fecha_registro');
+	        $this->db->where('id_detalle_producto',$id_detalle_producto);
+	        $this->db->order_by("id_kardex_producto", "asc");
+	        $query = $this->db->get('kardex_producto');
+	        if(count($query->result()) > 0){
+	        	foreach($query->result() as $row){
+	        		$auxiliar_last_kardex = $row->id_kardex_producto;
+	        		$cantidad_salida_kardex = $row->cantidad_salida;
+	        		$descripcion = $row->descripcion;
+	        		$fecha_registro = $row->fecha_registro;
+	        	}
+	        }
+	        // salida_producto
+	        $this->db->select('id_salida_producto,cantidad_salida,fecha');
+	        $this->db->where('id_detalle_producto',$id_detalle_producto);
+	        $this->db->order_by("id_salida_producto", "asc");
+	        $query = $this->db->get('salida_producto');
+	        if(count($query->result()) > 0){
+	        	foreach($query->result() as $row){
+	        		$auxiliar_last_salida = $row->id_salida_producto;
+	        		$cantidad_salida_table_salida = $row->cantidad_salida;
+	        	}
+	        }else{
+	        	$auxiliar_last_salida = "";
+	        	$cantidad_salida_table_salida = "";
+	        }
+	        // Validar a que almacen pertenece
+	        if($id_almacen == 1){
+	        	// Actualizar stock del producto por area
+	        	$result_update = $this->model_comercial->actualizar_stock_producto_area($id_pro,$area,$id_almacen,$cantidad);
+	        	// Obtener la suma total de stock del producto distribuido en areas ya actualizado
+	        	$this->db->select('stock_area_sta_clara');
+	        	$this->db->where('id_pro',$id_pro);
+	        	$query = $this->db->get('detalle_producto_area');
+	        	foreach($query->result() as $row){
+	        	    $suma_stock_producto_areas = $suma_stock_producto_areas + $row->stock_area_sta_clara;
+	        	}
+	        	// Hasta aca solo se ha actualizado el stock del producto por area
+	        	if($result_update){
+			        // El stock del sistema supera al stock fisico
+			        if($stock_sta_clara == $suma_stock_producto_areas){
+			        	$aux_parametro_cuadre = 1;
+		    			echo '1';
+			        }else if($stock_sta_clara > $suma_stock_producto_areas){
+		        		$unidad_base_salida = $stock_sta_clara - $suma_stock_producto_areas;
+		        		// Realizar la salida con la cantidad necesaria para cuadrar el producto en el almacen
+						// tabla salida_producto
+						$a_data = array('id_area' => $area,
+										'fecha' => date('Y-m-d'),
+										'id_detalle_producto' => $id_detalle_producto,
+										'cantidad_salida' => $unidad_base_salida,
+										'id_almacen' => $id_almacen,
+										'p_u_salida' => $precio_unitario,
+										);
+						$result_insert = $this->model_comercial->saveSalidaProducto($a_data,true);
+						// tabla kardex
+						$new_stock = ($stockactual + $stock_sta_clara) - $unidad_base_salida;
+						$stock_general = $stockactual + $stock_sta_clara;
+						$a_data_kardex = array('fecha_registro' => date('Y-m-d'),
+					        	                'descripcion' => "SALIDA",
+					        	                'id_detalle_producto' => $id_detalle_producto,
+					        	                'stock_anterior' => $stock_general,
+					        	                'precio_unitario_anterior' => $precio_unitario,
+					        	                'cantidad_salida' => $unidad_base_salida,
+					        	                'stock_actual' => $new_stock,
+					        	                'precio_unitario_actual' => $precio_unitario,
+					        	                'num_comprobante' => $result_insert,
+					        	                );
+					    $result_kardex = $this->model_comercial->saveSalidaProductoKardex($a_data_kardex,true);
+			    	    // Actualizar stock de acuerdo al cuadre
+			    	    // Vuelvo a traer el stock porque lineas arriba ya lo actualice
+			    	    $this->db->select('stock_sta_clara');
+			            $this->db->where('id_detalle_producto',$id_detalle_producto);
+			            $query = $this->db->get('detalle_producto');
+			            foreach($query->result() as $row){
+			            	$stock_final = $row->stock_sta_clara;
+			            }
+			            // Descontar stock - el nuevo stock debe ser de acuerdo al valor de cuadre
+			            $this->model_comercial->descontarStock_general($id_detalle_producto,$unidad_base_salida,$stock_final,$id_almacen);
+			    	    // Enviar parametro para terminar bucle
+			    		$aux_parametro_cuadre = 1;
+			    		echo '1';
+		    		}else if($stock_sta_clara < $suma_stock_producto_areas){
+		    			$cantidad_ingreso = $suma_stock_producto_areas - $stock_sta_clara;
+		    			if($cantidad_ingreso > 0){
+		    				$datos = array(
+								"id_detalle_producto" => $id_detalle_producto,
+								"cantidad_ingreso" => $cantidad_ingreso,
+								"fecha_registro" => date('Y-m-d'),
+								"id_almacen" => $id_almacen
+							);
+							$id_ingreso_producto = $this->model_comercial->insert_orden_ingreso($datos);
+							if($id_ingreso_producto == 'error_inesperado'){
+					            echo 'error_inesperado';
+					            $aux_parametro_cuadre = 1;
+							}else{
+								// Agregamos el detalle del comprobante
+								$result = $this->model_comercial->kardex_orden_ingreso($id_ingreso_producto, $id_detalle_producto, $cantidad_ingreso, $id_almacen);
+								if($result == 'registro_correcto'){
+									$aux_parametro_cuadre = 1;
+									echo '1';
+						        }else{
+						        	echo 'error_kardex';
+						        	$aux_parametro_cuadre = 1;
+						        }
+							}
+		    			}else{
+					    	echo 'cantidad_negativa';
+					    	$aux_parametro_cuadre = 1;
+					    }
+		    		}
+				}
+	        }else if($id_almacen == 2){
+	        	// Actualizar stock del producto por area
+	        	// La cantidad ingresada por el usuario se envia directamente al campo de la tabla
+	        	$result_update = $this->model_comercial->actualizar_stock_producto_area($id_pro,$area,$id_almacen,$cantidad);
+	        	// Obtener la suma total de stock del producto distribuido en areas ya actualizado
+	        	$this->db->select('stock_area_sta_anita');
+	        	$this->db->where('id_pro',$id_pro);
+	        	$query = $this->db->get('detalle_producto_area');
+	        	foreach($query->result() as $row){
+	        	    $suma_stock_producto_areas = $suma_stock_producto_areas + $row->stock_area_sta_anita;
+	        	}
+	        	// Hasta aca solo se ha actualizado el stock del producto por area
+        		if($result_update){
+        			// El stock del sistema supera al stock fisico
+        			if($stockactual == $suma_stock_producto_areas){
+			        	$aux_parametro_cuadre = 1;
+		    			echo '1';
+			        }else if($stockactual > $suma_stock_producto_areas){
+		        		$unidad_base_salida = $stockactual - $suma_stock_producto_areas;
+		        		// Realizar la salida con la cantidad necesaria para cuadrar el producto en el almacen
+						// tabla salida_producto
+						$a_data = array('id_area' => $area,
+										'fecha' => date('Y-m-d'),
+										'id_detalle_producto' => $id_detalle_producto,
+										'cantidad_salida' => $unidad_base_salida,
+										'id_almacen' => $id_almacen,
+										'p_u_salida' => $precio_unitario,
+										);
+						$result_insert = $this->model_comercial->saveSalidaProducto($a_data,true);
+						// tabla kardex
+						$new_stock = ($stockactual + $stock_sta_clara) - $unidad_base_salida;
+						$stock_general = $stockactual + $stock_sta_clara;
+						$a_data_kardex = array('fecha_registro' => date('Y-m-d'),
+					        	                'descripcion' => "SALIDA",
+					        	                'id_detalle_producto' => $id_detalle_producto,
+					        	                'stock_anterior' => $stock_general,
+					        	                'precio_unitario_anterior' => $precio_unitario,
+					        	                'cantidad_salida' => $unidad_base_salida,
+					        	                'stock_actual' => $new_stock,
+					        	                'precio_unitario_actual' => $precio_unitario,
+					        	                'num_comprobante' => $result_insert,
+					        	                );
+					    $result_kardex = $this->model_comercial->saveSalidaProductoKardex($a_data_kardex,true);
+					    // Actualizar stock de acuerdo al cuadre
+		    	    	// Vuelvo a traer el stock porque lineas arriba ya lo actualice
+		    	    	$this->db->select('stock');
+			            $this->db->where('id_detalle_producto',$id_detalle_producto);
+			            $query = $this->db->get('detalle_producto');
+			            foreach($query->result() as $row){
+			            	$stock_final = $row->stock;
+			            }
+			            // Descontar stock - el nuevo stock debe ser de acuerdo al valor de cuadre
+			            $this->model_comercial->descontarStock_general($id_detalle_producto,$unidad_base_salida,$stock_final,$id_almacen);
+			    	    // Enviar parametro para terminar bucle
+			    		$aux_parametro_cuadre = 1;
+			    		echo '1';
+        			}else if($stockactual < $suma_stock_producto_areas){
+		    			$cantidad_ingreso = $suma_stock_producto_areas - $stockactual;
+		    			if($cantidad_ingreso > 0){
+		    				$datos = array(
+								"id_detalle_producto" => $id_detalle_producto,
+								"cantidad_ingreso" => $cantidad_ingreso,
+								"fecha_registro" => date('Y-m-d'),
+								"id_almacen" => $id_almacen
+							);
+							$id_ingreso_producto = $this->model_comercial->insert_orden_ingreso($datos);
+							if($id_ingreso_producto == 'error_inesperado'){
+					            echo 'error_inesperado';
+					            $aux_parametro_cuadre = 1;
+							}else{
+								// Agregamos el detalle del comprobante
+								$result = $this->model_comercial->kardex_orden_ingreso($id_ingreso_producto, $id_detalle_producto, $cantidad_ingreso, $id_almacen);
+								if($result == 'registro_correcto'){
+									$aux_parametro_cuadre = 1;
+									echo '1';
+						        }else{
+						        	echo 'error_kardex';
+						        	$aux_parametro_cuadre = 1;
+						        }
+							}
+		    			}else{
+					    	echo 'cantidad_negativa';
+					    	$aux_parametro_cuadre = 1;
+					    }
 		    		}
         		}
 	        }
@@ -4372,11 +4573,11 @@ class Comercial extends CI_Controller {
 					        /* hacer el calculo del precio unitario y stock en funcion del movimiento */
 					        /* Nuevo precio unitario promedio */
 					        if($descripcion == 'SALIDA'){
-					            //$new_precio_unitario_especial = $precio_unitario_actual;
 					            $precio_unitario_anterior_especial = $precio_unitario_anterior;
 					        }else if($descripcion == 'ENTRADA' || $descripcion == 'ORDEN INGRESO'){
-					            //$new_precio_unitario_especial = (($stock_actual*$precio_unitario_actual_promedio)+($item['qty']*$precio_unitario_soles))/($stock_actual+$item['qty']);
 					            $precio_unitario_anterior_especial = $precio_unitario_actual_promedio;
+					        }else if($descripcion == 'IMPORTACION'){
+					            $precio_unitario_anterior_especial = 0;
 					        }
 					        $new_stock = $stock_actual - $cantidad;
 
@@ -4400,7 +4601,6 @@ class Comercial extends CI_Controller {
 					        	                'precio_unitario_anterior' => $precio_unitario_anterior_especial,
 					        	                'cantidad_salida' => $cantidad,
 					        	                'stock_actual' => $new_stock,
-					        	                //'precio_unitario_actual_promedio' => $new_precio_unitario_especial,
 					        	                'precio_unitario_actual' => $precio_unitario_anterior_especial,
 					        	                'num_comprobante' => $result_insert,
 					        	                );
@@ -5201,30 +5401,30 @@ class Comercial extends CI_Controller {
 					            $descripcion = $row->descripcion;
 					            $precio_unitario_actual = $row->precio_unitario_actual;
 					        }
-					        /* hacer el calculo del precio unitario y stock en funcion del movimiento */
-					        /* Nuevo precio unitario promedio */
+					        // hacer el calculo del precio unitario y stock en funcion del movimiento
+					        // Nuevo precio unitario promedio
 					        if($descripcion == 'SALIDA'){
-					            //$new_precio_unitario_especial = $precio_unitario_actual;
 					            $precio_unitario_anterior_especial = $precio_unitario_anterior;
-					        }else if($descripcion == 'ENTRADA'){
-					            //$new_precio_unitario_especial = (($stock_actual*$precio_unitario_actual_promedio)+($item['qty']*$precio_unitario_soles))/($stock_actual+$item['qty']);
+					        }else if($descripcion == 'ENTRADA' || $descripcion == 'ORDEN INGRESO'){
 					            $precio_unitario_anterior_especial = $precio_unitario_actual_promedio;
+					        }else if($descripcion == 'IMPORTACION'){
+					            $precio_unitario_anterior_especial = 0;
 					        }
 					        $new_stock = $stock_actual - $cantidad;
 
 					        if($new_stock >= 0){
-					        	/* Actualizar el stock del producto */
+					        	// Actualizar el stock del producto
 						        $this->model_comercial->descontarStock($id_detalle_producto,$cantidad,$stock_actual_sta_anita,$id_almacen, $id_area);
-						        /* Fin code */
-						        /* Actualizar estado del producto validando si tiene stock 0 */
+						        // Fin code
+						        // Actualizar estado del producto validando si tiene stock 0
 						        $stock_actual_general = $stock_actual + $stock_actual_sta_anita;
 						        $stock_actualizado = $stock_actual + $stock_actual_sta_anita - $cantidad;
 						        if($stock_actualizado == 0 AND $column_temp == ""){
 						        	$this->model_comercial->actualizarEstado($id_detalle_producto);
 						        }
-						        /* Fin de actualizacion */
+						        // Fin de actualizacion
 
-					        	/* Realizar el registro en el kardex */
+					        	// Realizar el registro en el kardex
 					        	$a_data_kardex = array('fecha_registro' => $fecharegistro,
 					        	                'descripcion' => "SALIDA",
 					        	                'id_detalle_producto' => $id_detalle_producto,
@@ -5232,22 +5432,21 @@ class Comercial extends CI_Controller {
 					        	                'precio_unitario_anterior' => $precio_unitario_anterior_especial,
 					        	                'cantidad_salida' => $cantidad,
 					        	                'stock_actual' => $new_stock,
-					        	                //'precio_unitario_actual_promedio' => $new_precio_unitario_especial,
 					        	                'precio_unitario_actual' => $precio_unitario_anterior_especial,
 					        	                'num_comprobante' => $result_insert,
 					        	                );
 					        	$result_kardex = $this->model_comercial->saveSalidaProductoKardex($a_data_kardex,true);
-					        	/* End registro para el kardex */
+					        	// End registro para el kardex
 					        }else{
-					        	/* Borrar los registros anteriores actualización e insercion de la salida*/
-					        	//$this->model_comercial->descontarStock_regresarstock($id_detalle_producto,$cantidad,$stock_actual_sta_anita,$id_almacen, $id_area);
+					        	// Borrar los registros anteriores actualización e insercion de la salida
+					        	// $this->model_comercial->descontarStock_regresarstock($id_detalle_producto,$cantidad,$stock_actual_sta_anita,$id_almacen, $id_area);
 					        	$this->model_comercial->eliminar_insert_salida($result_insert);
 					        	$validar_stock = 'no_existe_stock_disponible';
 					        }
 					    }else{
-					    	/* Actualizar el stock del producto */
+					    	// Actualizar el stock del producto
 					        $this->model_comercial->descontarStock($id_detalle_producto,$cantidad,$stock_actual_sta_anita,$id_almacen, $id_area);
-					        /* Fin code */
+					        // Fin code
 					        /* Actualizar estado del producto validando si tiene stock 0 */
 					        $stock_actual_general = $stock_area_sta_anita + $stock_area_sta_clara;
 					        $stock_actualizado = $stock_area_sta_anita + $stock_area_sta_clara - $cantidad;

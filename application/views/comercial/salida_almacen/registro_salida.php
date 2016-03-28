@@ -145,6 +145,14 @@ $(function() {
 	                	}}
 	              	});
 	              	$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");
+	            }else if(response == "kardex_genera_registro_negativo"){
+	              	$("#modalerror").empty().append('<span style="color:red"><b>!No se puede realizar el registro!</b><br><b>La Salida genera un Stock Negativo</b><br><b>Analizar Kardex del Producto</b></span>').dialog({
+	                	modal: true,position: 'center',width: 500,height: 165,resizable: false,title: 'Validación',hide: 'blind',show: 'blind',
+	                	buttons: { Ok: function() {
+	                		$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );
+	                	}}
+	              	});
+	              	$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");
 	            }else{
 	            	console.log(response);
 	            	$("#modalerror").empty().append('<span style="color:red"><b>!ERROR!</b></span>').dialog({

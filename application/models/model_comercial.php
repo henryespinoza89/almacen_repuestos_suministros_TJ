@@ -689,7 +689,8 @@ class Model_comercial extends CI_Model {
                 'stock_sta_clara'=> $stock_sta_clara,
                 'stock_referencial_sta_clara'=> $stock_sta_clara_actual,
                 'stock_referencial_sta_anita'=> $stock_sta_anita_actual,
-                'precio_unitario'=> $nuevo_precio_unitario
+                'precio_unitario'=> $nuevo_precio_unitario,
+                'precio_unitario_referencial'=> $nuevo_precio_unitario
             );
             $this->db->where('id_detalle_producto',$id_detalle_producto);
             $this->db->update('detalle_producto', $actualizar);
@@ -1040,7 +1041,8 @@ class Model_comercial extends CI_Model {
                 'stock'=> $stock_sta_anita,
                 'stock_referencial_sta_anita'=> $stock_sta_anita_actual,
                 'stock_referencial_sta_clara'=> $stock_sta_clara_actual,
-                'precio_unitario'=> $nuevo_precio_unitario
+                'precio_unitario'=> $nuevo_precio_unitario,
+                'precio_unitario_referencial'=> $nuevo_precio_unitario
             );
             $this->db->where('id_detalle_producto',$id_detalle_producto);
             $this->db->update('detalle_producto', $actualizar);
@@ -3718,6 +3720,46 @@ class Model_comercial extends CI_Model {
         }
     }
 
+    function get_facturas_importadas_pendientes(){
+        $filtro = "";
+        $filtro .= " AND ingreso_producto.id_almacen =".(int)$this->security->xss_clean($this->session->userdata('almacen'));
+        $filtro .= " AND ingreso_producto.id_comprobante =".(int)4;
+        $sql = "SELECT ingreso_producto.id_ingreso_producto,ingreso_producto.nro_comprobante,ingreso_producto.fecha,ingreso_producto.total,
+        ingreso_producto.gastos,ingreso_producto.id_almacen,ingreso_producto.cs_igv,ingreso_producto.serie_comprobante,comprobante.no_comprobante,
+        moneda.no_moneda,agente_aduana.no_agente,proveedor.razon_social,ingreso_producto.id_comprobante
+        FROM
+        ingreso_producto
+        INNER JOIN comprobante ON ingreso_producto.id_comprobante = comprobante.id_comprobante
+        INNER JOIN agente_aduana ON ingreso_producto.id_agente = agente_aduana.id_agente
+        INNER JOIN moneda ON ingreso_producto.id_moneda = moneda.id_moneda
+        INNER JOIN proveedor ON ingreso_producto.id_proveedor = proveedor.id_proveedor
+        WHERE ingreso_producto.id_ingreso_producto IS NOT NULL".$filtro."ORDER BY ingreso_producto.fecha ASC";
+        $query = $this->db->query($sql);
+        if($query->num_rows()>0)
+        {
+            return $query->result();
+        }
+    }
+
+    function get_datos_detalle_pedido($id_ingreso_producto){
+        try{
+            $filtro = $id_ingreso_producto;
+            $sql = "SELECT ingreso_producto.id_ingreso_producto,ingreso_producto.id_comprobante,ingreso_producto.nro_comprobante,ingreso_producto.fecha,
+                    ingreso_producto.id_moneda,ingreso_producto.id_proveedor,ingreso_producto.total,ingreso_producto.gastos,ingreso_producto.id_almacen,
+                    ingreso_producto.id_agente,ingreso_producto.cs_igv,ingreso_producto.serie_comprobante,proveedor.razon_social
+                    FROM
+                    ingreso_producto
+                    INNER JOIN proveedor ON ingreso_producto.id_proveedor = proveedor.id_proveedor
+                    WHERE ingreso_producto.id_ingreso_producto =".$filtro;
+            $query = $this->db->query($sql);
+            $a_data = $query->result_array();
+            return $a_data;
+        }catch (Exception $e) {
+            throw new Exception('Error Inesperado');
+            return false;
+        }
+    }
+
     function traer_movimientos_salidas_facturas($f_inicial,$f_final){
         $filtro = "";
         $filtro .= " AND DATE(salida_producto.fecha) BETWEEN'".$f_inicial."'AND'".$f_final."'";
@@ -4631,8 +4673,12 @@ class Model_comercial extends CI_Model {
     }
     var_dump($cantidad_salida);
     */
+        $sql_elim_2 = "DELETE FROM adm_facturas_asociadas WHERE id_salida_producto = " . $id . "";
+        $query = $this->db->query($sql_elim_2);
+        
         $sql = "DELETE FROM salida_producto WHERE id_salida_producto = " . $id . "";
         $query = $this->db->query($sql);
+
         //echo $query;
         /*
         if($query->num_rows()>0){
@@ -7746,7 +7792,6 @@ class Model_comercial extends CI_Model {
             $stock_sta_anita = $row->stock;
             $precio_unitario = $row->precio_unitario;
         }
-
         $stock_actual = $stock_sta_clara + $stock_sta_anita;
         $new_stock = $stock_actual + $cantidad;
         if($almacen == 1){ /* Sta. Clara */
@@ -7762,7 +7807,6 @@ class Model_comercial extends CI_Model {
         }
         $this->db->where('id_detalle_producto',$id_detalle_producto);
         $this->db->update('detalle_producto', $actualizar);
-
         // Kardex del producto
         $a_data_kardex = array('fecha_registro' => date('Y-m-d'),
                         'descripcion' => "ORDEN INGRESO",
@@ -7777,13 +7821,8 @@ class Model_comercial extends CI_Model {
                         'serie_comprobante' => "001",
                         );
         $this->db->insert('kardex_producto', $a_data_kardex);
-
-
         return 'registro_correcto';
-
     }
-
-    
 
     public function agregar_detalle_ingreso($carrito, $id_ingreso_producto, $fecharegistro, $numcomprobante, $seriecomprobante, $porcentaje, $almacen)
     {
@@ -8422,8 +8461,7 @@ class Model_comercial extends CI_Model {
             return FALSE;
         }
     }
-
-
+    
     public function getMarca(){
         //Obtenemos la ID del Departamento
         $almacen = $this->security->xss_clean($this->session->userdata('almacen'));

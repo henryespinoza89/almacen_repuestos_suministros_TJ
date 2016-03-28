@@ -258,7 +258,7 @@
       });
     <?php } ?>
     /* ------------ FIN DE VALIDACIÓN SI EXISTE EL ID DEL PRODUCTO ------------ */
-    $("#comprobante").change(function() {
+    $("#comprobante").change(function(){
     $("#comprobante option:selected").each(function() {
         categoria = $('#comprobante').val();
         if(categoria == 4){ /* Guia */
@@ -269,13 +269,76 @@
       });
     });
 
+    $('#lista_factura_importada_pendiente').jTPS( {perPages:[10,20,30,50,'Todos'],scrollStep:1,scrollDelay:30,clickCallback:function () {     
+      var table = '#lista_factura_importada_pendiente';
+      document.cookie = 'jTPS=sortasc:' + $(table + ' .sortableHeader').index($(table + ' .sortAsc')) + ',' +
+        'sortdesc:' + $(table + ' .sortableHeader').index($(table + ' .sortDesc')) + ',' +
+        'page:' + $(table + ' .pageSelector').index($(table + ' .hilightPageSelector')) + ';';
+      }
+    });
+    // reinstate sort and pagination if cookie exists
+    var cookies = document.cookie.split(';');
+    for (var ci = 0, cie = cookies.length; ci < cie; ci++) {
+      var cookie = cookies[ci].split('=');
+      if (cookie[0] == 'jTPS') {
+        var commands = cookie[1].split(',');
+        for (var cm = 0, cme = commands.length; cm < cme; cm++) {
+          var command = commands[cm].split(':');
+          if (command[0] == 'sortasc' && parseInt(command[1]) >= 0) {
+            $('#lista_factura_importada_pendiente .sortableHeader:eq(' + parseInt(command[1]) + ')').click();
+          } else if (command[0] == 'sortdesc' && parseInt(command[1]) >= 0) {
+            $('#lista_factura_importada_pendiente .sortableHeader:eq(' + parseInt(command[1]) + ')').click().click();
+          } else if (command[0] == 'page' && parseInt(command[1]) >= 0) {
+            $('#lista_factura_importada_pendiente .pageSelector:eq(' + parseInt(command[1]) + ')').click();
+          }
+        }
+      }
+    }
+
+    // bind mouseover for each tbody row and change cell (td) hover style
+    $('#lista_factura_importada_pendiente tbody tr:not(.stubCell)').bind('mouseover mouseout',
+      function (e) {
+        e.type == 'mouseover' ? $(this).children('td').addClass('hilightRow') : $(this).children('td').removeClass('hilightRow');
+      }
+    );
+
   });
+
+  function fill_inputs(id_ingreso_producto){
+  /* Llenar datos del pedido en los inputs del formulario */
+  $.ajax({
+    type: 'POST',
+    url: "<?php echo base_url(); ?>comercial/obtener_datos_importacion/",
+    data:{
+        'id_ingreso_producto' : id_ingreso_producto
+    },
+    success: function(data){
+      var dataJson = JSON.parse(data);
+      var id_comprobante = dataJson.id_comprobante;
+      var id_moneda = dataJson.id_moneda;
+      var id_agente = dataJson.id_agente;
+      var id_ingreso_producto = dataJson.id_ingreso_producto;
+      $("#seriecomprobante").val(dataJson.serie_comprobante);
+      $("#numcomprobante").val(dataJson.nro_comprobante);
+      $("#nombre_proveedor").val(dataJson.razon_social);
+      $("#fecharegistro").val(dataJson.fecha);
+      $("#id_ingreso_producto_hidden").val(id_ingreso_producto);
+      $("#comprobante option[value="+2+"]").attr("selected",true);
+      $("#moneda option[value="+id_moneda+"]").attr("selected",true);
+      $("#agente option[value="+id_agente+"]").attr("selected",true);
+    }
+  });
+  $("#cantidad_devolucion").css('display','block');
+  $("#table_button_finalizar_salida").css('display','none');
+}
+
 </script>
 </head>
 <body>
   <div id="contenedor" style="padding-top: 10px;">
     <div id="tituloCont" style="margin-bottom: 0;">Cargar Facturas Importadas</div>
     <div id="formFiltro">
+    <input type="hidden" name="id_ingreso_producto_hidden" id="id_ingreso_producto_hidden" value="">
       <form id="formulario" action="<?php echo base_url('comercial/guardar_informacion_factura_importada');?>" enctype="multipart/form-data" method="post" style="background: whitesmoke;padding-left: 15px;padding-top: 12px;margin-top: 0px;">
         <div style="float: left;width: 400px;"> 
           <table width="360" border="0" cellspacing="0" cellpadding="0" style="margin-top: 4px;">
@@ -348,6 +411,59 @@
         </div>
       </form>
     </div>
+
+    <?php 
+        $existe = count($factura_import);
+      if($existe <= 0){
+          echo 'No existen Facturas Importadas Pendientes ';
+      }
+      else{
+    ?>
+    <table border="0" cellspacing="0" cellpadding="0" id="lista_factura_importada_pendiente" style="width:1350px;">
+        <thead>
+              <tr class="tituloTable">
+                <td sort="idprod" width="80" height="25">ITEM</td>
+                <td sort="idproducto" width="200" height="25">FECHA DE REGISTRO</td>
+                <td sort="idproducto" width="100" height="25">SERIE</td>
+                <td sort="idproducto" width="160" height="25">N° DE COMPROBANTE</td>
+                <td sort="idproducto" width="520" height="25">PROVEEDOR</td>
+                <td sort="idproducto" width="220" height="25">AGENTE ADUANA</td>
+                <td sort="idproducto" width="120" height="25">MONEDA</td>
+                <td width="20">&nbsp;</td>
+              </tr>
+        </thead>
+        <?php 
+          $i = 1;
+          foreach($factura_import as $data){ ?>  
+              <tr class="contentTable">
+                <td height="27"><?php echo str_pad($i, 3, 0, STR_PAD_LEFT); ?></td>
+                <td><?php echo $data->fecha; ?></td>
+                <td><?php echo $data->serie_comprobante; ?></td>
+                <td><?php echo $data->nro_comprobante; ?></td>
+                <td><?php echo $data->razon_social; ?></td>
+                <td><?php echo $data->no_agente; ?></td>
+                <td><?php echo $data->no_moneda; ?></td>
+                <td width="20" align="center"><input type="radio" name="newsletter" onClick="fill_inputs(<?php echo $data->id_ingreso_producto; ?>)" style="cursor: pointer;" title="Finalizar Registro"/></td>
+                <!--<td width="20" align="center">
+                    <a href="" class="eliminar_salida" id="elim_<?php //echo $listasalidaproductos->id_salida_producto; ?>">
+                    <img src="<?php //echo base_url();?>assets/img/trash.png" width="20" height="20" title="Eliminar Registro"/></a>
+                </td>-->
+              </tr>
+          <?php 
+            $i++;
+            } 
+        ?>
+        <tfoot class="nav">
+          <tr>
+            <td colspan=13>
+              <div class="pagination"></div>
+              <div class="paginationTitle">Página</div>
+              <div class="selectPerPage"></div>
+            </td>
+          </tr>                   
+        </tfoot>     
+    </table>
+    <?php }?>
   </div>
   <div id="finregistro"></div>
   <div id="modalerror"></div>
