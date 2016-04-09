@@ -4126,6 +4126,7 @@ class Comercial extends CI_Controller {
         foreach($query->result() as $row){
             $id_detalle_producto = $row->id_detalle_producto;
         }
+        // echo $id_detalle_producto;
         // Obtengo los datos del producto
 		$this->db->select('id_pro');
         $this->db->where('id_detalle_producto',$id_detalle_producto);
@@ -4134,6 +4135,7 @@ class Comercial extends CI_Controller {
             $id_pro = $row->id_pro;
         }
         // Generar el ciclo
+        
         do{
         	$suma_stock_producto_areas = 0;
         	// Obtener stock del general del producto - de acuerdo al almacen
@@ -4347,6 +4349,7 @@ class Comercial extends CI_Controller {
         		}
 	        }
         }while($aux_parametro_cuadre == 0);
+        
 	}
 
 	function finalizar_salida_before_13()
