@@ -459,11 +459,11 @@ $("#actualizar_saldos_iniciales").on("click",function(){
         <input name="submit" type="submit" id="button_killer" value=" Buttom Killer xD" style="padding-bottom:3px; padding-top:3px; margin-bottom: 15px; background-color: #CD0A0A; border-radius:6px; width: 150px;margin-right: 15px;" />
       </div>
       -->
-      <!--
+
       <div>
         <input name="submit" type="submit" id="actualizar_saldos_iniciales" value="Actualizar saldos iniciales" style="padding-bottom:3px; padding-top:3px; margin-bottom: 15px; background-color: #CD0A0A; border-radius:6px; width: 150px;margin-right: 15px;" />
       </div>
-      -->
+
       <!--
       <div>
         <input name="submit" type="submit" id="actualizar_precio_unitario" value="Actualizar Precio Unitario" style="padding-bottom:3px; padding-top:3px; margin-bottom: 15px; background-color: #CD0A0A; border-radius:6px; width: 150px;margin-right: 15px;" />
