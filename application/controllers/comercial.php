@@ -1290,6 +1290,23 @@ class Comercial extends CI_Controller {
 		}
 	}
 
+	public function gestion_cierre_saldos_iniciales(){
+		$nombre = $this->security->xss_clean($this->session->userdata('nombre')); //Variable de sesion
+		$apellido = $this->security->xss_clean($this->session->userdata('apaterno')); //Variable de sesion
+		if($nombre == "" AND $apellido == ""){
+			$this->load->view('login');
+		}else{
+			if($this->model_comercial->existeTipoCambio() == TRUE){
+			$data['tipocambio'] = 0;
+			}else{
+				$data['tipocambio'] = 1;
+			}
+			$data['monto']= $this->model_comercial->listarMontoCierre();
+			$this->load->view('comercial/menu');
+			$this->load->view('comercial/view_cierre_saldos_iniciales', $data);
+		}
+	}
+
 	public function nuevonombremaquina(){
 		$data['nombremaquinas']= $this->model_comercial->listarNombreMaquinas();
 		//$data['listamaquina']= $this->model_comercial->listarMaquinas();
@@ -8114,6 +8131,217 @@ class Comercial extends CI_Controller {
 		    	$this->db->where('id_pro',$id_pro);
 		    	$this->db->where('fecha_cierre',date($fecha_formateada_posterior));
 		    	$this->db->update('saldos_iniciales', $actualizar);
+			}
+		}
+		echo '1';
+	}
+
+	public function actualizar_saldos_iniciales_controller_version_6(){
+		$almacen = $this->security->xss_clean($this->session->userdata('almacen'));
+		$fechainicial = $this->security->xss_clean($this->input->post("fechainicial"));
+		$fechafinal = $this->security->xss_clean($this->input->post("fechafinal"));
+		// Formato a la fecha para actualizar los cierre anterior
+		$elementos = explode("-", $fechainicial);
+        $anio = $elementos[0];
+        $mes = $elementos[1];
+        $dia = $elementos[2];
+        if($mes == 12){
+            $anio = $anio + 1;
+            $mes_siguiente = 1;
+            $dia = 1;
+        }else if($mes <= 11 ){
+            $mes_siguiente = $mes;
+            $dia = 1;
+        }
+        $array = array($anio, $mes_siguiente, $dia);
+        $fecha_formateada_anterior = implode("-", $array);
+        // Formato a la fecha para actualizar los cierre anterior
+		$elementos = explode("-", $fechafinal);
+        $anio = $elementos[0];
+        $mes = $elementos[1];
+        $dia = $elementos[2];
+        if($mes == 12){
+            $anio = $anio + 1;
+            $mes_siguiente = 1;
+            $dia = 1;
+        }else if($mes <= 11 ){
+            $mes_siguiente = $mes + 1;
+            $dia = 1;
+        }
+        $array = array($anio, $mes_siguiente, $dia);
+        $fecha_formateada_posterior = implode("-", $array);
+		// Realizar un consulta de todos los productos registrados en el sistema
+		// para verificar los movimientos de esos productos en el kardex y seleccionar el ultimo movimiento de ese mes
+		// para obtener el stock y el precio final para el cierre del mes
+		$data_product = $this->model_comercial->get_all_productos();
+		foreach ($data_product as $row){
+			$id_detalle_producto = $row->id_detalle_producto;
+			$id_pro = $row->id_pro;
+			// validacion si existe un registro de este producto en kardex dentro del periodo seleccionado
+			$validacion = $this->model_comercial->validar_registros_producto_periodo($fechainicial, $fechafinal, $id_detalle_producto);
+			if($validacion == 'no_existe_movimiento'){
+				// Verificar si existe saldos iniciales del mes anterior para colocarlos en el saldo inicial actual
+				$this->db->select('stock_inicial,precio_uni_inicial,id_saldos_iniciales,stock_inicial_sta_clara');
+		        $this->db->where('fecha_cierre',date($fecha_formateada_anterior));
+		        $this->db->where('id_pro',$id_pro);
+		        $query = $this->db->get('saldos_iniciales');
+			    if(count($query->result()) > 0){
+			    	// Obtengo los saldos iniciales del mes anterior
+			    	// osea del mes actual que se esta trabajando
+			        foreach($query->result() as $row){
+			            $id_saldos_iniciales_anterior = $row->id_saldos_iniciales;
+			            $stock_inicial_anterior = $row->stock_inicial;
+			            $stock_inicial_sta_clara_anterior = $row->stock_inicial_sta_clara;
+			            $precio_uni_inicial_anterior = $row->precio_uni_inicial;
+			        }
+			        $total_saldo_inicial_anterior = $stock_inicial_anterior + $stock_inicial_sta_clara_anterior;
+			        // Obtener los saldos iniciales del mes posterior
+	        		$this->db->select('stock_inicial,precio_uni_inicial,id_saldos_iniciales,stock_inicial_sta_clara');
+	                $this->db->where('fecha_cierre',date($fecha_formateada_posterior));
+	                $this->db->where('id_pro',$id_pro);
+	                $query = $this->db->get('saldos_iniciales');
+	        	    if(count($query->result()) > 0){
+	        	    	foreach($query->result() as $row){
+	        	    	    $id_saldos_iniciales_posterior = $row->id_saldos_iniciales;
+	        	    	    $stock_inicial_posterior = $row->stock_inicial;
+	        	    	    $stock_inicial_sta_clara_posterior = $row->stock_inicial_sta_clara;
+	        	    	    $precio_uni_inicial_posterior = $row->precio_uni_inicial;
+	        	    	}
+	        	    }
+	        	    // validacion de resultados negativos
+	        	    if($stock_inicial_sta_clara_posterior < 0){
+	        	    	$stock_inicial_sta_clara_posterior = 0;
+	        	    }else if($stock_inicial_posterior < 0 ){
+	        	    	$stock_inicial_posterior = 0;
+	        	    }
+	        	    // totalizar stock's de cierre
+	        	    $total_saldo_inicial_posterior = $stock_inicial_posterior + $stock_inicial_sta_clara_posterior;
+	        	    // Distribucion de casos
+	        	    if($total_saldo_inicial_anterior < $total_saldo_inicial_posterior){
+	        	    	$diferencia = $total_saldo_inicial_posterior - $total_saldo_inicial_anterior;
+	        	    	// Quitar la diferencia a sta anita
+	        	    	$result_posterior_anita = $stock_inicial_posterior - $diferencia;	        	    	
+	        	    	if($result_posterior_anita > 0){
+			        	    // Validacion por la cantidad en unidades de los saldos iniciales
+					        // Actualizar los saldos iniciales del mes que se selecciono
+		                    $actualizar = array(
+		                        'precio_uni_inicial'=> $precio_uni_inicial_posterior,
+		                        'stock_inicial' => $result_posterior_anita
+		                    );
+		                    $this->db->where('id_pro',$id_pro);
+		                    $this->db->where('fecha_cierre',date($fecha_formateada_posterior));
+		                    $this->db->update('saldos_iniciales', $actualizar);
+	        	    	}else{
+	        	    		$result_posterior_clara = $stock_inicial_sta_clara_posterior - $diferencia;
+					        // Actualizar los saldos iniciales del mes que se selecciono
+		                    $actualizar = array(
+		                        'precio_uni_inicial'=> $precio_uni_inicial_posterior,
+		                        'stock_inicial_sta_clara' => $result_posterior_clara
+		                    );
+		                    $this->db->where('id_pro',$id_pro);
+		                    $this->db->where('fecha_cierre',date($fecha_formateada_posterior));
+		                    $this->db->update('saldos_iniciales', $actualizar);
+	        	    	}
+	        	    }else if($total_saldo_inicial_anterior > $total_saldo_inicial_posterior){
+	        	    	$diferencia = $total_saldo_inicial_anterior - $total_saldo_inicial_posterior;
+	        	    	// Aumento la diferencia a sta anita
+	        	    	$result_posterior_anita = $stock_inicial_posterior + $diferencia;
+				        // Actualizar los saldos iniciales del mes que se selecciono
+	                    $actualizar = array(
+	                        'precio_uni_inicial'=> $precio_uni_inicial_posterior,
+	                        'stock_inicial' => $result_posterior_anita
+	                    );
+	                    $this->db->where('id_pro',$id_pro);
+	                    $this->db->where('fecha_cierre',date($fecha_formateada_posterior));
+	                    $this->db->update('saldos_iniciales', $actualizar);
+	        	    }
+			    }else{
+			    	$actualizar = array(
+			    	    'precio_uni_inicial'=> 0,
+			    	    'stock_inicial' => 0
+			    	);
+			    	$this->db->where('id_pro',$id_pro);
+			    	$this->db->where('fecha_cierre',date($fecha_formateada_posterior));
+			    	$this->db->update('saldos_iniciales', $actualizar);
+			    }
+			}else{
+				// Obtener los ultimos datos nececesarios del kardex para la actualizacion del saldos inicial del producto en el periodo que corresponde
+				$this->db->select('stock_actual,precio_unitario_actual_promedio,precio_unitario_anterior,descripcion,precio_unitario_actual,fecha_registro');
+				$this->db->where('id_kardex_producto',(int)$validacion);
+				$query = $this->db->get('kardex_producto');
+				foreach($query->result() as $row){
+				    $stock_actual = $row->stock_actual;
+				    $precio_unitario_actual_promedio = $row->precio_unitario_actual_promedio;
+				    $precio_unitario_anterior = $row->precio_unitario_anterior;
+				    $descripcion = $row->descripcion;
+				    $precio_unitario_actual = $row->precio_unitario_actual;
+				    $fecha_registro = $row->fecha_registro;
+				}
+				// Considerar el ultimo precio que se manejo dependiente del tipo de movimiento
+				if($descripcion == 'SALIDA'){
+				    $precio_unitario_anterior_especial = $precio_unitario_anterior;
+				}else if($descripcion == 'ENTRADA'  || $descripcion == 'ORDEN INGRESO'){
+				    $precio_unitario_anterior_especial = $precio_unitario_actual_promedio;
+				}
+				// Obtener los saldos iniciales de cierre del mes que ya se tiene como registro
+        		$this->db->select('stock_inicial,precio_uni_inicial,id_saldos_iniciales,stock_inicial_sta_clara');
+                $this->db->where('fecha_cierre',date($fecha_formateada_posterior));
+                $this->db->where('id_pro',$id_pro);
+                $query = $this->db->get('saldos_iniciales');
+        	    if(count($query->result()) > 0){
+        	    	foreach($query->result() as $row){
+        	    	    $id_saldos_iniciales_posterior = $row->id_saldos_iniciales;
+        	    	    $stock_inicial_posterior = $row->stock_inicial;
+        	    	    $stock_inicial_sta_clara_posterior = $row->stock_inicial_sta_clara;
+        	    	    $precio_uni_inicial_posterior = $row->precio_uni_inicial;
+        	    	}
+        	    }
+        	    // validacion de resultados negativos
+	    	    if($stock_inicial_sta_clara_posterior < 0){
+	    	    	$stock_inicial_sta_clara_posterior = 0;
+	    	    }else if($stock_inicial_posterior < 0 ){
+	    	    	$stock_inicial_posterior = 0;
+	    	    }
+	    	    // totalizar stock's de cierre
+        	    $total_saldo_inicial_posterior = $stock_inicial_posterior + $stock_inicial_sta_clara_posterior;
+        	    if($stock_actual < $total_saldo_inicial_posterior){
+        	    	$diferencia = $total_saldo_inicial_posterior - $stock_actual;
+        	    	// Quitar la diferencia a sta anita
+					$result_posterior_anita = $stock_inicial_posterior - $diferencia;	        	    	
+					if($result_posterior_anita > 0){
+					    // Validacion por la cantidad en unidades de los saldos iniciales
+				        // Actualizar los saldos iniciales del mes que se selecciono
+				        $actualizar = array(
+				            'precio_uni_inicial'=> $precio_unitario_anterior_especial,
+				            'stock_inicial' => $result_posterior_anita
+				        );
+				        $this->db->where('id_pro',$id_pro);
+				        $this->db->where('fecha_cierre',date($fecha_formateada_posterior));
+				        $this->db->update('saldos_iniciales', $actualizar);
+					}else{
+						$result_posterior_clara = $stock_inicial_sta_clara_posterior - $diferencia;
+				        // Actualizar los saldos iniciales del mes que se selecciono
+				        $actualizar = array(
+				            'precio_uni_inicial'=> $precio_unitario_anterior_especial,
+				            'stock_inicial_sta_clara' => $result_posterior_clara
+				        );
+				        $this->db->where('id_pro',$id_pro);
+				        $this->db->where('fecha_cierre',date($fecha_formateada_posterior));
+				        $this->db->update('saldos_iniciales', $actualizar);
+					}
+        	    }else if($stock_actual > $total_saldo_inicial_posterior){
+        	    	$diferencia = $stock_actual - $total_saldo_inicial_posterior;
+        	    	// Aumento la diferencia a sta anita
+					$result_posterior_anita = $stock_inicial_posterior + $diferencia;
+					// Actualizar los saldos iniciales del mes que se selecciono
+				    $actualizar = array(
+				        'precio_uni_inicial'=> $precio_unitario_anterior_especial,
+				        'stock_inicial' => $result_posterior_anita
+				    );
+				    $this->db->where('id_pro',$id_pro);
+				    $this->db->where('fecha_cierre',date($fecha_formateada_posterior));
+				    $this->db->update('saldos_iniciales', $actualizar);
+        	    }
 			}
 		}
 		echo '1';
