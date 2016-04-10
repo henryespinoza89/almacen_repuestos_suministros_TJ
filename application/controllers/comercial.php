@@ -1272,6 +1272,68 @@ class Comercial extends CI_Controller {
 			echo 'error_validacion';
 		}
 	}
+
+	public function registrar_cierre_mes(){
+		$fecha_inicial = $this->security->xss_clean($this->input->post('fecha_inicial'));
+		$fecha_final = $this->security->xss_clean($this->input->post('fecha_final'));
+		// Formateo de la fecha
+        $elementos = explode("-", $fecha_inicial);
+        $anio = $elementos[0];
+        $mes = $elementos[1];
+        $dia = $elementos[2];
+        // Nombre del mes
+        if($mes == 1){
+            $nombre_mes = "ENERO";
+        }else if($mes == 2){
+            $nombre_mes = "FEBRERO";
+        }else if($mes == 3){
+            $nombre_mes = "MARZO";
+        }else if($mes == 4){
+            $nombre_mes = "ABRIL";
+        }else if($mes == 5){
+            $nombre_mes = "MAYO";
+        }else if($mes == 6){
+            $nombre_mes = "JUNIO";
+        }else if($mes == 7){
+            $nombre_mes = "JULIO";
+        }else if($mes == 8){
+            $nombre_mes = "AGOSTO";
+        }else if($mes == 9){
+            $nombre_mes = "SETIEMBRE";
+        }else if($mes == 10){
+            $nombre_mes = "OCTUBRE";
+        }else if($mes == 11){
+            $nombre_mes = "NOVIEMBRE";
+        }else if($mes == 12){
+            $nombre_mes = "DICIEMBRE";
+        }
+        // Fecha posterior
+        if($mes == 12){
+            $anio = $anio + 1;
+            $mes_siguiente = 1;
+            $dia = 1;
+        }else if($mes <= 11 ){
+            $mes_siguiente = $mes + 1;
+            $dia = 1;
+        }
+        $array = array($anio, $mes_siguiente, $dia);
+        $fecha_formateada = implode("-", $array);
+		// Procedimiento de validación
+		$this->db->select('id_monto_cierre');
+        $this->db->where('nombre_mes',$nombre_mes);
+        $this->db->where('fecha_auxiliar',$fecha_formateada);
+        $query = $this->db->get('monto_cierre');
+        if(count($query->result()) > 0){
+        	echo 'error_validacion';
+        }else{
+        	$result_monto = $this->model_comercial->cierre_almacen_montos_2016($fecha_formateada,$nombre_mes); // guarda el monto de cierre del mes en la tabla monto_cierre
+	    	if(!$result_monto){
+		        echo 'error_validacion_monto';
+		    }else{
+		    	echo '1';
+		    }
+        }
+	}
 	
 	public function gestioncierrealmacen(){
 		$nombre = $this->security->xss_clean($this->session->userdata('nombre')); //Variable de sesion
@@ -1287,6 +1349,23 @@ class Comercial extends CI_Controller {
 			$data['monto']= $this->model_comercial->listarMontoCierre();
 			$this->load->view('comercial/menu');
 			$this->load->view('comercial/view_cierre_almacen', $data);
+		}
+	}
+
+	public function gestion_cierre_saldos_iniciales(){
+		$nombre = $this->security->xss_clean($this->session->userdata('nombre')); //Variable de sesion
+		$apellido = $this->security->xss_clean($this->session->userdata('apaterno')); //Variable de sesion
+		if($nombre == "" AND $apellido == ""){
+			$this->load->view('login');
+		}else{
+			if($this->model_comercial->existeTipoCambio() == TRUE){
+			$data['tipocambio'] = 0;
+			}else{
+				$data['tipocambio'] = 1;
+			}
+			$data['monto']= $this->model_comercial->listarMontoCierre();
+			$this->load->view('comercial/menu');
+			$this->load->view('comercial/view_cierre_saldos_iniciales', $data);
 		}
 	}
 
@@ -4109,6 +4188,7 @@ class Comercial extends CI_Controller {
         foreach($query->result() as $row){
             $id_detalle_producto = $row->id_detalle_producto;
         }
+        // echo $id_detalle_producto;
         // Obtengo los datos del producto
 		$this->db->select('id_pro');
         $this->db->where('id_detalle_producto',$id_detalle_producto);
@@ -4117,6 +4197,7 @@ class Comercial extends CI_Controller {
             $id_pro = $row->id_pro;
         }
         // Generar el ciclo
+        
         do{
         	$suma_stock_producto_areas = 0;
         	// Obtener stock del general del producto - de acuerdo al almacen
@@ -4330,6 +4411,7 @@ class Comercial extends CI_Controller {
         		}
 	        }
         }while($aux_parametro_cuadre == 0);
+        
 	}
 
 	function finalizar_salida_before_13()
@@ -8114,6 +8196,116 @@ class Comercial extends CI_Controller {
 		    	$this->db->where('id_pro',$id_pro);
 		    	$this->db->where('fecha_cierre',date($fecha_formateada_posterior));
 		    	$this->db->update('saldos_iniciales', $actualizar);
+			}
+		}
+		echo '1';
+	}
+
+	public function actualizar_saldos_iniciales_controller_version_6(){
+		$almacen = $this->security->xss_clean($this->session->userdata('almacen'));
+		$fecha_inicial = $this->security->xss_clean($this->input->post("fecha_inicial"));
+		$fecha_final = $this->security->xss_clean($this->input->post("fecha_final"));
+        // Formato de la fecha anterior
+		$elementos = explode("-", $fecha_inicial);
+        $anio = $elementos[0];
+        $mes = $elementos[1];
+        $dia = $elementos[2];
+        if($mes == 12){
+            $anio = $anio + 1;
+            $mes_siguiente = 1;
+            $dia = 1;
+        }else if($mes <= 11 ){
+            $mes_siguiente = $mes;
+            $dia = 1;
+        }
+        $array = array($anio, $mes_siguiente, $dia);
+        $fecha_formateada_anterior = implode("-", $array);
+        // Formato a la fecha posterior
+		$elementos = explode("-", $fecha_inicial);
+        $anio = $elementos[0];
+        $mes = $elementos[1];
+        $dia = $elementos[2];
+        if($mes == 12){
+            $anio = $anio + 1;
+            $mes_siguiente = 1;
+            $dia = 1;
+        }else if($mes <= 11 ){
+            $mes_siguiente = $mes + 1;
+            $dia = 1;
+        }
+        $array = array($anio, $mes_siguiente, $dia);
+        $fecha_formateada_posterior = implode("-", $array);
+		// Realizar un consulta de todos los productos registrados en el sistema
+		// para verificar los movimientos de esos productos en el kardex y seleccionar el ultimo movimiento de ese mes
+		// para obtener el stock y el precio final para el cierre del mes
+		$data_product = $this->model_comercial->get_all_productos_v2();
+		foreach ($data_product as $row){
+			$id_detalle_producto = $row->id_detalle_producto;
+			$id_pro = $row->id_pro;
+			// validacion si existe un registro de este producto en kardex dentro del periodo seleccionado
+			$validacion = $this->model_comercial->validar_registros_producto_periodo($fecha_inicial, $fecha_final, $id_detalle_producto);
+			if($validacion == 'no_existe_movimiento'){
+				// Verificar si existe saldos iniciales del mes anterior para colocarlos en el saldo inicial actual
+				$this->db->select('stock_inicial,precio_uni_inicial,id_saldos_iniciales,stock_inicial_sta_clara');
+		        $this->db->where('fecha_cierre',date($fecha_formateada_anterior));
+		        $this->db->where('id_pro',$id_pro);
+		        $query = $this->db->get('saldos_iniciales');
+			    if(count($query->result()) > 0){
+			    	// Obtengo los saldos iniciales del mes anterior
+			    	// osea del mes actual que se esta trabajando
+			        foreach($query->result() as $row){
+			            $id_saldos_iniciales_anterior = $row->id_saldos_iniciales;
+			            $stock_inicial_anterior = $row->stock_inicial;
+			            $stock_inicial_sta_clara_anterior = $row->stock_inicial_sta_clara;
+			            $precio_uni_inicial_anterior = $row->precio_uni_inicial;
+			        }
+			        // Actualizar los saldos iniciales del mes que se selecciono
+			        $datos = array(
+                        'id_pro'=> $id_pro,
+                        'fecha_cierre'=> $fecha_formateada_posterior,
+                        'precio_uni_inicial'=> $precio_uni_inicial_anterior,
+                        'stock_inicial' => $stock_inicial_anterior,
+                        'stock_inicial_sta_clara' => $stock_inicial_sta_clara_anterior
+                    );
+                    $this->model_comercial->insert_saldos_iniciales($datos);
+			    }else{
+			    	$datos = array(
+			    	    'id_pro'=> $id_pro,
+                        'fecha_cierre'=> $fecha_formateada_posterior,
+			    	    'precio_uni_inicial'=> 0,
+			    	    'stock_inicial' => 0,
+			    	    'stock_inicial_sta_clara' => 0
+			    	);
+			    	$this->model_comercial->insert_saldos_iniciales($datos);
+			    }
+			}else{
+				// Obtener los ultimos datos nececesarios del kardex para la actualizacion del saldos inicial del producto en el periodo que corresponde
+				$this->db->select('stock_actual,precio_unitario_actual_promedio,precio_unitario_anterior,descripcion,precio_unitario_actual,fecha_registro');
+				$this->db->where('id_kardex_producto',(int)$validacion);
+				$query = $this->db->get('kardex_producto');
+				foreach($query->result() as $row){
+				    $stock_actual = $row->stock_actual;
+				    $precio_unitario_actual_promedio = $row->precio_unitario_actual_promedio;
+				    $precio_unitario_anterior = $row->precio_unitario_anterior;
+				    $descripcion = $row->descripcion;
+				    $precio_unitario_actual = $row->precio_unitario_actual;
+				    $fecha_registro = $row->fecha_registro;
+				}
+				// Considerar el ultimo precio que se manejo dependiente del tipo de movimiento
+				if($descripcion == 'SALIDA'){
+				    $precio_unitario_anterior_especial = $precio_unitario_anterior;
+				}else if($descripcion == 'ENTRADA'  || $descripcion == 'ORDEN INGRESO'){
+				    $precio_unitario_anterior_especial = $precio_unitario_actual_promedio;
+				}
+				// datos los saldos iniciales del mes que se selecciono
+				$datos = array(
+					'id_pro'=> $id_pro,
+                    'fecha_cierre'=> $fecha_formateada_posterior,
+		            'precio_uni_inicial'=> $precio_unitario_anterior_especial,
+		            'stock_inicial' => $stock_actual,
+		            'stock_inicial_sta_clara' => 0
+		        );
+		        $this->model_comercial->insert_saldos_iniciales($datos);
 			}
 		}
 		echo '1';

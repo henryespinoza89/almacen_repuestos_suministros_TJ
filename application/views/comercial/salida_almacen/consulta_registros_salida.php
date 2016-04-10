@@ -80,7 +80,7 @@ $("#actualizar_saldos_iniciales").on("click",function(){
       var dataString = 'fechainicial='+fechainicial+'&fechafinal='+fechafinal+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
       $.ajax({
         type: "POST",
-        url: "<?php echo base_url(); ?>comercial/actualizar_saldos_iniciales_controller_version_2/",
+        url: "<?php echo base_url(); ?>comercial/actualizar_saldos_iniciales_controller_version_6/",
         data: dataString,
         success: function(response){
           if(response == 1){

@@ -88,6 +88,35 @@ class Model_comercial extends CI_Model {
 
     }
 
+    function cierre_almacen_montos_2016($fecha_formateada,$nombre_mes){
+        $sumatoria = 0;
+        $filtro = "";
+        $filtro .= " AND DATE(saldos_iniciales.fecha_cierre) ='".$fecha_formateada."'";
+        $sql = "SELECT saldos_iniciales.id_saldos_iniciales,saldos_iniciales.id_pro,saldos_iniciales.fecha_cierre,saldos_iniciales.stock_inicial,saldos_iniciales.precio_uni_inicial,saldos_iniciales.stock_inicial_sta_clara
+                FROM saldos_iniciales
+                WHERE saldos_iniciales.id_saldos_iniciales IS NOT NULL".$filtro;
+        $query = $this->db->query($sql);
+        foreach($query->result() as $row){
+            $id_pro = $row->id_pro;
+            $stock_inicial_sta_anita = $row->stock_inicial;
+            $stock_inicial_sta_clara = $row->stock_inicial_sta_clara;
+            $precio_unitario = $row->precio_uni_inicial;
+
+            $stock_general = $stock_inicial_sta_anita + $stock_inicial_sta_clara;
+            $sumatoria = $sumatoria + ($stock_general*$precio_unitario);
+        }
+        $datos_cierre_mes = array(
+            "fecha_cierre" => $fecha_formateada,
+            "monto_cierre" => $sumatoria,
+            "monto_cierre_sta_anita" => 0,
+            "monto_cierre_sta_clara" => 0,
+            "nombre_mes" => $nombre_mes,
+            "fecha_auxiliar" => $fecha_formateada
+        );
+        $this->db->insert('monto_cierre', $datos_cierre_mes);
+        return true;
+    }
+
     function cierre_almacen_montos_model($fecha_cierre){
         $sumatoria = 0;
         $sumatoria_sta_clara = 0;
@@ -335,6 +364,16 @@ class Model_comercial extends CI_Model {
         }
     }
 
+    public function insert_saldos_iniciales($datos)
+    {   
+        $last_id = $this->db->insert('saldos_iniciales', $datos);
+        if($last_id != ""){
+            return $this->db->insert_id();
+        }else{
+            return "error_inesperado";
+        }
+    }
+
     function cierre_almacen_model($fecha_cierre){
         $sql = "SELECT producto.id_pro,detalle_producto.stock,detalle_producto.precio_unitario,
                 detalle_producto.stock_sta_clara
@@ -487,6 +526,13 @@ class Model_comercial extends CI_Model {
                     );
                     $this->db->where('id_salida_producto',$num_comprobante);
                     $this->db->update('salida_producto', $actualizar_precio_salida);
+                }else if($descripcion == 'ORDEN INGRESO'){
+                    // Actualizar el precio unitario en el kardex
+                    $actualizar_precio_io_kardex = array(
+                        'precio_unitario_actual_promedio'=> $nuevo_precio_unitario
+                    );
+                    $this->db->where('id_kardex_producto',$id_kardex_producto);
+                    $this->db->update('kardex_producto', $actualizar_precio_io_kardex);
                 }
             }
             // Formateando la Fecha
@@ -3875,8 +3921,19 @@ class Model_comercial extends CI_Model {
         INNER JOIN producto ON producto.id_detalle_producto = detalle_producto.id_detalle_producto
         WHERE detalle_producto.id_detalle_producto IS NOT NULL".$filtro;
         $query = $this->db->query($sql);
-        if($query->num_rows()>0)
-        {
+        if($query->num_rows()>0){
+            return $query->result();
+        }
+    }
+
+    function get_all_productos_v2(){
+        $sql = "SELECT DISTINCT detalle_producto.id_detalle_producto,detalle_producto.no_producto,producto.id_pro,producto.estado,detalle_producto.stock,
+        detalle_producto.stock_sta_clara
+        FROM detalle_producto
+        INNER JOIN producto ON producto.id_detalle_producto = detalle_producto.id_detalle_producto
+        WHERE detalle_producto.id_detalle_producto IS NOT NULL";
+        $query = $this->db->query($sql);
+        if($query->num_rows()>0){
             return $query->result();
         }
     }
