@@ -643,7 +643,7 @@
               <?php
                 }else if($listaproductos->column_temp == "NUEVO" || $listaproductos->column_temp == "NUEVO 14" || $listaproductos->column_temp == "NUEVO 14S"){
               ?>
-                <span class="fa fa-thumbs-o-up" style="color: green;"></span>  
+                <span class="fa fa-thumbs-o-up" style="color: green;"></span>
               <?php
                 }
               ?>

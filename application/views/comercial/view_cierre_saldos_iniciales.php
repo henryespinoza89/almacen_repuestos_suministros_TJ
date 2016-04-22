@@ -45,7 +45,7 @@
 			                $("#finregistro").html('!El Cierre de Almacén ha sido regristado con éxito!.').dialog({
 			                  	modal: true,position: 'center',width: 350,height: 125,resizable: false, title: 'Fin de Registro',
 			                  	buttons: { Ok: function(){
-			                    	window.location.href="<?php echo base_url();?>comercial/gestioncierrealmacen";
+			                    	window.location.href="<?php echo base_url();?>comercial/gestion_cierre_saldos_iniciales";
 			                  	}}
 			                });
 	                  	}else if(response == 'error_validacion'){

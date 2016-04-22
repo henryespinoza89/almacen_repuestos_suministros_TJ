@@ -10545,7 +10545,7 @@ class Comercial extends CI_Controller {
 	            	 ->setCellValue('H1', 'PRODUCTO')
 	            	 ->setCellValue('I1', 'UNID. MEDIDA')
 	            	 ->setCellValue('J1', 'CANTIDAD SALIDA')
-	            	 ->setCellValue('K1', 'VALORIZADO')
+	            	 ->setCellValue('K1', 'VALORIZADO S/.')
 	            	 ->setCellValue('L1', 'SOLICITANTE');
 
 	    /* Traer informacion de la BD */
@@ -10626,7 +10626,7 @@ class Comercial extends CI_Controller {
 		    		 ->setCellValue('G'.$p, "")
 		    		 ->setCellValue('H'.$p, "")
 		    		 ->setCellValue('I'.$p, "")
-		    		 ->setCellValue('J'.$p, "TOTALES")
+		    		 ->setCellValue('J'.$p, "TOTALES S/.")
 		    		 ->setCellValue('K'.$p, $sumatoria_totales)
 		    		 ->setCellValue('L'.$p, ""); // colocar lo siguiente me da un error: ->setCellValue('G'.$p, "S/. ".$suma_soles); al insertar el icono de soles, convierte todo los valores en texto y no lo puedo pasar a numerico
 		/* ---------------------------------------------------------------------- */
