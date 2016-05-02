@@ -11469,6 +11469,771 @@ class Comercial extends CI_Controller {
         	echo '1';
         }
 	}
+
+	public function al_exportar_kardex_sunat_excel_formato_2016(){
+		$data = $this->security->xss_clean($this->uri->segment(3));
+		$data = json_decode($data, true);
+		$f_inicial = $data[0];
+		$f_final = $data[1];
+
+		(array)$arr = str_split($f_final, 4);
+		$anio = $arr[0];
+
+		/* Formato para la fecha inicial */
+        $elementos = explode("-", $f_inicial);
+        $anio = $elementos[0];
+        $mes = $elementos[1];
+        $dia = $elementos[2];
+        $array = array($dia, $mes, $anio);
+        $f_inicial = implode("-", $array);
+        /* Fin */
+
+		$this->load->library('pHPExcel');
+		/* variables de PHPExcel */
+		$objPHPExcel = new PHPExcel();
+		$nombre_archivo = "phpExcel";
+
+		/* propiedades de la celda */
+		$objPHPExcel->getDefaultStyle()->getFont()->setName('Arial Narrow');
+		$objPHPExcel->getDefaultStyle()->getFont()->setSize(10);
+		$objPHPExcel->getActiveSheet()->getRowDimension('1')->setRowHeight(10);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(10);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(10);
+
+		/* Here your first sheet */
+	    $sheet = $objPHPExcel->getActiveSheet();
+
+	    /* Style - Bordes */
+	    $borders = array(
+			'borders' => array(
+				'allborders' => array(
+					'style' => PHPExcel_Style_Border::BORDER_THIN,
+					'color' => array('argb' => 'FF000000'),
+				)
+			),
+		);
+
+		$style = array(
+	        'alignment' => array(
+	            'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
+	        )
+	    );
+
+	    $style_2 = array(
+	        'alignment' => array(
+	            'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_RIGHT,
+	        )
+	    );
+
+	    $style_3 = array(
+	        'alignment' => array(
+	            'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_LEFT,
+	        )
+	    );
+
+	    $styleArray = array(
+		    'font' => array(
+		        'bold' => true
+		    )
+		);
+		/* Add new sheet */
+	    $objWorkSheet = $objPHPExcel->createSheet(0); /* Setting index when creating */
+	    $objPHPExcel->setActiveSheetIndex(0)->mergeCells('A1:D1');
+	    $objPHPExcel->setActiveSheetIndex(0)->mergeCells('A1:D1');
+	    $objPHPExcel->setActiveSheetIndex(0)->mergeCells('E1:G1');
+	    $objPHPExcel->setActiveSheetIndex(0)->mergeCells('H1:J1');
+	    $objPHPExcel->setActiveSheetIndex(0)->mergeCells('K1:M1');
+
+	    $objPHPExcel->getActiveSheet()->getStyle('A1:D1')->applyFromArray($borders);
+		$objPHPExcel->getActiveSheet()->getStyle('E1:G1')->applyFromArray($borders);
+		$objPHPExcel->getActiveSheet()->getStyle('H1:J1')->applyFromArray($borders);
+		$objPHPExcel->getActiveSheet()->getStyle('K1:M1')->applyFromArray($borders);
+		$objPHPExcel->getActiveSheet()->getStyle('A2:AN2')->applyFromArray($borders);
+
+		$objPHPExcel->getActiveSheet()->getStyle('A1:D1')->applyFromArray($style);
+		$objPHPExcel->getActiveSheet()->getStyle('E1:G1')->applyFromArray($style);
+		$objPHPExcel->getActiveSheet()->getStyle('H1:J1')->applyFromArray($style);
+		$objPHPExcel->getActiveSheet()->getStyle('K1:M1')->applyFromArray($style);
+		$objPHPExcel->getActiveSheet()->getStyle('A2:AN2')->applyFromArray($style);
+
+		$objPHPExcel->getActiveSheet()->getStyle('A1:D1')->applyFromArray($styleArray);
+		$objPHPExcel->getActiveSheet()->getStyle('E1:G1')->applyFromArray($styleArray);
+		$objPHPExcel->getActiveSheet()->getStyle('H1:J1')->applyFromArray($styleArray);
+		$objPHPExcel->getActiveSheet()->getStyle('K1:M1')->applyFromArray($styleArray);
+		$objPHPExcel->getActiveSheet()->getStyle('A2:AN2')->applyFromArray($styleArray);
+
+		$objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(15);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(15);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth(15);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth(15);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth(15);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('F')->setWidth(15);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('G')->setWidth(15);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('H')->setWidth(15);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('I')->setWidth(15);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('J')->setWidth(15);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('K')->setWidth(15);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('L')->setWidth(15);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('M')->setWidth(15);
+
+		$objPHPExcel->getActiveSheet()->getColumnDimension('O')->setWidth(15);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('P')->setWidth(15);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('Q')->setWidth(15);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('R')->setWidth(15);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('S')->setWidth(15);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('T')->setWidth(15);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('U')->setWidth(15);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('V')->setWidth(15);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('W')->setWidth(15);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('X')->setWidth(15);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('Y')->setWidth(60);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('Z')->setWidth(15);
+
+		$objPHPExcel->getActiveSheet()->getColumnDimension('AA')->setWidth(15);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('AB')->setWidth(20);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('AC')->setWidth(20);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('AD')->setWidth(20);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('AE')->setWidth(20);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('AF')->setWidth(20);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('AG')->setWidth(20);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('AH')->setWidth(20);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('AI')->setWidth(20);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('AJ')->setWidth(20);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('AK')->setWidth(20);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('AL')->setWidth(20);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('AM')->setWidth(20);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('AN')->setWidth(20);
+
+		/* Cabecera SUNAT */
+	    $objWorkSheet->setCellValue('A1', 'DOCUMENTO DE MOVIMIENTO')
+	    			 ->setCellValue('E1', 'ENTRADAS')
+	    			 ->setCellValue('H1', 'SALIDAS')
+	    			 ->setCellValue('K1', 'SALDO FINAL');
+	    $objWorkSheet->setCellValue('A2', 'FECHA')
+	    			 ->setCellValue('B2', 'TIPO')
+	    			 ->setCellValue('C2', 'SERIE')
+	    			 ->setCellValue('D2', 'NÚMERO')
+	    			 ->setCellValue('E2', 'CANTIDAD')
+	    			 ->setCellValue('F2', 'CU')
+	    			 ->setCellValue('G2', 'CT')
+	    			 ->setCellValue('H2', 'CANTIDAD')
+	    			 ->setCellValue('I2', 'CU')
+	    			 ->setCellValue('J2', 'CT')
+	    			 ->setCellValue('K2', 'CANTIDAD')
+	    			 ->setCellValue('L2', 'CU')
+	    			 ->setCellValue('M2', 'CT')
+	    			 ->setCellValue('O2', 'KPERIODO')
+	    			 ->setCellValue('P2', 'KANEXO')
+	    			 ->setCellValue('Q2', 'KCATALOGO')
+	    			 ->setCellValue('R2', 'KTIPEXIST')
+	    			 ->setCellValue('S2', 'KCODEXIST')
+	    			 ->setCellValue('T2', 'KFECDOC')
+	    			 ->setCellValue('U2', 'KTIPODOC')
+	    			 ->setCellValue('V2', 'KSERDOC')
+	    			 ->setCellValue('W2', 'KNUMDOC')
+	    			 ->setCellValue('X2', 'KTIPOPE')
+	    			 ->setCellValue('Y2', 'KDESEXIST')
+	    			 ->setCellValue('Z2', 'KUNIMED')
+	    			 ->setCellValue('AA2', 'KMETVAL')
+	    			 ->setCellValue('AB2', 'KUNIING')
+	    			 ->setCellValue('AC2', 'KCOSING')
+	    			 ->setCellValue('AD2', 'KTOTING')
+	    			 ->setCellValue('AE2', 'KUNIRET')
+	    			 ->setCellValue('AF2', 'KCOSRET')
+	    			 ->setCellValue('AG2', 'KTOTRET')
+	    			 ->setCellValue('AH2', 'KSALFIN')
+	    			 ->setCellValue('AI2', 'KCOSFIN')
+	    			 ->setCellValue('AJ2', 'KTOTFIN')
+
+	    			 ->setCellValue('AK2', 'KESTOPE')
+	    			 ->setCellValue('AL2', 'KINTDIAMAY')
+	    			 ->setCellValue('AM2', 'KINTVTACOM')
+	    			 ->setCellValue('AN2', 'KINTREG');
+	    // Traer informacion de la BD
+	    $nombre_productos_salidas = $this->model_comercial->traer_nombres_kardex_sunat();
+	    // Recorro con todos los nombres seleccionados que tienen una salida/ingreso en el kardex
+	    // Tambien debo considerar los que no han tenido registros en la tabla kardex pero si debe aparece SI o vacio
+	    $i = 3;
+        foreach ($nombre_productos_salidas as $reg) {
+
+        	$nombre_producto = $reg->no_producto;
+        	$id_producto = $reg->id_producto;
+        	$id_unidad_medida = $reg->id_unidad_medida;
+        	$id_detalle_producto = $reg->id_detalle_producto;
+        	$id_pro = $reg->id_pro;
+        	$id_categoria = $reg->id_categoria;
+
+        	// Asignar codigo de existencia
+        	if($id_categoria == 1){
+        		$ktipexist = '07';
+        	}else if($id_categoria == 2){
+        		$ktipexist = '06';
+        	}else{
+        		$ktipexist = '99';
+        	}
+
+        	// Asignar codigo de unidad de medida
+        	if($id_unidad_medida == 1){
+        		$kunimed = 'KGM';
+        	}else if($id_unidad_medida == 7){
+        		$kunimed = 'C62';
+        	}else if($id_unidad_medida == 8){
+        		$kunimed = 'LTR';
+        	}else if($id_unidad_medida == 9){
+        		$kunimed = 'GLL';
+        	}else if($id_unidad_medida == 12){
+        		$kunimed = 'BX';
+        	}else if($id_unidad_medida == 13){
+        		$kunimed = 'MIL';
+        	}else if($id_unidad_medida == 15){
+        		$kunimed = 'MTR';
+        	}else if($id_unidad_medida == 99){
+        		$kunimed = 'D44';
+        	}
+
+        	/* Traer sólo productos que tengan registros en el periodo seleccionado */
+        	$produtos_con_kardex = $this->model_comercial->traer_producto_con_kardex($id_detalle_producto,$f_inicial,$f_final);
+        	if( count($produtos_con_kardex) > 0 ){
+        		/* Formato para la filas */
+		    	$objPHPExcel->getActiveSheet()->getStyle('A'.$i)->applyFromArray($borders);
+		    	$objPHPExcel->getActiveSheet()->getStyle('B'.$i)->applyFromArray($borders);
+		    	$objPHPExcel->getActiveSheet()->getStyle('C'.$i)->applyFromArray($borders);
+		    	$objPHPExcel->getActiveSheet()->getStyle('D'.$i)->applyFromArray($borders);
+		    	$objPHPExcel->getActiveSheet()->getStyle('A'.$i)->applyFromArray($style);
+		    	$objPHPExcel->getActiveSheet()->getStyle('B'.$i)->applyFromArray($style);
+		    	$objPHPExcel->getActiveSheet()->getStyle('C'.$i)->applyFromArray($style);
+		    	$objPHPExcel->getActiveSheet()->getStyle('D'.$i)->applyFromArray($style);
+		    	$objPHPExcel->getActiveSheet()->getStyle('E'.$i)->applyFromArray($borders);
+		    	$objPHPExcel->getActiveSheet()->getStyle('F'.$i)->applyFromArray($borders);
+		    	$objPHPExcel->getActiveSheet()->getStyle('G'.$i)->applyFromArray($borders);
+		    	$objPHPExcel->getActiveSheet()->getStyle('H'.$i)->applyFromArray($borders);
+		    	$objPHPExcel->getActiveSheet()->getStyle('I'.$i)->applyFromArray($borders);
+		    	$objPHPExcel->getActiveSheet()->getStyle('J'.$i)->applyFromArray($borders);
+		    	$objPHPExcel->getActiveSheet()->getStyle('K'.$i)->applyFromArray($borders);
+		    	$objPHPExcel->getActiveSheet()->getStyle('L'.$i)->applyFromArray($borders);
+		    	$objPHPExcel->getActiveSheet()->getStyle('M'.$i)->applyFromArray($borders);
+		    	$objPHPExcel->getActiveSheet()->getStyle('O'.$i)->applyFromArray($borders);
+		    	$objPHPExcel->getActiveSheet()->getStyle('P'.$i)->applyFromArray($borders);
+		    	$objPHPExcel->getActiveSheet()->getStyle('Q'.$i)->applyFromArray($borders);
+		    	$objPHPExcel->getActiveSheet()->getStyle('R'.$i)->applyFromArray($borders);
+
+		    	$objPHPExcel->getActiveSheet()->getStyle('S'.$i)->applyFromArray($borders);
+		    	$objPHPExcel->getActiveSheet()->getStyle('T'.$i)->applyFromArray($borders);
+		    	$objPHPExcel->getActiveSheet()->getStyle('U'.$i)->applyFromArray($borders);
+		    	$objPHPExcel->getActiveSheet()->getStyle('V'.$i)->applyFromArray($borders);
+		    	$objPHPExcel->getActiveSheet()->getStyle('W'.$i)->applyFromArray($borders);
+		    	$objPHPExcel->getActiveSheet()->getStyle('X'.$i)->applyFromArray($borders);
+		    	$objPHPExcel->getActiveSheet()->getStyle('Y'.$i)->applyFromArray($borders);
+		    	$objPHPExcel->getActiveSheet()->getStyle('Z'.$i)->applyFromArray($borders);
+
+		    	$objPHPExcel->getActiveSheet()->getStyle('AA'.$i)->applyFromArray($borders);
+		    	$objPHPExcel->getActiveSheet()->getStyle('AB'.$i)->applyFromArray($borders);
+		    	$objPHPExcel->getActiveSheet()->getStyle('AC'.$i)->applyFromArray($borders);
+		    	$objPHPExcel->getActiveSheet()->getStyle('AD'.$i)->applyFromArray($borders);
+		    	$objPHPExcel->getActiveSheet()->getStyle('AE'.$i)->applyFromArray($borders);
+		    	$objPHPExcel->getActiveSheet()->getStyle('AF'.$i)->applyFromArray($borders);
+		    	$objPHPExcel->getActiveSheet()->getStyle('AG'.$i)->applyFromArray($borders);
+		    	$objPHPExcel->getActiveSheet()->getStyle('AH'.$i)->applyFromArray($borders);
+		    	$objPHPExcel->getActiveSheet()->getStyle('AI'.$i)->applyFromArray($borders);
+		    	$objPHPExcel->getActiveSheet()->getStyle('AJ'.$i)->applyFromArray($borders);
+		    	$objPHPExcel->getActiveSheet()->getStyle('AK'.$i)->applyFromArray($borders);
+		    	$objPHPExcel->getActiveSheet()->getStyle('AL'.$i)->applyFromArray($borders);
+		    	$objPHPExcel->getActiveSheet()->getStyle('AM'.$i)->applyFromArray($borders);
+		    	$objPHPExcel->getActiveSheet()->getStyle('AN'.$i)->applyFromArray($borders);
+
+			    /* Traer saldos iniciales de la BD */
+		    	$saldos_iniciales = $this->model_comercial->traer_saldos_iniciales($f_inicial,$id_pro);
+
+		    	$elementos = explode("-", $f_inicial);
+                $anio = $elementos[0];
+                $mes = $elementos[1];
+                $dia = $elementos[2];
+                $kperiodo_si = $dia.$mes.'00';
+
+				$objPHPExcel->getActiveSheet()->getStyle('E'.$i)->applyFromArray($style_2);
+			    $objPHPExcel->getActiveSheet()->getStyle('F'.$i)->applyFromArray($style_2);
+			    $objPHPExcel->getActiveSheet()->getStyle('G'.$i)->applyFromArray($style_2);
+			    $objPHPExcel->getActiveSheet()->getStyle('H'.$i)->applyFromArray($style_2);
+			    $objPHPExcel->getActiveSheet()->getStyle('I'.$i)->applyFromArray($style_2);
+			    $objPHPExcel->getActiveSheet()->getStyle('J'.$i)->applyFromArray($style_2);
+			    $objPHPExcel->getActiveSheet()->getStyle('K'.$i)->applyFromArray($style_2);
+			    $objPHPExcel->getActiveSheet()->getStyle('L'.$i)->applyFromArray($style_2);
+			    $objPHPExcel->getActiveSheet()->getStyle('M'.$i)->applyFromArray($style_2);
+			    $objPHPExcel->getActiveSheet()->getStyle('O'.$i)->applyFromArray($style_2);
+			    $objPHPExcel->getActiveSheet()->getStyle('P'.$i)->applyFromArray($style_2);
+			    $objPHPExcel->getActiveSheet()->getStyle('Q'.$i)->applyFromArray($style_2);
+			    $objPHPExcel->getActiveSheet()->getStyle('R'.$i)->applyFromArray($style_2);
+
+			    $objPHPExcel->getActiveSheet()->getStyle('S'.$i)->applyFromArray($style_2);
+			    $objPHPExcel->getActiveSheet()->getStyle('T'.$i)->applyFromArray($style_2);
+			    $objPHPExcel->getActiveSheet()->getStyle('U'.$i)->applyFromArray($style_2);
+			    $objPHPExcel->getActiveSheet()->getStyle('V'.$i)->applyFromArray($style_2);
+			    $objPHPExcel->getActiveSheet()->getStyle('W'.$i)->applyFromArray($style_2);
+			    $objPHPExcel->getActiveSheet()->getStyle('X'.$i)->applyFromArray($style_2);
+			    $objPHPExcel->getActiveSheet()->getStyle('Y'.$i)->applyFromArray($style_2);
+			    $objPHPExcel->getActiveSheet()->getStyle('Z'.$i)->applyFromArray($style_2);
+
+			    $objPHPExcel->getActiveSheet()->getStyle('AA'.$i)->applyFromArray($style_2);
+			    $objPHPExcel->getActiveSheet()->getStyle('AB'.$i)->applyFromArray($style_2);
+			    $objPHPExcel->getActiveSheet()->getStyle('AC'.$i)->applyFromArray($style_2);
+			    $objPHPExcel->getActiveSheet()->getStyle('AD'.$i)->applyFromArray($style_2);
+			    $objPHPExcel->getActiveSheet()->getStyle('AE'.$i)->applyFromArray($style_2);
+			    $objPHPExcel->getActiveSheet()->getStyle('AF'.$i)->applyFromArray($style_2);
+			    $objPHPExcel->getActiveSheet()->getStyle('AG'.$i)->applyFromArray($style_2);
+			    $objPHPExcel->getActiveSheet()->getStyle('AH'.$i)->applyFromArray($style_2);
+			    $objPHPExcel->getActiveSheet()->getStyle('AI'.$i)->applyFromArray($style_2);
+			    $objPHPExcel->getActiveSheet()->getStyle('AJ'.$i)->applyFromArray($style_2);
+			    $objPHPExcel->getActiveSheet()->getStyle('AK'.$i)->applyFromArray($style_2);
+			    $objPHPExcel->getActiveSheet()->getStyle('AL'.$i)->applyFromArray($style_2);
+			    $objPHPExcel->getActiveSheet()->getStyle('AM'.$i)->applyFromArray($style_2);
+			    $objPHPExcel->getActiveSheet()->getStyle('AN'.$i)->applyFromArray($style_2);
+
+			    $objPHPExcel->getActiveSheet()->getStyle('Y'.$i)->applyFromArray($style_3);
+
+			    $objPHPExcel->getActiveSheet()->getStyle('E'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+			    $objPHPExcel->getActiveSheet()->getStyle('F'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+			    $objPHPExcel->getActiveSheet()->getStyle('G'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+			    $objPHPExcel->getActiveSheet()->getStyle('H'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+			    $objPHPExcel->getActiveSheet()->getStyle('I'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+			    $objPHPExcel->getActiveSheet()->getStyle('J'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+			    $objPHPExcel->getActiveSheet()->getStyle('K'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+			    $objPHPExcel->getActiveSheet()->getStyle('L'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+			    $objPHPExcel->getActiveSheet()->getStyle('M'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+
+			    $objPHPExcel->getActiveSheet()->getStyle('AB'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+			    $objPHPExcel->getActiveSheet()->getStyle('AC'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+			    $objPHPExcel->getActiveSheet()->getStyle('AD'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+			    $objPHPExcel->getActiveSheet()->getStyle('AE'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+			    $objPHPExcel->getActiveSheet()->getStyle('AF'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+			    $objPHPExcel->getActiveSheet()->getStyle('AG'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+			    $objPHPExcel->getActiveSheet()->getStyle('AH'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+			    $objPHPExcel->getActiveSheet()->getStyle('AI'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+			    $objPHPExcel->getActiveSheet()->getStyle('AJ'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+			    /*
+			    $objPHPExcel->getActiveSheet()->getStyle('AK'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+			    $objPHPExcel->getActiveSheet()->getStyle('AL'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+			    $objPHPExcel->getActiveSheet()->getStyle('AM'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+			    $objPHPExcel->getActiveSheet()->getStyle('AN'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+			    */
+
+		    	if( count($saldos_iniciales) > 0 ){
+		    		foreach ($saldos_iniciales as $result) {
+		    			/* Formato de Fecha */
+	                    $elementos = explode("-", $result->fecha_cierre);
+	                    $anio = $elementos[0];
+	                    $mes = $elementos[1];
+	                    $dia = $elementos[2];
+	                    $array = array($dia, $mes, $anio);
+	                    $fecha_formateada = implode("-", $array);
+	                    /* Fin */
+	                    $stock_cierre_total = $result->stock_inicial + $result->stock_inicial_sta_clara;
+			    		$objWorkSheet->setCellValue('A'.$i, $fecha_formateada)
+				    			     ->setCellValue('B'.$i, " ")
+				    			     ->setCellValue('C'.$i, "SI")
+				    			     ->setCellValue('D'.$i, " ")
+				    			     ->setCellValue('E'.$i, $stock_cierre_total)
+				    			     ->setCellValue('F'.$i, $result->precio_uni_inicial)
+				    			     ->setCellValue('G'.$i, $stock_cierre_total*$result->precio_uni_inicial)
+				    			     ->setCellValueExplicit('H'.$i, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+				    			     ->setCellValue('I'.$i, $result->precio_uni_inicial)
+				    			     ->setCellValueExplicit('J'.$i, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+				    			     ->setCellValue('K'.$i, $stock_cierre_total)
+				    			     ->setCellValue('L'.$i, $result->precio_uni_inicial)
+				    			     ->setCellValue('M'.$i, $stock_cierre_total*$result->precio_uni_inicial)
+				    			     ->setCellValue('O'.$i, $kperiodo_si)
+				    			     ->setCellValue('P'.$i, "2")
+				    			     ->setCellValue('Q'.$i, "9")
+				    			     ->setCellValueExplicit('R'.$i, $ktipexist,PHPExcel_Cell_DataType::TYPE_STRING)
+				    			     ->setCellValue('S'.$i, $id_producto)
+				    			     ->setCellValue('T'.$i, $fecha_formateada)
+				    			     ->setCellValue('U'.$i, "")
+				    			     ->setCellValue('V'.$i, "SI")
+				    			     ->setCellValue('W'.$i, "")
+				    			     ->setCellValue('X'.$i, "16")
+				    			     ->setCellValue('Y'.$i, $nombre_producto)
+				    			     ->setCellValue('Z'.$i, $kunimed)
+				    			     ->setCellValue('AA'.$i, "1")
+				    			     ->setCellValue('AB'.$i, $stock_cierre_total)
+				    			     ->setCellValue('AC'.$i, $result->precio_uni_inicial)
+				    			     ->setCellValue('AD'.$i, $stock_cierre_total*$result->precio_uni_inicial)
+				    			     ->setCellValueExplicit('AE'.$i, "0.0000000000",PHPExcel_Cell_DataType::TYPE_STRING)
+				    			     ->setCellValue('AF'.$i, $result->precio_uni_inicial)
+				    			     ->setCellValueExplicit('AG'.$i, "0.0000000000",PHPExcel_Cell_DataType::TYPE_STRING)
+				    			     ->setCellValue('AH'.$i, $stock_cierre_total)
+				    			     ->setCellValue('AI'.$i, $result->precio_uni_inicial)
+				    			     ->setCellValue('AJ'.$i, $stock_cierre_total*$result->precio_uni_inicial)
+				    			     ->setCellValue('AK'.$i, "1")
+				    			     ->setCellValue('AL'.$i, "0")
+				    			     ->setCellValue('AM'.$i, "0")
+				    			     ->setCellValue('AN'.$i, "0");
+				    	$i++;
+			    	}
+		    	}else{
+		    		$objWorkSheet->setCellValueExplicit('A'.$i, $f_inicial)
+			    			     ->setCellValueExplicit('B'.$i, " ")
+			    			     ->setCellValueExplicit('C'.$i, "SI")
+			    			     ->setCellValueExplicit('D'.$i, " ")
+			    			     ->setCellValueExplicit('E'.$i, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+			    			     ->setCellValueExplicit('F'.$i, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+			    			     ->setCellValueExplicit('G'.$i, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+			    			     ->setCellValueExplicit('H'.$i, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+			    			     ->setCellValueExplicit('I'.$i, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+			    			     ->setCellValueExplicit('J'.$i, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+			    			     ->setCellValueExplicit('K'.$i, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+			    			     ->setCellValueExplicit('L'.$i, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+			    			     ->setCellValueExplicit('M'.$i, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+			    			     ->setCellValueExplicit('O'.$i, $kperiodo_si,PHPExcel_Cell_DataType::TYPE_STRING)
+			    			     ->setCellValueExplicit('P'.$i, "2",PHPExcel_Cell_DataType::TYPE_STRING)
+			    			     ->setCellValueExplicit('Q'.$i, "9",PHPExcel_Cell_DataType::TYPE_STRING)
+			    			     ->setCellValueExplicit('R'.$i, $ktipexist,PHPExcel_Cell_DataType::TYPE_STRING)
+			    			     ->setCellValueExplicit('S'.$i, $id_producto,PHPExcel_Cell_DataType::TYPE_STRING)
+			    			     ->setCellValue('T'.$i, $f_inicial)
+			    			     ->setCellValue('U'.$i, "")
+			    			     ->setCellValue('V'.$i, "SI")
+			    			     ->setCellValue('W'.$i, "")
+			    			     ->setCellValue('X'.$i, "16")
+			    			     ->setCellValue('Y'.$i, $nombre_producto)
+			    			     ->setCellValue('Z'.$i, $kunimed)
+			    			     ->setCellValueExplicit('AA'.$i, "1")
+			    			     ->setCellValueExplicit('AB'.$i, "0.0000000000",PHPExcel_Cell_DataType::TYPE_STRING)
+			    			     ->setCellValueExplicit('AC'.$i, "0.0000000000",PHPExcel_Cell_DataType::TYPE_STRING)
+			    			     ->setCellValueExplicit('AD'.$i, "0.0000000000",PHPExcel_Cell_DataType::TYPE_STRING)
+			    			     ->setCellValueExplicit('AE'.$i, "0.0000000000",PHPExcel_Cell_DataType::TYPE_STRING)
+			    			     ->setCellValueExplicit('AF'.$i, "0.0000000000",PHPExcel_Cell_DataType::TYPE_STRING)
+			    			     ->setCellValueExplicit('AG'.$i, "0.0000000000",PHPExcel_Cell_DataType::TYPE_STRING)
+			    			     ->setCellValueExplicit('AH'.$i, "0.0000000000",PHPExcel_Cell_DataType::TYPE_STRING)
+			    			     ->setCellValueExplicit('AI'.$i, "0.0000000000",PHPExcel_Cell_DataType::TYPE_STRING)
+			    			     ->setCellValueExplicit('AJ'.$i, "0.0000000000",PHPExcel_Cell_DataType::TYPE_STRING)
+			    			     ->setCellValue('AK'.$i, "1")
+			    			     ->setCellValue('AL'.$i, "0")
+			    			     ->setCellValue('AM'.$i, "0")
+			    			     ->setCellValue('AN'.$i, "0");
+			    	$i++;
+		    	}
+
+			    // Recorrido del detalle del kardex general por producto
+			    $detalle_movimientos_kardex = $this->model_comercial->traer_movimientos_kardex($id_detalle_producto,$f_inicial,$f_final);
+			    if( count($detalle_movimientos_kardex) > 0 ){
+				    foreach ($detalle_movimientos_kardex as $data) {
+				    	// Centrar contenido
+				    	$objPHPExcel->getActiveSheet()->getStyle('A'.$i)->applyFromArray($borders);
+				    	$objPHPExcel->getActiveSheet()->getStyle('B'.$i)->applyFromArray($borders);
+				    	$objPHPExcel->getActiveSheet()->getStyle('C'.$i)->applyFromArray($borders);
+				    	$objPHPExcel->getActiveSheet()->getStyle('D'.$i)->applyFromArray($borders);
+				    	$objPHPExcel->getActiveSheet()->getStyle('A'.$i)->applyFromArray($style);
+				    	$objPHPExcel->getActiveSheet()->getStyle('B'.$i)->applyFromArray($style);
+				    	$objPHPExcel->getActiveSheet()->getStyle('C'.$i)->applyFromArray($style);
+				    	$objPHPExcel->getActiveSheet()->getStyle('D'.$i)->applyFromArray($style);
+				    	$objPHPExcel->getActiveSheet()->getStyle('E'.$i)->applyFromArray($borders);
+				    	$objPHPExcel->getActiveSheet()->getStyle('F'.$i)->applyFromArray($borders);
+				    	$objPHPExcel->getActiveSheet()->getStyle('G'.$i)->applyFromArray($borders);
+
+				    	$objPHPExcel->getActiveSheet()->getStyle('E'.$i)->applyFromArray($style_2);
+				    	$objPHPExcel->getActiveSheet()->getStyle('F'.$i)->applyFromArray($style_2);
+				    	$objPHPExcel->getActiveSheet()->getStyle('G'.$i)->applyFromArray($style_2);
+				    	$objPHPExcel->getActiveSheet()->getStyle('H'.$i)->applyFromArray($style_2);
+				    	$objPHPExcel->getActiveSheet()->getStyle('I'.$i)->applyFromArray($style_2);
+				    	$objPHPExcel->getActiveSheet()->getStyle('J'.$i)->applyFromArray($style_2);
+				    	$objPHPExcel->getActiveSheet()->getStyle('K'.$i)->applyFromArray($style_2);
+				    	$objPHPExcel->getActiveSheet()->getStyle('L'.$i)->applyFromArray($style_2);
+				    	$objPHPExcel->getActiveSheet()->getStyle('M'.$i)->applyFromArray($style_2);
+				    	$objPHPExcel->getActiveSheet()->getStyle('O'.$i)->applyFromArray($style_2);
+				    	$objPHPExcel->getActiveSheet()->getStyle('P'.$i)->applyFromArray($style_2);
+				    	$objPHPExcel->getActiveSheet()->getStyle('Q'.$i)->applyFromArray($style_2);
+				    	$objPHPExcel->getActiveSheet()->getStyle('R'.$i)->applyFromArray($style_2);
+
+				    	$objPHPExcel->getActiveSheet()->getStyle('S'.$i)->applyFromArray($style_2);
+				    	$objPHPExcel->getActiveSheet()->getStyle('T'.$i)->applyFromArray($style_2);
+				    	$objPHPExcel->getActiveSheet()->getStyle('U'.$i)->applyFromArray($style_2);
+				    	$objPHPExcel->getActiveSheet()->getStyle('V'.$i)->applyFromArray($style_2);
+				    	$objPHPExcel->getActiveSheet()->getStyle('W'.$i)->applyFromArray($style_2);
+				    	$objPHPExcel->getActiveSheet()->getStyle('X'.$i)->applyFromArray($style_2);
+				    	$objPHPExcel->getActiveSheet()->getStyle('Y'.$i)->applyFromArray($style_2);
+				    	$objPHPExcel->getActiveSheet()->getStyle('Z'.$i)->applyFromArray($style_2);
+
+				    	$objPHPExcel->getActiveSheet()->getStyle('AA'.$i)->applyFromArray($style_2);
+					    $objPHPExcel->getActiveSheet()->getStyle('AB'.$i)->applyFromArray($style_2);
+					    $objPHPExcel->getActiveSheet()->getStyle('AC'.$i)->applyFromArray($style_2);
+					    $objPHPExcel->getActiveSheet()->getStyle('AD'.$i)->applyFromArray($style_2);
+					    $objPHPExcel->getActiveSheet()->getStyle('AE'.$i)->applyFromArray($style_2);
+					    $objPHPExcel->getActiveSheet()->getStyle('AF'.$i)->applyFromArray($style_2);
+					    $objPHPExcel->getActiveSheet()->getStyle('AG'.$i)->applyFromArray($style_2);
+					    $objPHPExcel->getActiveSheet()->getStyle('AH'.$i)->applyFromArray($style_2);
+					    $objPHPExcel->getActiveSheet()->getStyle('AI'.$i)->applyFromArray($style_2);
+					    $objPHPExcel->getActiveSheet()->getStyle('AJ'.$i)->applyFromArray($style_2);
+					    $objPHPExcel->getActiveSheet()->getStyle('AK'.$i)->applyFromArray($style_2);
+					    $objPHPExcel->getActiveSheet()->getStyle('AL'.$i)->applyFromArray($style_2);
+					    $objPHPExcel->getActiveSheet()->getStyle('AM'.$i)->applyFromArray($style_2);
+					    $objPHPExcel->getActiveSheet()->getStyle('AN'.$i)->applyFromArray($style_2);
+
+				    	$objPHPExcel->getActiveSheet()->getStyle('Y'.$i)->applyFromArray($style_3);
+
+				    	$objPHPExcel->getActiveSheet()->getStyle('H'.$i)->applyFromArray($borders);
+				    	$objPHPExcel->getActiveSheet()->getStyle('I'.$i)->applyFromArray($borders);
+				    	$objPHPExcel->getActiveSheet()->getStyle('J'.$i)->applyFromArray($borders);
+				    	$objPHPExcel->getActiveSheet()->getStyle('K'.$i)->applyFromArray($borders);
+				    	$objPHPExcel->getActiveSheet()->getStyle('L'.$i)->applyFromArray($borders);
+				    	$objPHPExcel->getActiveSheet()->getStyle('M'.$i)->applyFromArray($borders);
+				    	$objPHPExcel->getActiveSheet()->getStyle('O'.$i)->applyFromArray($borders);
+				    	$objPHPExcel->getActiveSheet()->getStyle('P'.$i)->applyFromArray($borders);
+				    	$objPHPExcel->getActiveSheet()->getStyle('Q'.$i)->applyFromArray($borders);
+				    	$objPHPExcel->getActiveSheet()->getStyle('R'.$i)->applyFromArray($borders);
+
+				    	$objPHPExcel->getActiveSheet()->getStyle('S'.$i)->applyFromArray($borders);
+				    	$objPHPExcel->getActiveSheet()->getStyle('T'.$i)->applyFromArray($borders);
+				    	$objPHPExcel->getActiveSheet()->getStyle('U'.$i)->applyFromArray($borders);
+				    	$objPHPExcel->getActiveSheet()->getStyle('V'.$i)->applyFromArray($borders);
+				    	$objPHPExcel->getActiveSheet()->getStyle('W'.$i)->applyFromArray($borders);
+				    	$objPHPExcel->getActiveSheet()->getStyle('X'.$i)->applyFromArray($borders);
+				    	$objPHPExcel->getActiveSheet()->getStyle('Y'.$i)->applyFromArray($borders);
+				    	$objPHPExcel->getActiveSheet()->getStyle('Z'.$i)->applyFromArray($borders);
+
+				    	$objPHPExcel->getActiveSheet()->getStyle('AA'.$i)->applyFromArray($borders);
+				    	$objPHPExcel->getActiveSheet()->getStyle('AB'.$i)->applyFromArray($borders);
+				    	$objPHPExcel->getActiveSheet()->getStyle('AC'.$i)->applyFromArray($borders);
+				    	$objPHPExcel->getActiveSheet()->getStyle('AD'.$i)->applyFromArray($borders);
+				    	$objPHPExcel->getActiveSheet()->getStyle('AE'.$i)->applyFromArray($borders);
+				    	$objPHPExcel->getActiveSheet()->getStyle('AF'.$i)->applyFromArray($borders);
+				    	$objPHPExcel->getActiveSheet()->getStyle('AG'.$i)->applyFromArray($borders);
+				    	$objPHPExcel->getActiveSheet()->getStyle('AH'.$i)->applyFromArray($borders);
+				    	$objPHPExcel->getActiveSheet()->getStyle('AI'.$i)->applyFromArray($borders);
+				    	$objPHPExcel->getActiveSheet()->getStyle('AJ'.$i)->applyFromArray($borders);
+				    	$objPHPExcel->getActiveSheet()->getStyle('AK'.$i)->applyFromArray($borders);
+				    	$objPHPExcel->getActiveSheet()->getStyle('AL'.$i)->applyFromArray($borders);
+				    	$objPHPExcel->getActiveSheet()->getStyle('AM'.$i)->applyFromArray($borders);
+				    	$objPHPExcel->getActiveSheet()->getStyle('AN'.$i)->applyFromArray($borders);
+
+				    	// formato de variables
+				    	$objPHPExcel->getActiveSheet()->getStyle('E'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+				    	$objPHPExcel->getActiveSheet()->getStyle('F'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+				    	$objPHPExcel->getActiveSheet()->getStyle('G'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+				    	$objPHPExcel->getActiveSheet()->getStyle('H'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+				    	$objPHPExcel->getActiveSheet()->getStyle('I'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+				    	$objPHPExcel->getActiveSheet()->getStyle('J'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+				    	$objPHPExcel->getActiveSheet()->getStyle('K'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+				    	$objPHPExcel->getActiveSheet()->getStyle('L'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+				    	$objPHPExcel->getActiveSheet()->getStyle('M'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+
+				    	$objPHPExcel->getActiveSheet()->getStyle('AB'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+					    $objPHPExcel->getActiveSheet()->getStyle('AC'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+					    $objPHPExcel->getActiveSheet()->getStyle('AD'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+					    $objPHPExcel->getActiveSheet()->getStyle('AE'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+					    $objPHPExcel->getActiveSheet()->getStyle('AF'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+					    $objPHPExcel->getActiveSheet()->getStyle('AG'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+					    $objPHPExcel->getActiveSheet()->getStyle('AH'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+					    $objPHPExcel->getActiveSheet()->getStyle('AI'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+					    $objPHPExcel->getActiveSheet()->getStyle('AJ'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+					    /*
+					    $objPHPExcel->getActiveSheet()->getStyle('AK'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+					    $objPHPExcel->getActiveSheet()->getStyle('AL'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+					    $objPHPExcel->getActiveSheet()->getStyle('AM'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+					    $objPHPExcel->getActiveSheet()->getStyle('AN'.$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+					    */
+
+				    	// Formato de Fecha
+	                    $elementos = explode("-", $data->fecha_registro);
+	                    $anio = $elementos[0];
+	                    $mes = $elementos[1];
+	                    $dia = $elementos[2];
+	                    $array = array($dia, $mes, $anio);
+	                    $fecha_formateada_2 = implode("-", $array);
+	                    // fin de formato
+				    	$kperiodo_movimiento = $anio.$mes.'00';
+				    	// fin de formato
+				    	if($data->descripcion == "ENTRADA"){
+
+				    		// verificar si la entrada es una factura importada
+				    		$this->db->select('id_agente');
+				            $this->db->where('serie_comprobante',$data->serie_comprobante);
+				            $this->db->where('nro_comprobante',$data->num_comprobante);
+				            $this->db->where('fecha',$data->fecha_registro);
+				            $query = $this->db->get('ingreso_producto');
+				            foreach($query->result() as $row){
+				                $id_agente = $row->id_agente;
+				            }
+
+				            if($id_agente == 2){
+					    		$objWorkSheet->setCellValue('A'.$i, $fecha_formateada_2)
+					    					 ->setCellValue('B'.$i, "FT")
+					    					 ->setCellValueExplicit('C'.$i, str_pad($data->serie_comprobante, 3, 0, STR_PAD_LEFT),PHPExcel_Cell_DataType::TYPE_STRING)
+					    					 ->setCellValueExplicit('D'.$i, str_pad($data->num_comprobante, 8, 0, STR_PAD_LEFT),PHPExcel_Cell_DataType::TYPE_STRING)
+					    					 ->setCellValue('E'.$i, $data->cantidad_ingreso)
+					    					 ->setCellValue('F'.$i, $data->precio_unitario_actual)
+					    					 ->setCellValue('G'.$i, $data->cantidad_ingreso * $data->precio_unitario_actual)
+					    					 ->setCellValueExplicit('H'.$i, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+					    					 ->setCellValue('I'.$i, $data->precio_unitario_actual_promedio)
+					    					 ->setCellValueExplicit('J'.$i, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+					    					 ->setCellValue('K'.$i, $data->stock_actual)
+					    					 ->setCellValue('L'.$i, $data->precio_unitario_actual_promedio)
+					    					 ->setCellValue('M'.$i, $data->stock_actual*$data->precio_unitario_actual_promedio)
+					    					 ->setCellValue('O'.$i, $kperiodo_movimiento)
+					    					 ->setCellValue('P'.$i, "2")
+					    					 ->setCellValue('Q'.$i, "9")
+					    					 ->setCellValueExplicit('R'.$i, $ktipexist,PHPExcel_Cell_DataType::TYPE_STRING)
+					    					 ->setCellValueExplicit('S'.$i, $id_producto,PHPExcel_Cell_DataType::TYPE_STRING)
+					    					 ->setCellValue('T'.$i, $fecha_formateada_2)
+					    					 ->setCellValueExplicit('U'.$i, "01",PHPExcel_Cell_DataType::TYPE_STRING)
+					    					 ->setCellValueExplicit('V'.$i, $data->serie_comprobante,PHPExcel_Cell_DataType::TYPE_STRING)
+					    					 ->setCellValueExplicit('W'.$i, str_pad($data->num_comprobante, 8, 0, STR_PAD_LEFT),PHPExcel_Cell_DataType::TYPE_STRING)
+					    					 ->setCellValueExplicit('X'.$i, "02",PHPExcel_Cell_DataType::TYPE_STRING)
+					    					 ->setCellValue('Y'.$i, $nombre_producto)
+					    					 ->setCellValue('Z'.$i, $kunimed)
+											 ->setCellValue('AA'.$i, "1")
+					    					 ->setCellValue('AB'.$i, $data->cantidad_ingreso)
+					    					 ->setCellValue('AC'.$i, $data->precio_unitario_actual)
+					    					 ->setCellValue('AD'.$i, $data->cantidad_ingreso * $data->precio_unitario_actual)
+					    					 ->setCellValueExplicit('AE'.$i, "0.0000000000",PHPExcel_Cell_DataType::TYPE_STRING)
+					    					 ->setCellValue('AF'.$i, $data->precio_unitario_actual_promedio)
+					    					 ->setCellValueExplicit('AG'.$i, "0.0000000000",PHPExcel_Cell_DataType::TYPE_STRING)
+					    					 ->setCellValue('AH'.$i, $data->stock_actual)
+					    					 ->setCellValue('AI'.$i, $data->precio_unitario_actual_promedio)
+					    					 ->setCellValue('AJ'.$i, $data->stock_actual*$data->precio_unitario_actual_promedio)
+					    					 ->setCellValue('AK'.$i, "1")
+						    			     ->setCellValue('AL'.$i, "0")
+						    			     ->setCellValue('AM'.$i, "0")
+						    			     ->setCellValue('AN'.$i, "0");
+					    		$i++;
+				            }else{
+				            	$objWorkSheet->setCellValue('A'.$i, $fecha_formateada_2)
+					    					 ->setCellValue('B'.$i, "FT")
+					    					 ->setCellValueExplicit('C'.$i, str_pad($data->serie_comprobante, 3, 0, STR_PAD_LEFT),PHPExcel_Cell_DataType::TYPE_STRING)
+					    					 ->setCellValueExplicit('D'.$i, str_pad($data->num_comprobante, 8, 0, STR_PAD_LEFT),PHPExcel_Cell_DataType::TYPE_STRING)
+					    					 ->setCellValue('E'.$i, $data->cantidad_ingreso)
+					    					 ->setCellValue('F'.$i, $data->precio_unitario_actual)
+					    					 ->setCellValue('G'.$i, $data->cantidad_ingreso * $data->precio_unitario_actual)
+					    					 ->setCellValueExplicit('H'.$i, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+					    					 ->setCellValue('I'.$i, $data->precio_unitario_actual_promedio)
+					    					 ->setCellValueExplicit('J'.$i, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+					    					 ->setCellValue('K'.$i, $data->stock_actual)
+					    					 ->setCellValue('L'.$i, $data->precio_unitario_actual_promedio)
+					    					 ->setCellValue('M'.$i, $data->stock_actual*$data->precio_unitario_actual_promedio)
+					    					 ->setCellValue('O'.$i, $kperiodo_movimiento)
+					    					 ->setCellValue('P'.$i, "2")
+					    					 ->setCellValue('Q'.$i, "9")
+					    					 ->setCellValueExplicit('R'.$i, $ktipexist,PHPExcel_Cell_DataType::TYPE_STRING)
+					    					 ->setCellValueExplicit('S'.$i, $id_producto,PHPExcel_Cell_DataType::TYPE_STRING)
+					    					 ->setCellValue('T'.$i, $fecha_formateada_2)
+					    					 ->setCellValueExplicit('U'.$i, "01",PHPExcel_Cell_DataType::TYPE_STRING)
+					    					 ->setCellValueExplicit('V'.$i, $data->serie_comprobante,PHPExcel_Cell_DataType::TYPE_STRING)
+					    					 ->setCellValueExplicit('W'.$i, str_pad($data->num_comprobante, 8, 0, STR_PAD_LEFT),PHPExcel_Cell_DataType::TYPE_STRING)
+					    					 ->setCellValueExplicit('X'.$i, "18",PHPExcel_Cell_DataType::TYPE_STRING)
+					    					 ->setCellValue('Y'.$i, $nombre_producto)
+					    					 ->setCellValue('Z'.$i, $kunimed)
+											 ->setCellValue('AA'.$i, "1")
+					    					 ->setCellValue('AB'.$i, $data->cantidad_ingreso)
+					    					 ->setCellValue('AC'.$i, $data->precio_unitario_actual)
+					    					 ->setCellValue('AD'.$i, $data->cantidad_ingreso * $data->precio_unitario_actual)
+					    					 ->setCellValueExplicit('AE'.$i, "0.0000000000",PHPExcel_Cell_DataType::TYPE_STRING)
+					    					 ->setCellValue('AF'.$i, $data->precio_unitario_actual_promedio)
+					    					 ->setCellValueExplicit('AG'.$i, "0.0000000000",PHPExcel_Cell_DataType::TYPE_STRING)
+					    					 ->setCellValue('AH'.$i, $data->stock_actual)
+					    					 ->setCellValue('AI'.$i, $data->precio_unitario_actual_promedio)
+					    					 ->setCellValue('AJ'.$i, $data->stock_actual*$data->precio_unitario_actual_promedio)
+					    					 ->setCellValue('AK'.$i, "1")
+						    			     ->setCellValue('AL'.$i, "0")
+						    			     ->setCellValue('AM'.$i, "0")
+						    			     ->setCellValue('AN'.$i, "0");
+					    		$i++;
+				            }
+				    	}else if($data->descripcion == "SALIDA"){
+				    		$objWorkSheet->setCellValue('A'.$i, $fecha_formateada_2)
+				    					 ->setCellValue('B'.$i, "OS")
+				    					 ->setCellValue('C'.$i, "NIG")
+				    					 ->setCellValueExplicit('D'.$i, str_pad($data->id_kardex_producto, 8, 0, STR_PAD_LEFT),PHPExcel_Cell_DataType::TYPE_STRING)
+				    					 ->setCellValueExplicit('E'.$i, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+				    					 ->setCellValueExplicit('F'.$i, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+				    					 ->setCellValueExplicit('G'.$i, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+				    					 ->setCellValue('H'.$i, $data->cantidad_salida)
+				    					 ->setCellValue('I'.$i, $data->precio_unitario_anterior)
+				    					 ->setCellValue('J'.$i, $data->cantidad_salida*$data->precio_unitario_anterior)
+				    					 ->setCellValue('K'.$i, $data->stock_actual)
+				    					 ->setCellValue('L'.$i, $data->precio_unitario_actual)
+				    					 ->setCellValue('M'.$i, $data->stock_actual*$data->precio_unitario_actual)
+				    					 ->setCellValue('O'.$i, $kperiodo_movimiento)
+				    					 ->setCellValue('P'.$i, "2")
+				    					 ->setCellValue('Q'.$i, "9")
+				    					 ->setCellValueExplicit('R'.$i, $ktipexist,PHPExcel_Cell_DataType::TYPE_STRING)
+				    					 ->setCellValueExplicit('S'.$i, $id_producto,PHPExcel_Cell_DataType::TYPE_STRING)
+				    					 ->setCellValue('T'.$i, $fecha_formateada_2)
+				    					 ->setCellValueExplicit('U'.$i, "00",PHPExcel_Cell_DataType::TYPE_STRING)
+				    					 ->setCellValue('V'.$i, "NIG")
+				    					 ->setCellValueExplicit('W'.$i, str_pad($data->id_kardex_producto, 8, 0, STR_PAD_LEFT),PHPExcel_Cell_DataType::TYPE_STRING)
+				    					 ->setCellValueExplicit('X'.$i, "10",PHPExcel_Cell_DataType::TYPE_STRING)
+				    					 ->setCellValue('Y'.$i, $nombre_producto)
+				    					 ->setCellValue('Z'.$i, $kunimed)
+				    					 ->setCellValue('AA'.$i, "1")
+				    					 ->setCellValueExplicit('AB'.$i, "0.0000000000",PHPExcel_Cell_DataType::TYPE_STRING)
+				    					 ->setCellValueExplicit('AC'.$i, "0.0000000000",PHPExcel_Cell_DataType::TYPE_STRING)
+				    					 ->setCellValueExplicit('AD'.$i, "0.0000000000",PHPExcel_Cell_DataType::TYPE_STRING)
+				    					 ->setCellValue('AE'.$i, $data->cantidad_salida)
+				    					 ->setCellValue('AF'.$i, $data->precio_unitario_anterior)
+				    					 ->setCellValue('AG'.$i, $data->cantidad_salida*$data->precio_unitario_anterior)
+				    					 ->setCellValue('AH'.$i, $data->stock_actual)
+				    					 ->setCellValue('AI'.$i, $data->precio_unitario_actual)
+				    					 ->setCellValue('AJ'.$i, $data->stock_actual*$data->precio_unitario_actual)
+				    					 ->setCellValue('AK'.$i, "1")
+					    			     ->setCellValue('AL'.$i, "0")
+					    			     ->setCellValue('AM'.$i, "0")
+					    			     ->setCellValue('AN'.$i, "0");
+				    		$i++;
+				    	}else if($data->descripcion == "ORDEN INGRESO"){
+				    		$objWorkSheet->setCellValue('A'.$i, $fecha_formateada_2)
+				    					 ->setCellValue('B'.$i, "OI")
+				    					 ->setCellValueExplicit('C'.$i, str_pad($data->serie_comprobante, 3, 0, STR_PAD_LEFT),PHPExcel_Cell_DataType::TYPE_STRING)
+				    					 ->setCellValueExplicit('D'.$i, str_pad($data->num_comprobante, 8, 0, STR_PAD_LEFT),PHPExcel_Cell_DataType::TYPE_STRING)
+				    					 ->setCellValue('E'.$i, $data->cantidad_ingreso)
+				    					 ->setCellValue('F'.$i, $data->precio_unitario_actual)
+				    					 ->setCellValue('G'.$i, $data->cantidad_ingreso * $data->precio_unitario_actual)
+				    					 ->setCellValueExplicit('H'.$i, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+				    					 ->setCellValue('I'.$i, $data->precio_unitario_actual)
+				    					 ->setCellValueExplicit('J'.$i, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+				    					 ->setCellValue('K'.$i, $data->stock_actual)
+				    					 ->setCellValue('L'.$i, $data->precio_unitario_actual_promedio)
+				    					 ->setCellValue('M'.$i, $data->stock_actual*$data->precio_unitario_actual_promedio)
+				    					 ->setCellValue('O'.$i, $kperiodo_movimiento)
+				    					 ->setCellValue('P'.$i, "2")
+				    					 ->setCellValue('Q'.$i, "9")
+				    					 ->setCellValueExplicit('R'.$i, $ktipexist,PHPExcel_Cell_DataType::TYPE_STRING)
+				    					 ->setCellValueExplicit('S'.$i, $id_producto,PHPExcel_Cell_DataType::TYPE_STRING)
+				    					 ->setCellValue('T'.$i, $fecha_formateada_2)
+				    					 ->setCellValueExplicit('U'.$i, "00",PHPExcel_Cell_DataType::TYPE_STRING)
+				    					 ->setCellValueExplicit('V'.$i, str_pad($data->serie_comprobante, 3, 0, STR_PAD_LEFT),PHPExcel_Cell_DataType::TYPE_STRING)
+				    					 ->setCellValueExplicit('W'.$i, str_pad($data->num_comprobante, 8, 0, STR_PAD_LEFT),PHPExcel_Cell_DataType::TYPE_STRING)
+				    					 ->setCellValueExplicit('X'.$i, "21",PHPExcel_Cell_DataType::TYPE_STRING)
+				    					 ->setCellValue('Y'.$i, $nombre_producto)
+				    					 ->setCellValue('Z'.$i, $kunimed)
+				    					 ->setCellValue('AA'.$i, "1")
+				    					 ->setCellValue('AB'.$i, $data->cantidad_ingreso)
+				    					 ->setCellValue('AC'.$i, $data->precio_unitario_actual)
+				    					 ->setCellValue('AD'.$i, $data->cantidad_ingreso * $data->precio_unitario_actual)
+				    					 ->setCellValueExplicit('AE'.$i, "0.0000000000",PHPExcel_Cell_DataType::TYPE_STRING)
+				    					 ->setCellValue('AF'.$i, $data->precio_unitario_actual)
+				    					 ->setCellValueExplicit('AG'.$i, "0.0000000000",PHPExcel_Cell_DataType::TYPE_STRING)
+				    					 ->setCellValue('AH'.$i, $data->stock_actual)
+				    					 ->setCellValue('AI'.$i, $data->precio_unitario_actual_promedio)
+				    					 ->setCellValue('AJ'.$i, $data->stock_actual*$data->precio_unitario_actual_promedio)
+				    					 ->setCellValue('AK'.$i, "1")
+					    			     ->setCellValue('AL'.$i, "0")
+					    			     ->setCellValue('AM'.$i, "0")
+					    			     ->setCellValue('AN'.$i, "0");
+				    		$i++;
+				    	}
+					}
+				}
+			    /* Rename sheet */
+			    $objWorkSheet->setTitle("Reporte SUNAT I");
+        	}
+        }
+
+	    $objPHPExcel->setActiveSheetIndex(0);
+		/* datos de la salida del excel */
+		header("Content-type: application/vnd.ms-excel");
+		header("Content-Disposition: attachment; filename=Kardex_General.xls");
+		header("Cache-Control: max-age=0");
+		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+		$objWriter->save('php://output');
+		exit;
+	}
 	
 }
 ?>
