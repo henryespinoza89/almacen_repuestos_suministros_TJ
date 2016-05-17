@@ -339,7 +339,6 @@ class Model_comercial extends CI_Model {
                 foreach($query->result() as $row){
                     $id_ingreso_producto = $row->id_ingreso_producto;
                 }
-                // return $id_ingreso_producto;
                 return 'actualizacion_registro';
             }else{
                 $last_id = $this->db->insert('ingreso_producto', $datos);

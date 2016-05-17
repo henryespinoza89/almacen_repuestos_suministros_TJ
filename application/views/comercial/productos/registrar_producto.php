@@ -637,7 +637,6 @@
             <td>
               <?php 
                 if($listaproductos->column_temp == ""){
-                  /*echo "Vacio";*/
               ?>
                 <span class="icon-ban" style="color: red;"></span>
               <?php

@@ -292,6 +292,14 @@ $(function(){
 	      }}
 	    });
 
+	    $("#factura_duplicada").html('!La Factura ya se encuentra registrada. Verificar!').dialog({
+	      modal: true,position: 'center',width: 500,height: 125,resizable: false, title: 'Registro duplicado',
+	      buttons: { Ok: function(){
+	        //window.location.href="<?php echo base_url();?>comercial/gestionarea";
+	        $(this).dialog('close');
+	      }}
+	    });
+
 	    $("#mensaje_registro_correcto").html('<b>!La Factura se registro satisfactoriamente!</b>').dialog({
 	      modal: true,position: 'center',width: 400,height: 125,resizable: false, title: 'Mensaje',
 	      buttons: { Ok: function(){
@@ -1028,6 +1036,10 @@ $(function(){
 -->
 <?php if(!empty($error_tipo_cambio)){ ?>
     <div id="error_tipo_cambio"></div>
+<?php } ?>
+
+<?php if(!empty($factura_duplicada)){ ?>
+    <div id="factura_duplicada"></div>
 <?php } ?>
 
 <?php if(!empty($respuesta_csigv)){ ?>

@@ -5,6 +5,7 @@
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
 	<link rel="shortcut icon" type="image/jpg" href="<?php echo base_url(); ?>assets/img/tienda_movistar.jpg">
 	<link rel="stylesheet" type="text/css" href="<?php echo base_url(); ?>assets/css/estilos.css">
+	<link rel="stylesheet" type="text/css" href="<?php echo base_url(); ?>assets/css/sweetalert.css">
 	<link type="text/css" rel="stylesheet" href="<?php echo base_url();?>assets/css/jTPS.css" />
 	<!-- JQuery UI -->
 	<script src="<?php echo base_url();?>assets/js/jquery.min.js" type="text/javascript"></script>
@@ -24,22 +25,17 @@
 	<script language="JavaScript" type="text/javascript" src="<?php echo base_url();?>assets/js/jTPS.js"></script>
 	<script language="JavaScript" type="text/javascript" src="<?php echo base_url();?>assets/js/validador.js"></script>
 	<script language="JavaScript" type="text/javascript" src="<?php echo base_url();?>assets/js/funciones.js"></script>	 <!--Valida Contraseña-->
+	<script language="JavaScript" type="text/javascript" src="<?php echo base_url();?>assets/js/sweetalert.min.js"></script>
 	<!-- JQuery Autocomplete -->
-	<!--<link rel="stylesheet" type="text/css" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">-->
-	<!--
-	<link rel="stylesheet" href="//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
-	<script src="//code.jquery.com/jquery-1.10.2.js"></script>
-	<script src="//code.jquery.com/ui/1.11.2/jquery-ui.js"></script>
-	<link rel="stylesheet" href="/resources/demos/style.css">
-    <!--<script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>-->
-    
-	<!--<script src='https://ajax.googleapis.com/ajax/libs/jquery/1.8.0/jquery.min.js'></script>-->
-	<!--<script language="JavaScript" type="text/javascript" src="<?php //echo base_url();?>assets/js/funciones_2.js"></script> <!-- Valida Contraseña -->
+	<link type="text/css" rel="stylesheet" href="<?php echo base_url();?>assets/css/jquery.dataTables.css">
+	<script language="JavaScript" type="text/javascript" src="<?php echo base_url();?>assets/js/jquery.dataTables.js"></script>
+	<link type="text/css" rel="stylesheet" href="<?php echo base_url();?>assets/css/bootstrap.min.css">
+
 	<script language="JavaScript" type="text/javascript" src="<?php echo base_url();?>assets/js/jquery.cookie.js"></script>
 	<script language="JavaScript" type="text/javascript" src="<?php echo base_url();?>assets/js/jquery.maskedinput.min.js"></script>
 
 	<script language="JavaScript" type="text/javascript" src="<?php echo base_url();?>assets/js/ttip.js"></script>
-	<link type="text/css" rel="stylesheet" href="<?php echo base_url();?>assets/css/ttip.css" />	
+	<link type="text/css" rel="stylesheet" href="<?php echo base_url();?>assets/css/ttip.css" />
 
 	<title>Sistema de Almacén - Repuestos y Suministros</title>
 	<meta charset="utf-8">

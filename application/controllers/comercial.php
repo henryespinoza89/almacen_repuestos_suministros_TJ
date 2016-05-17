@@ -3281,7 +3281,7 @@ class Comercial extends CI_Controller {
 			$data['listasimmon']= $this->model_comercial->listaSimMon();
 			$data['listanombreproducto']= $this->model_comercial->listaNombreProducto();
 			$this->load->view('comercial/menu_script');
-									$this->load->view('comercial/menu_cabecera');
+			$this->load->view('comercial/menu_cabecera');
 			$this->load->view('comercial/comprobantes/registro_ingreso', $data);
 		}else{
 			if(($this->input->post('id_agente') != 2 AND $this->input->post('id_agente') != 3 AND $this->input->post('id_agente') != 4) AND ($this->input->post('porcent') == 0)){
@@ -3299,7 +3299,7 @@ class Comercial extends CI_Controller {
 					$data['listasimmon']= $this->model_comercial->listaSimMon();
 					$data['listanombreproducto']= $this->model_comercial->listaNombreProducto();
 					$this->load->view('comercial/menu_script');
-									$this->load->view('comercial/menu_cabecera');
+					$this->load->view('comercial/menu_cabecera');
 					$this->load->view('comercial/comprobantes/registro_ingreso', $data);
 			}else{
 				$existe = $this->cart->total_items();
@@ -3317,7 +3317,7 @@ class Comercial extends CI_Controller {
 					$data['listasimmon']= $this->model_comercial->listaSimMon();
 					$data['listanombreproducto']= $this->model_comercial->listaNombreProducto();
 					$this->load->view('comercial/menu_script');
-									$this->load->view('comercial/menu_cabecera');
+					$this->load->view('comercial/menu_cabecera');
 					$this->load->view('comercial/comprobantes/registro_ingreso', $data);
 			    }else{
 			    	// Realizar la inserción a la BD
@@ -3407,6 +3407,22 @@ class Comercial extends CI_Controller {
 									$data['tipocambio'] = 1;
 								}
 								$data['error_tipo_cambio'] = '<span style="color:red"><b>ERROR:</b> No existe un Tipo de Cambio para el día con el que se Registra la Factura.</span>';
+								$data['listaagente']= $this->model_comercial->listaAgenteAduana();
+								$data['listaarea']= $this->model_comercial->listarArea();
+								$data['listacomprobante']= $this->model_comercial->listaComprobante();
+								$data['listaproveedor']= $this->model_comercial->listaProveedor();
+								$data['listasimmon']= $this->model_comercial->listaSimMon();
+								$data['listanombreproducto']= $this->model_comercial->listaNombreProducto();
+								$this->load->view('comercial/menu_script');
+									$this->load->view('comercial/menu_cabecera');
+								$this->load->view('comercial/comprobantes/registro_ingreso', $data);
+							}else if($id_ingreso_producto == 'actualizacion_registro'){
+					            if($this->model_comercial->existeTipoCambio() == TRUE){
+									$data['tipocambio'] = 0;
+								}else{
+									$data['tipocambio'] = 1;
+								}
+								$data['factura_duplicada'] = 'msg';
 								$data['listaagente']= $this->model_comercial->listaAgenteAduana();
 								$data['listaarea']= $this->model_comercial->listarArea();
 								$data['listacomprobante']= $this->model_comercial->listaComprobante();
