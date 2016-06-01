@@ -6,6 +6,7 @@
 	<link rel="shortcut icon" type="image/jpg" href="<?php echo base_url(); ?>assets/img/tienda_movistar.jpg">
 	<!--<link rel="stylesheet" type="text/css" href="<?php echo base_url(); ?>assets/css/bootstrap.css">-->
 	<link rel="stylesheet" type="text/css" href="<?php echo base_url(); ?>assets/css/estilos.css">
+	<link rel="stylesheet" type="text/css" href="<?php echo base_url(); ?>assets/css/sweetalert.css">
 	<link type="text/css" rel="stylesheet" href="<?php echo base_url();?>assets/css/jTPS.css" />
 	<!-- JQuery UI -->
 	<script type="text/javascript" src="<?php echo base_url();?>assets/js/jquery.min.js"></script>
@@ -16,6 +17,10 @@
 	<link type="text/css" rel="stylesheet" href="<?php echo base_url();?>assets/js/plugins/jquery-ui/jquery-ui.theme.min.css" />
 	<script language="JavaScript" type="text/javascript" src="<?php echo base_url();?>assets/js/plugins/jquery-ui/jquery-ui.js"></script>
 
+	<link type="text/css" rel="stylesheet" href="<?php echo base_url();?>assets/css/jquery.dataTables.css">
+	<script language="JavaScript" type="text/javascript" src="<?php echo base_url();?>assets/js/jquery.dataTables.js"></script>
+	<link type="text/css" rel="stylesheet" href="<?php echo base_url();?>assets/css/bootstrap.min.css">
+	<script language="JavaScript" type="text/javascript" src="<?php echo base_url();?>assets/js/sweetalert.min.js"></script>
 
 	<!-- Steps Plugin -->
 	<link type="text/css" rel="stylesheet" href="<?php echo base_url();?>assets/css/normalize.css">

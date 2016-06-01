@@ -3,8 +3,9 @@
 <head>
 	<link type="text/css" rel="stylesheet" href="<?php echo base_url();?>assets/font_awesome_icon/fonts/style.css">
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
-	<link rel="shortcut icon" type="image/jpg" href="<?php echo base_url(); ?>assets/img/tienda_movistar.jpg">
+	<link rel="shortcut icon" type="image/jpg" href="<?php echo base_url(); ?>assets/img/logo_tejidos.jpg">
 	<link rel="stylesheet" type="text/css" href="<?php echo base_url(); ?>assets/css/estilos.css">
+	<link rel="stylesheet" type="text/css" href="<?php echo base_url(); ?>assets/css/sweetalert.css">
 	<link type="text/css" rel="stylesheet" href="<?php echo base_url();?>assets/css/jTPS.css" />
 	<!-- JQuery UI -->
 	<script src="<?php echo base_url();?>assets/js/jquery.min.js" type="text/javascript"></script>
@@ -25,13 +26,10 @@
 	<script language="JavaScript" type="text/javascript" src="<?php echo base_url();?>assets/js/validador.js"></script>
 	<script language="JavaScript" type="text/javascript" src="<?php echo base_url();?>assets/js/funciones.js"></script>	 <!--Valida Contraseña-->
 	<!-- JQuery Autocomplete -->
-	<!--<link rel="stylesheet" type="text/css" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">-->
-	<!--
-	<link rel="stylesheet" href="//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
-	<script src="//code.jquery.com/jquery-1.10.2.js"></script>
-	<script src="//code.jquery.com/ui/1.11.2/jquery-ui.js"></script>
-	<link rel="stylesheet" href="/resources/demos/style.css">
-    <!--<script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>-->
+	<link type="text/css" rel="stylesheet" href="<?php echo base_url();?>assets/css/jquery.dataTables.css">
+	<script language="JavaScript" type="text/javascript" src="<?php echo base_url();?>assets/js/jquery.dataTables.js"></script>
+	<link type="text/css" rel="stylesheet" href="<?php echo base_url();?>assets/css/bootstrap.min.css">
+	<script language="JavaScript" type="text/javascript" src="<?php echo base_url();?>assets/js/sweetalert.min.js"></script>
     
 	<!--<script src='https://ajax.googleapis.com/ajax/libs/jquery/1.8.0/jquery.min.js'></script>-->
 	<!--<script language="JavaScript" type="text/javascript" src="<?php //echo base_url();?>assets/js/funciones_2.js"></script> <!-- Valida Contraseña -->
@@ -170,7 +168,7 @@
 	}
 
 		body{
-			zoom: 85% !important;
+			zoom: 80% !important;
 		}
 	</style>
 </head>
@@ -222,7 +220,7 @@
 					</li>
 					<li><a href='<?php echo base_url();?>comercial/gestionsalida'><span>Gestión Salida de Almacén</span></a></li>
 					<li><a href='<?php echo base_url();?>comercial/gestiontipocambio'><span>Gestión Tipo de Cambio</span></a></li>
-					<li><a href="" style="width: 110px;"><span>Gestión Kardex</span></a>
+					<li><a href="" style="width: 140px;"><span>Gestión Kardex</span></a>
 						<ul>
 							<li><a href='<?php echo base_url();?>comercial/gestionreportkardexproducto'><span>Kardex por Producto</span></a>
 							<li><a href='<?php echo base_url();?>comercial/gestionreportkardexgeneral'><span>Kardex General</span></a>
@@ -233,7 +231,7 @@
 					</li>
 					<!--<li><a href='<?php // echo base_url();?>comercial/gestioninterfaz'><span>Interfaz</span></a></li>-->
 					<!--<li><a href='<?php // echo base_url();?>comercial/backup'><span>Backup de la BD</span></a></li>-->
-					<li><a href="" style="width: 116px;"><span>Gestión Reportes</span></a>
+					<li><a href="" style="width: 140px;"><span>Gestión Reportes</span></a>
 						<ul>
 							<li><a href='<?php echo base_url();?>comercial/gestionreportentrada' style="width: 126px;"><span>Reporte de Facturas</span></a>
 							<li><a href='<?php echo base_url();?>comercial/gestionreportsalida'><span>Reporte de Salidas</span></a>

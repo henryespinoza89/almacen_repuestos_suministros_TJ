@@ -40,7 +40,9 @@
 			    //Luego lo paso por JSON  a un archivo php llamado js.php
 			    jObject= JSON.stringify(jObject);
 	    		
-	    		url = '<?php echo base_url(); ?>comercial/al_exportar_kardex_sunat_excel/'+jObject;
+	    		
+	    		// url = '<?php echo base_url(); ?>comercial/al_exportar_kardex_sunat_excel/'+jObject;
+	    		url = '<?php echo base_url(); ?>comercial/al_exportar_kardex_sunat_excel_formato_2016/'+jObject;
 	    		$(location).attr('href',url);
 			}
     	});

@@ -1775,7 +1775,8 @@ class Model_comercial extends CI_Model {
             $filtro .= " AND producto.estado = TRUE ";
             $filtro .= "LIMIT 10";
             $sql = "SELECT DISTINCT detalle_producto.no_producto,unidad_medida.nom_uni_med,producto.column_temp,
-                    detalle_producto_area.stock_area_sta_anita,detalle_producto_area.stock_area_sta_clara,detalle_producto_area.id_area
+                    detalle_producto_area.stock_area_sta_anita,detalle_producto_area.stock_area_sta_clara,
+                    detalle_producto_area.id_area,detalle_producto.id_detalle_producto
                     FROM producto
                     INNER JOIN detalle_producto ON producto.id_detalle_producto = detalle_producto.id_detalle_producto
                     INNER JOIN unidad_medida ON producto.id_unidad_medida = unidad_medida.id_unidad_medida
@@ -1938,7 +1939,7 @@ class Model_comercial extends CI_Model {
             $filtro .= " AND producto.id_almacen =".(int)$this->security->xss_clean($this->session->userdata('almacen')); 
         }
         /* $filtro .= " AND producto.estado = TRUE "; */
-        $filtro .= " LIMIT 50";
+        $filtro .= " LIMIT 10";
         $sql = "SELECT DISTINCT producto.id_pro,producto.id_producto,producto.observacion,categoria.no_categoria,tipo_producto.no_tipo_producto,
                 detalle_producto.no_producto,procedencia.no_procedencia,unidad_medida.nom_uni_med,producto.column_temp,area.no_area,
                 detalle_producto_area.stock_area_sta_anita,detalle_producto_area.stock_area_sta_clara,detalle_producto_area.id_detalle_producto_area
@@ -3716,11 +3717,12 @@ class Model_comercial extends CI_Model {
 
     function traer_nombres_kardex_sunat(){
         $sql = "SELECT DISTINCT detalle_producto.no_producto,producto.id_pro,producto.id_producto,producto.id_unidad_medida,unidad_medida.nom_uni_med,
-                detalle_producto.id_detalle_producto,producto.indice
+                detalle_producto.id_detalle_producto,producto.indice,categoria.id_categoria
                 FROM kardex_producto
                 INNER JOIN detalle_producto ON kardex_producto.id_detalle_producto = detalle_producto.id_detalle_producto
                 INNER JOIN producto ON producto.id_detalle_producto = detalle_producto.id_detalle_producto
                 INNER JOIN unidad_medida ON producto.id_unidad_medida = unidad_medida.id_unidad_medida
+                INNER JOIN categoria ON producto.id_categoria = categoria.id_categoria
                 WHERE producto.indice IS NOT NULL";
         $query = $this->db->query($sql);
         if($query->num_rows()>0)
@@ -3854,13 +3856,14 @@ class Model_comercial extends CI_Model {
         $filtro .= " AND DATE(kardex_producto.fecha_registro) BETWEEN'".$f_inicial."'AND'".$f_final."'";
         $filtro .= " ORDER BY kardex_producto.fecha_registro ASC , kardex_producto.id_kardex_producto ASC";
         $sql = "SELECT kardex_producto.id_kardex_producto,kardex_producto.descripcion,kardex_producto.id_detalle_producto,kardex_producto.stock_anterior,
-        kardex_producto.precio_unitario_anterior,kardex_producto.cantidad_salida,kardex_producto.stock_actual,kardex_producto.precio_unitario_actual,
-        kardex_producto.fecha_registro,kardex_producto.cantidad_ingreso,kardex_producto.precio_unitario_actual_promedio,kardex_producto.serie_comprobante,
-        kardex_producto.num_comprobante,detalle_producto.no_producto,producto.id_producto,unidad_medida.id_unidad_medida,unidad_medida.nom_uni_med
+        kardex_producto.precio_unitario_anterior,kardex_producto.cantidad_salida,kardex_producto.stock_actual,kardex_producto.precio_unitario_actual,kardex_producto.fecha_registro,
+        kardex_producto.cantidad_ingreso,kardex_producto.precio_unitario_actual_promedio,kardex_producto.serie_comprobante,kardex_producto.num_comprobante,
+        detalle_producto.no_producto,producto.id_producto,unidad_medida.nom_uni_med,categoria.no_categoria
         FROM kardex_producto
         INNER JOIN detalle_producto ON kardex_producto.id_detalle_producto = detalle_producto.id_detalle_producto
         INNER JOIN producto ON producto.id_detalle_producto = detalle_producto.id_detalle_producto
         INNER JOIN unidad_medida ON producto.id_unidad_medida = unidad_medida.id_unidad_medida
+        INNER JOIN categoria ON producto.id_categoria = categoria.id_categoria
         WHERE kardex_producto.id_kardex_producto IS NOT NULL".$filtro;
         $query = $this->db->query($sql);
         if($query->num_rows()>0)
