@@ -25,6 +25,7 @@
 	<script language="JavaScript" type="text/javascript" src="<?php echo base_url();?>assets/js/jTPS.js"></script>
 	<script language="JavaScript" type="text/javascript" src="<?php echo base_url();?>assets/js/validador.js"></script>
 	<script language="JavaScript" type="text/javascript" src="<?php echo base_url();?>assets/js/funciones.js"></script>	 <!--Valida Contraseña-->
+	<script language="JavaScript" type="text/javascript" src="<?php echo base_url();?>assets/js/sweetalert.min.js"></script>
 	<!-- JQuery Autocomplete -->
 	<link type="text/css" rel="stylesheet" href="<?php echo base_url();?>assets/css/jquery.dataTables.css">
 	<script language="JavaScript" type="text/javascript" src="<?php echo base_url();?>assets/js/jquery.dataTables.js"></script>
@@ -37,7 +38,7 @@
 	<script language="JavaScript" type="text/javascript" src="<?php echo base_url();?>assets/js/jquery.maskedinput.min.js"></script>
 
 	<script language="JavaScript" type="text/javascript" src="<?php echo base_url();?>assets/js/ttip.js"></script>
-	<link type="text/css" rel="stylesheet" href="<?php echo base_url();?>assets/css/ttip.css" />	
+	<link type="text/css" rel="stylesheet" href="<?php echo base_url();?>assets/css/ttip.css" />
 
 	<title>Sistema de Almacén - Repuestos y Suministros</title>
 	<meta charset="utf-8">

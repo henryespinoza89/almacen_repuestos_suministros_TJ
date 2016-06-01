@@ -548,7 +548,6 @@
             <td style="vertical-align: middle;">
               <?php 
                 if($listaproductos->column_temp == ""){
-                  /*echo "Vacio";*/
               ?>
                 <span class="icon-ban" style="color: red;cursor: pointer;"></span>
               <?php

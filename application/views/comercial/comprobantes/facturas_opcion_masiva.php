@@ -305,32 +305,32 @@
   });
 
   function fill_inputs(id_ingreso_producto){
-  /* Llenar datos del pedido en los inputs del formulario */
-  $.ajax({
-    type: 'POST',
-    url: "<?php echo base_url(); ?>comercial/obtener_datos_importacion/",
-    data:{
-        'id_ingreso_producto' : id_ingreso_producto
-    },
-    success: function(data){
-      var dataJson = JSON.parse(data);
-      var id_comprobante = dataJson.id_comprobante;
-      var id_moneda = dataJson.id_moneda;
-      var id_agente = dataJson.id_agente;
-      var id_ingreso_producto = dataJson.id_ingreso_producto;
-      $("#seriecomprobante").val(dataJson.serie_comprobante);
-      $("#numcomprobante").val(dataJson.nro_comprobante);
-      $("#nombre_proveedor").val(dataJson.razon_social);
-      $("#fecharegistro").val(dataJson.fecha);
-      $("#id_ingreso_producto_hidden").val(id_ingreso_producto);
-      $("#comprobante option[value="+2+"]").attr("selected",true);
-      $("#moneda option[value="+id_moneda+"]").attr("selected",true);
-      $("#agente option[value="+id_agente+"]").attr("selected",true);
-    }
-  });
-  $("#cantidad_devolucion").css('display','block');
-  $("#table_button_finalizar_salida").css('display','none');
-}
+    /* Llenar datos del pedido en los inputs del formulario */
+    $.ajax({
+      type: 'POST',
+      url: "<?php echo base_url(); ?>comercial/obtener_datos_importacion/",
+      data:{
+          'id_ingreso_producto' : id_ingreso_producto
+      },
+      success: function(data){
+        var dataJson = JSON.parse(data);
+        var id_comprobante = dataJson.id_comprobante;
+        var id_moneda = dataJson.id_moneda;
+        var id_agente = dataJson.id_agente;
+        var id_ingreso_producto = dataJson.id_ingreso_producto;
+        $("#seriecomprobante").val(dataJson.serie_comprobante);
+        $("#numcomprobante").val(dataJson.nro_comprobante);
+        $("#nombre_proveedor").val(dataJson.razon_social);
+        $("#fecharegistro").val(dataJson.fecha);
+        $("#id_ingreso_producto_hidden").val(id_ingreso_producto);
+        $("#comprobante option[value="+2+"]").attr("selected",true);
+        $("#moneda option[value="+id_moneda+"]").attr("selected",true);
+        $("#agente option[value="+id_agente+"]").attr("selected",true);
+      }
+    });
+    $("#cantidad_devolucion").css('display','block');
+    $("#table_button_finalizar_salida").css('display','none');
+  }
 
 </script>
 </head>
@@ -338,7 +338,7 @@
   <div id="contenedor" style="padding-top: 10px;">
     <div id="tituloCont" style="margin-bottom: 0;">Cargar Facturas Importadas</div>
     <div id="formFiltro">
-    <input type="hidden" name="id_ingreso_producto_hidden" id="id_ingreso_producto_hidden" value="">
+      <input type="hidden" name="id_ingreso_producto_hidden" id="id_ingreso_producto_hidden" value="">
       <form id="formulario" action="<?php echo base_url('comercial/guardar_informacion_factura_importada');?>" enctype="multipart/form-data" method="post" style="background: whitesmoke;padding-left: 15px;padding-top: 12px;margin-top: 0px;">
         <div style="float: left;width: 400px;"> 
           <table width="360" border="0" cellspacing="0" cellpadding="0" style="margin-top: 4px;">

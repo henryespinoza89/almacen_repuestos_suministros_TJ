@@ -3282,7 +3282,7 @@ class Comercial extends CI_Controller {
 			$data['listasimmon']= $this->model_comercial->listaSimMon();
 			$data['listanombreproducto']= $this->model_comercial->listaNombreProducto();
 			$this->load->view('comercial/menu_script');
-									$this->load->view('comercial/menu_cabecera');
+			$this->load->view('comercial/menu_cabecera');
 			$this->load->view('comercial/comprobantes/registro_ingreso', $data);
 		}else{
 			if(($this->input->post('id_agente') != 2 AND $this->input->post('id_agente') != 3 AND $this->input->post('id_agente') != 4) AND ($this->input->post('porcent') == 0)){
@@ -3300,7 +3300,7 @@ class Comercial extends CI_Controller {
 					$data['listasimmon']= $this->model_comercial->listaSimMon();
 					$data['listanombreproducto']= $this->model_comercial->listaNombreProducto();
 					$this->load->view('comercial/menu_script');
-									$this->load->view('comercial/menu_cabecera');
+					$this->load->view('comercial/menu_cabecera');
 					$this->load->view('comercial/comprobantes/registro_ingreso', $data);
 			}else{
 				$existe = $this->cart->total_items();
@@ -3318,7 +3318,7 @@ class Comercial extends CI_Controller {
 					$data['listasimmon']= $this->model_comercial->listaSimMon();
 					$data['listanombreproducto']= $this->model_comercial->listaNombreProducto();
 					$this->load->view('comercial/menu_script');
-									$this->load->view('comercial/menu_cabecera');
+					$this->load->view('comercial/menu_cabecera');
 					$this->load->view('comercial/comprobantes/registro_ingreso', $data);
 			    }else{
 			    	// Realizar la inserción a la BD
@@ -3408,6 +3408,22 @@ class Comercial extends CI_Controller {
 									$data['tipocambio'] = 1;
 								}
 								$data['error_tipo_cambio'] = '<span style="color:red"><b>ERROR:</b> No existe un Tipo de Cambio para el día con el que se Registra la Factura.</span>';
+								$data['listaagente']= $this->model_comercial->listaAgenteAduana();
+								$data['listaarea']= $this->model_comercial->listarArea();
+								$data['listacomprobante']= $this->model_comercial->listaComprobante();
+								$data['listaproveedor']= $this->model_comercial->listaProveedor();
+								$data['listasimmon']= $this->model_comercial->listaSimMon();
+								$data['listanombreproducto']= $this->model_comercial->listaNombreProducto();
+								$this->load->view('comercial/menu_script');
+									$this->load->view('comercial/menu_cabecera');
+								$this->load->view('comercial/comprobantes/registro_ingreso', $data);
+							}else if($id_ingreso_producto == 'actualizacion_registro'){
+					            if($this->model_comercial->existeTipoCambio() == TRUE){
+									$data['tipocambio'] = 0;
+								}else{
+									$data['tipocambio'] = 1;
+								}
+								$data['factura_duplicada'] = 'msg';
 								$data['listaagente']= $this->model_comercial->listaAgenteAduana();
 								$data['listaarea']= $this->model_comercial->listarArea();
 								$data['listacomprobante']= $this->model_comercial->listaComprobante();
@@ -9476,18 +9492,18 @@ class Comercial extends CI_Controller {
 		$objWorkSheet = $objPHPExcel->createSheet(0); //Setting index when creating
 		$objPHPExcel->setActiveSheetIndex(0); // Esta línea y en esta posición hace que los formatos vayan a la primera hoja
 		$objPHPExcel->getDefaultStyle()->getFont()->setSize(13);
-		$objPHPExcel->setActiveSheetIndex(0)->mergeCells('A1:J1');
-		$objPHPExcel->getActiveSheet()->getStyle('A1:J1')->applyFromArray($borders);
-		$objPHPExcel->getActiveSheet()->getStyle('A1:J1')->applyFromArray($style);
-		$objPHPExcel->getActiveSheet()->getStyle('A1:J1')->applyFromArray($styleArray);
+		$objPHPExcel->setActiveSheetIndex(0)->mergeCells('A1:K1');
+		$objPHPExcel->getActiveSheet()->getStyle('A1:K1')->applyFromArray($borders);
+		$objPHPExcel->getActiveSheet()->getStyle('A1:K1')->applyFromArray($style);
+		$objPHPExcel->getActiveSheet()->getStyle('A1:K1')->applyFromArray($styleArray);
 		//$objPHPExcel->getActiveSheet()->getRowDimension('A')->setRowHeight(40);
-		$objPHPExcel->getActiveSheet()->getStyle('A1:J1')->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
+		$objPHPExcel->getActiveSheet()->getStyle('A1:K1')->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
 		$objPHPExcel->getActiveSheet()->getRowDimension('1')->setRowHeight(30);
 
 		$objPHPExcel->getDefaultStyle()->getFont()->setSize(10);
-		$objPHPExcel->getActiveSheet()->getStyle('A2:J2')->applyFromArray($borders);
-		$objPHPExcel->getActiveSheet()->getStyle('A2:J2')->applyFromArray($style);
-		$objPHPExcel->getActiveSheet()->getStyle('A2:J2')->applyFromArray($styleArray);
+		$objPHPExcel->getActiveSheet()->getStyle('A2:K2')->applyFromArray($borders);
+		$objPHPExcel->getActiveSheet()->getStyle('A2:K2')->applyFromArray($style);
+		$objPHPExcel->getActiveSheet()->getStyle('A2:K2')->applyFromArray($styleArray);
 
 		$objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(25);
 		$objPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(55);
@@ -9499,6 +9515,7 @@ class Comercial extends CI_Controller {
 		$objPHPExcel->getActiveSheet()->getColumnDimension('H')->setWidth(15);
 		$objPHPExcel->getActiveSheet()->getColumnDimension('I')->setWidth(15);
 		$objPHPExcel->getActiveSheet()->getColumnDimension('J')->setWidth(15);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('K')->setWidth(20);
 		//Write cells
 		if($almacen == 1){
 			$objWorkSheet->setCellValue('A1', 'INVENTARIO FISICO DE PRODUCTOS - STA. CLARA                     FECHA: '.date('d-m-y'));
@@ -9514,7 +9531,8 @@ class Comercial extends CI_Controller {
 	    			 ->setCellValue('G2', 'U. MEDIDA')
 	    			 ->setCellValue('H2', 'STOCK')
 	    			 ->setCellValue('I2', 'P. UNITARIO')
-	    			 ->setCellValue('J2', 'INVENTARIO');
+	    			 ->setCellValue('J2', 'VALORIZADO S/.')
+	    			 ->setCellValue('K2', 'INVENTARIO');
 	    /* Traer informacion de la BD */
 	    $result = $this->model_comercial->get_info_inventario_actual();
 	    /* Recorro con todos los nombres seleccionados que tienen una salida/ingreso en el kardex */
@@ -9524,6 +9542,7 @@ class Comercial extends CI_Controller {
 	    foreach ($result as $reg) {
 	    	$objPHPExcel->getActiveSheet()->getStyle('H'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
 	    	$objPHPExcel->getActiveSheet()->getStyle('I'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+	    	$objPHPExcel->getActiveSheet()->getStyle('J'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
 	    	/* Centrar contenido */
 	    	$objPHPExcel->getActiveSheet()->getStyle('A'.$p)->applyFromArray($style);
     		$objPHPExcel->getActiveSheet()->getStyle('B'.$p)->applyFromArray($style);
@@ -9535,6 +9554,7 @@ class Comercial extends CI_Controller {
     		$objPHPExcel->getActiveSheet()->getStyle('H'.$p)->applyFromArray($style);
     		$objPHPExcel->getActiveSheet()->getStyle('I'.$p)->applyFromArray($style);
     		$objPHPExcel->getActiveSheet()->getStyle('J'.$p)->applyFromArray($style);
+    		$objPHPExcel->getActiveSheet()->getStyle('K'.$p)->applyFromArray($style);
     		/* border */
     		$objPHPExcel->getActiveSheet()->getStyle('A'.$p)->applyFromArray($borders);
     		$objPHPExcel->getActiveSheet()->getStyle('B'.$p)->applyFromArray($borders);
@@ -9546,6 +9566,7 @@ class Comercial extends CI_Controller {
     		$objPHPExcel->getActiveSheet()->getStyle('H'.$p)->applyFromArray($borders);
     		$objPHPExcel->getActiveSheet()->getStyle('I'.$p)->applyFromArray($borders);
     		$objPHPExcel->getActiveSheet()->getStyle('J'.$p)->applyFromArray($borders);
+    		$objPHPExcel->getActiveSheet()->getStyle('K'.$p)->applyFromArray($borders);
     		if($reg->estado == 't'){
     			$estado = 'ACTIVO';
     		}else if($reg->estado == 'f'){
@@ -9560,18 +9581,21 @@ class Comercial extends CI_Controller {
 	    					 ->setCellValue('F'.$p, $reg->no_procedencia)
 	    					 ->setCellValue('G'.$p, $reg->nom_uni_med)
 	    					 ->setCellValue('H'.$p, $reg->stock_sta_clara)
-	    					 ->setCellValue('I'.$p, "");
+	    					 ->setCellValue('I'.$p, $reg->precio_unitario)
+	    					 ->setCellValue('J'.$p, $reg->stock_sta_clara*$reg->precio_unitario)
+	    					 ->setCellValue('K'.$p, "");
 	    	}else if($almacen == 2){
 	    		$objWorkSheet->setCellValue('A'.$p, $reg->id_producto)
-    					 ->setCellValue('B'.$p, $reg->no_producto)
-    					 ->setCellValue('C'.$p, $estado)
-    					 ->setCellValue('D'.$p, $reg->no_categoria)
-    					 ->setCellValue('E'.$p, $reg->no_tipo_producto)
-    					 ->setCellValue('F'.$p, $reg->no_procedencia)
-    					 ->setCellValue('G'.$p, $reg->nom_uni_med)
-    					 ->setCellValue('H'.$p, $reg->stock)
-    					 ->setCellValue('I'.$p, $reg->precio_unitario)
-    					 ->setCellValue('J'.$p, "");
+	    					 ->setCellValue('B'.$p, $reg->no_producto)
+	    					 ->setCellValue('C'.$p, $estado)
+	    					 ->setCellValue('D'.$p, $reg->no_categoria)
+	    					 ->setCellValue('E'.$p, $reg->no_tipo_producto)
+	    					 ->setCellValue('F'.$p, $reg->no_procedencia)
+	    					 ->setCellValue('G'.$p, $reg->nom_uni_med)
+	    					 ->setCellValue('H'.$p, $reg->stock)
+	    					 ->setCellValue('I'.$p, $reg->precio_unitario)
+	    					 ->setCellValue('J'.$p, $reg->stock*$reg->precio_unitario)
+	    					 ->setCellValue('K'.$p, "");
 	    	}
 		    /* Rename sheet */
 		    $objWorkSheet->setTitle("Inventario_Almacen");
