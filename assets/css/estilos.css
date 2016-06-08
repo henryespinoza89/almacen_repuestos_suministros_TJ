@@ -73,7 +73,7 @@ footer{
 }
 
 #options_productos .newct {
-	width: 158px;
+	width: 170px;
 	height: 20px;
 	background: url('../img/add.png') no-repeat;
 	padding: 3px 0px 0px 28px;
@@ -89,7 +89,7 @@ footer{
 }
 
 #options_productos .newtp {
-	width: 120px;
+	width: 150px;
 	height: 20px;
 	background: url('../img/add.png') no-repeat;
 	padding: 3px 0px 0px 28px;
@@ -265,7 +265,7 @@ nav a {
 	float: left;
 	clear: both;
 	text-align: left;
-	margin-left: 15px;
+	margin-left: 68px;
 	margin-top: 0px;
 }
 
@@ -280,8 +280,8 @@ nav a {
 #contenedor #tituloCont {
 	font-family: 'Tahoma';
 	font-size: 20px;
-	padding-bottom: 10px;
-	margin-bottom: 10px;
+	padding-bottom: 5px;
+	margin-bottom: 20px;
 	border-bottom: 1px solid #000;
 	color: #041D35;
 }
@@ -693,12 +693,13 @@ nav a {
 
 #formFiltro select {
 	margin-bottom: 5px;
-	margin-left: 0px;/*Esta línea no estaba en el Diseño*/
+	margin-left: 5px;/*Esta línea no estaba en el Diseño*/
 	font-family: 'Tahoma';
 	font-size: 11px;
 	padding: 3px;
 	width: auto;
 	border: 1px solid #CCCCCC;
+	margin-right : 5px;
 	/*margin: 0px; Josep: Comento esta línea*/
 }
 
@@ -738,13 +739,13 @@ nav a {
 
 #formFiltro #options_productos {
 	overflow: hidden;
-	margin-bottom: 10px;
+	margin-bottom: 18px;
 	float: left;
 	width: 1380px;
 }
 
 #options_productos .newprospect {
-	width: 120px;
+	width: 150px;
 	height: 20px;
 	background: url('../img/add.png') no-repeat;
 	padding: 3px 0px 0px 28px;
@@ -1114,7 +1115,7 @@ nav a {
 }
 
 .tituloTable td {
-	background-color: #005197;
+	background-color: #303F9F;
 	padding: 3px;
 	text-align: center;
 	border: 1px solid #FFF;
@@ -1124,7 +1125,7 @@ nav a {
 .contentTable td{
 	text-align: center;
 	padding: 2px;
-	color: #898989;
+	color: #111111;
 }
 
 #modalerror {
@@ -1438,7 +1439,7 @@ nav a {
   padding: 0px;
   margin: 0px;
   border: 0px;
-  position: absolute;
+  position: fixed;
   width: auto;
   z-index: 200;
 }

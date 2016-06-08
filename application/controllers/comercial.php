@@ -1081,6 +1081,7 @@ class Comercial extends CI_Controller {
                 $array = array(
                     "label" => $producto['no_producto'],
                     "nombre_producto" => $producto['no_producto'],
+                    "id_detalle_producto" => $producto['id_detalle_producto'],
                     "column_temp" => $producto['column_temp']
                 );
                 array_push($data, $array);
@@ -4449,6 +4450,7 @@ class Comercial extends CI_Controller {
         $validar_stock_paso_2 = "";
         $auxiliar_stock_negatiVo = "";
 		$id_almacen = $this->security->xss_clean($this->session->userdata('almacen'));
+		$id_detalle_producto_hidden = $this->security->xss_clean($this->input->post('id_detalle_producto_hidden'));
 		$id_area = $this->security->xss_clean($this->input->post('id_area'));
 		$solicitante = strtoupper($this->security->xss_clean($this->input->post('solicitante')));
 		$fecharegistro = $this->security->xss_clean($this->input->post('fecharegistro'));
@@ -4456,7 +4458,7 @@ class Comercial extends CI_Controller {
 		$cantidad = $this->security->xss_clean($this->input->post('cantidad'));
 		// Obtengo los datos del producto antes de actualizarlos. Stock y Precio Unitario anterior
 		$this->db->select('id_detalle_producto,stock,precio_unitario,stock_sta_clara');
-        $this->db->where('no_producto',$nombre_producto);
+        $this->db->where('id_detalle_producto',$id_detalle_producto_hidden);
         $query = $this->db->get('detalle_producto');
         foreach($query->result() as $row){
             $id_detalle_producto = $row->id_detalle_producto;
@@ -4468,6 +4470,7 @@ class Comercial extends CI_Controller {
         // Seleccion el id de la tabla producto
         $this->db->select('id_pro');
         $this->db->where('id_detalle_producto',$id_detalle_producto);
+        $this->db->where('estado','TRUE');
         $query = $this->db->get('producto');
         foreach($query->result() as $row){
             $id_pro = $row->id_pro;

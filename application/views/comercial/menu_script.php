@@ -12,6 +12,15 @@
 	<link type="text/css" rel="stylesheet" href="<?php echo base_url();?>assets/css/smoothness/jquery-ui-1.9.2.custom.css" />
 	<script language="JavaScript" type="text/javascript" src="<?php echo base_url();?>assets/js/jquery-ui-1.9.2.custom.js"></script>
 
+	<link type="text/css" rel="stylesheet" href="<?php echo base_url();?>assets/js/plugins/jquery-ui/jquery-ui.css" />
+	<link type="text/css" rel="stylesheet" href="<?php echo base_url();?>assets/js/plugins/jquery-ui/jquery-ui.theme.min.css" />
+	<script language="JavaScript" type="text/javascript" src="<?php echo base_url();?>assets/js/plugins/jquery-ui/jquery-ui.js"></script>
+
+	<link type="text/css" rel="stylesheet" href="<?php echo base_url();?>assets/css/jquery.dataTables.css">
+	<script language="JavaScript" type="text/javascript" src="<?php echo base_url();?>assets/js/jquery.dataTables.js"></script>
+	<link type="text/css" rel="stylesheet" href="<?php echo base_url();?>assets/css/bootstrap.min.css">
+	<script language="JavaScript" type="text/javascript" src="<?php echo base_url();?>assets/js/sweetalert.min.js"></script>
+
 	<!-- Steps Plugin -->
 	<link type="text/css" rel="stylesheet" href="<?php echo base_url();?>assets/css/normalize.css">
 	<link type="text/css" rel="stylesheet" href="<?php echo base_url();?>assets/css/jquery.steps.css">

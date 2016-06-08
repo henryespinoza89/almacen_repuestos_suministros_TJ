@@ -125,7 +125,7 @@
 		}
 
 		body{
-			zoom: 85% !important;
+			zoom: 80% !important;
 		}
 	</style>
 </head>
@@ -177,7 +177,7 @@
 					</li>
 					<li><a href='<?php echo base_url();?>comercial/gestionsalida'><span>Gestión Salida de Almacén</span></a></li>
 					<li><a href='<?php echo base_url();?>comercial/gestiontipocambio'><span>Gestión Tipo de Cambio</span></a></li>
-					<li><a href="" style="width: 110px;"><span>Gestión Kardex</span></a>
+					<li><a href="" style="width: 140px;"><span>Gestión Kardex</span></a>
 						<ul>
 							<li><a href='<?php echo base_url();?>comercial/gestionreportkardexproducto'><span>Kardex por Producto</span></a>
 							<li><a href='<?php echo base_url();?>comercial/gestionreportkardexgeneral'><span>Kardex General</span></a>
@@ -188,7 +188,7 @@
 					</li>
 					<!--<li><a href='<?php echo base_url();?>comercial/gestioninterfaz'><span>Interfaz</span></a></li>-->
 					<!--<li><a href='<?php //echo base_url();?>comercial/backup'><span>Backup de la BD</span></a></li>-->
-					<li><a href="" style="width: 116px;"><span>Gestión Reportes</span></a>
+					<li><a href="" style="width: 140px;"><span>Gestión Reportes</span></a>
 						<ul>
 							<li><a href='<?php echo base_url();?>comercial/gestionreportentrada' style="width: 126px;"><span>Reporte de Facturas</span></a>
 							<li><a href='<?php echo base_url();?>comercial/gestionreportsalida'><span>Reporte de Salidas</span></a>

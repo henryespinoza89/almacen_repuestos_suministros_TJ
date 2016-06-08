@@ -79,6 +79,8 @@ $(function() {
 
 	$("#submit_finalizar").on("click",function(){
 		// Selecciono las variables para registro de salida
+		// OBTENER EL ID_DETALLE_PRODUCTO
+		var id_detalle_producto_hidden =$("#id_detalle_producto_hidden").val();
 		/* Datos de la maquina */
 		var id_maquina = $("#maquina").val();
 		var id_marca = $("#marca").val();
@@ -99,7 +101,7 @@ $(function() {
 	          	buttons: { Ok: function() {$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );}}
 	        });
 	    }else{
-	    	var dataString = 'id_area='+id_area+'&fecharegistro='+fecharegistro+'&solicitante='+solicitante+'&nombre_producto='+nombre_producto+'&cantidad='+cantidad+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
+	    	var dataString = 'id_area='+id_area+'&fecharegistro='+fecharegistro+'&id_detalle_producto_hidden='+id_detalle_producto_hidden+'&solicitante='+solicitante+'&nombre_producto='+nombre_producto+'&cantidad='+cantidad+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
 	    	$.ajax({
 	            type: "POST",
 	            url: "<?php echo base_url(); ?>comercial/finalizar_salida_before_13/",
@@ -254,6 +256,7 @@ $(function() {
 	        var selectedObj = ui.item;
 
 	        $("#nombre_producto").val(selectedObj.nombre_producto);
+	        $("#id_detalle_producto_hidden").val(selectedObj.id_detalle_producto);
 	        nombre_producto = $("#nombre_producto").val();
 	        var ruta = $('#direccion_traer_unidad_medida').text();
 	        $.ajax({
@@ -685,6 +688,7 @@ $(function() {
 			<!--<div class="reportOut"><a href="<?php //echo base_url(); ?>comercial/gestionreportesalida/">Gestionar Reporte de Salidas</a></div>-->
 		</div>
 		<div id="datosalida">
+			<input type="hidden" name="id_detalle_producto_hidden" id="id_detalle_producto_hidden" value="">
 			<table style="float: left; margin-top: 5px; width: 300px; margin-left: 0px;">
 				<tr>
 					<td width="148" valign="middle">Máquina:</td>

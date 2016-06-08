@@ -171,54 +171,39 @@
     //Venta Modal Registrar Producto
     $(".newprospect").click(function() { //activacion de ventana modal
       $("#mdlNuevoProducto" ).dialog({  //declaracion de ventana modal
-          modal: true,resizable: false,show: "blind",position: 'center',width: 370,height: 390,draggable: false,closeOnEscape: false, //Aumenta el marco general
+          modal: true,resizable: false,show: "blind",position: 'center',width: 370,height: 420,draggable: false,closeOnEscape: false, //Aumenta el marco general
           buttons: {
           Registrar: function() {
-              $(".ui-dialog-buttonpane button:contains('Registrar')").button("disable");
-              $(".ui-dialog-buttonpane button:contains('Registrar')").attr("disabled", true).addClass("ui-state-disabled");
-              //CONTROLO LAS VARIABLES
               var codigopro = $('#codigopro').val(); nombrepro = $('#nombrepro').val(); categoria = $('#categoriaN').val(); tipo = $('#tipo').val(); area = $('#area').val();
               var procedencia = $('#procedenciaN').val(); obser = $('#obser').val(); uni_med = $('#uni_med').val(); producto_asociado = $('#producto_asociado').val();
               if(codigopro == '' || nombrepro == '' || categoria == ''|| procedencia == '' || uni_med == '' || tipo == '' || area == ''){
-                $("#modalerror").html('<b>Faltan completar algunos campos del formulario, por favor verifique!</b>').dialog({
-                  modal: true,position: 'center',width: 450, height: 135,resizable: false,title: 'Validación/Campos Vacios',hide: 'scale',show: 'scale',
-                  buttons: { Ok: function() {$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );}}
-                });
+                sweetAlert("Falta completar campos obligatorios del formulario, por favor verifique!", "", "error");
               }else{
                 var dataString = 'codigopro='+codigopro+'&nombrepro='+nombrepro+'&categoria='+categoria+'&procedencia='+procedencia+'&uni_med='+uni_med+'&obser='+obser+'&tipo='+tipo+'&area='+area+'&producto_asociado='+producto_asociado+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
-                //alert(nombrepro);
                 $.ajax({
                   type: "POST",
                   url: "<?php echo base_url(); ?>comercial/registrarproducto/",
                   data: dataString,
                   success: function(msg){
                     if(msg == 1){
-                      $("#finregistro").html('!El Producto ha sido regristado con éxito!.').dialog({
-                        modal: true,position: 'center',width: 300,height: 125,resizable: false, title: 'Fin de Registro',
-                        buttons: { Ok: function(){
-                          window.location.href="<?php echo base_url();?>comercial/gestionproductos";
-                        }}
-                      });
+                      swal({ title: "El Producto ha sido regristado con éxito!",text: "",type: "success",confirmButtonText: "OK",timer: 2000 });
+                      $("#mdlNuevoProducto").dialog("close");
+                      $('#codigopro').val('');
+                      $('#nombrepro').val('');
+                      $('#area').val('');
+                      $('#categoriaN').val('');
+                      $('#tipo').val('');
+                      $('#procedenciaN').val('');
+                      $('#uni_med').val('');
+                      $('#obser').val('');
                     }else if(msg == 'unidad_no_existe'){
-                      $("#modalerror").html('<strong>!La Unidad de Medida ingresada no es Correcta. Verificar!</strong>').dialog({
-                        modal: true,position: 'center',width: 450, height: 125,resizable: false,title: 'Validación de Registro',hide: 'blind',show: 'blind',
-                        buttons: { Ok: function() {$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );}}
-                      });
+                      sweetAlert("!La Unidad de Medida ingresada no es correcta. Verificar!", "", "error");
                     }else if(msg == 'codigo_producto'){
-                      $("#modalerror").html('<strong>!El Código del Producto ya se encuentra asociado al Área seleccionada. Verificar!</strong>').dialog({
-                        modal: true,position: 'center',width: 580, height: 125,resizable: false,title: 'Validación de Registro',hide: 'blind',show: 'blind',
-                        buttons: { Ok: function() {$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );}}
-                      });
+                      sweetAlert("!El Código del Producto ya se encuentra asociado al Área seleccionada. Verificar!", "", "error");
                     }else if(msg == 'nombre_producto'){
-                      $("#modalerror").html('<strong>!El Nombre del Producto ya se encuentra asociado al Área seleccionada. Verificar!</strong>').dialog({
-                        modal: true,position: 'center',width: 580, height: 125,resizable: false,title: 'Validación de Registro',hide: 'blind',show: 'blind',
-                        buttons: { Ok: function() {$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );}}
-                      });
+                      sweetAlert("!El Nombre del Producto ya se encuentra asociado al Área seleccionada. Verificar!", "", "error");
                     }else if(msg == 'error_registro'){
-                      $("#modalerror").html('<strong>!Se ha producto un error. Intentelo Nuevamente!</strong>').dialog({
-                        modal: true,position: 'center',width: 450, height: 125,resizable: false,title: 'Validación de Registro',hide: 'blind',show: 'blind',
-                        buttons: { Ok: function() {$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );}}
-                      });
+                      sweetAlert("!Se ha producto un error. Intentelo Nuevamente!", "", "error");
                     }
                   }
                 });
@@ -255,43 +240,8 @@
       } 
     ?>
     
-        //Script para crear la tabla que será el contenedor de los productos registrados
-        $('#listaProductos').jTPS( {perPages:[10,20,'Todos'],scrollStep:1,scrollDelay:30,clickCallback:function () {     
-            // target table selector
-            var table = '#listaProductos';
-            // store pagination + sort in cookie 
-            document.cookie = 'jTPS=sortasc:' + $(table + ' .sortableHeader').index($(table + ' .sortAsc')) + ',' +
-                    'sortdesc:' + $(table + ' .sortableHeader').index($(table + ' .sortDesc')) + ',' +
-                    'page:' + $(table + ' .pageSelector').index($(table + ' .hilightPageSelector')) + ';';
-            }
-        });
+    $('#listaProductos').DataTable();
 
-        // reinstate sort and pagination if cookie exists
-        var cookies = document.cookie.split(';');
-        for (var ci = 0, cie = cookies.length; ci < cie; ci++) {
-                var cookie = cookies[ci].split('=');
-                if (cookie[0] == 'jTPS') {
-                        var commands = cookie[1].split(',');
-                        for (var cm = 0, cme = commands.length; cm < cme; cm++) {
-                                var command = commands[cm].split(':');
-                                if (command[0] == 'sortasc' && parseInt(command[1]) >= 0) {
-                                        $('#listaProductos .sortableHeader:eq(' + parseInt(command[1]) + ')').click();
-                                } else if (command[0] == 'sortdesc' && parseInt(command[1]) >= 0) {
-                                        $('#listaProductos .sortableHeader:eq(' + parseInt(command[1]) + ')').click().click();
-                                } else if (command[0] == 'page' && parseInt(command[1]) >= 0) {
-                                        $('#listaProductos .pageSelector:eq(' + parseInt(command[1]) + ')').click();
-                                }
-                        }
-                }
-        }
-
-        // bind mouseover for each tbody row and change cell (td) hover style
-        $('#listaProductos tbody tr:not(.stubCell)').bind('mouseover mouseout',
-                function (e) {
-                        // hilight the row
-                        e.type == 'mouseover' ? $(this).children('td').addClass('hilightRow') : $(this).children('td').removeClass('hilightRow');
-                }
-        );
         //Mostrar ::SELECCIONE:: en los combobox
         $("#almacen").append('<option value="" selected="selected">:: SELECCIONE ::</option>');
 
@@ -425,7 +375,7 @@
 
     var urlMaq = '<?php echo base_url();?>comercial/editarproducto/'+jObject;
     $("#mdlEditarProducto").load(urlMaq).dialog({
-      modal: true, position: 'center', width: 350, height: 458, draggable: false, resizable: false, closeOnEscape: false,
+      modal: true, position: 'center', width: 350, height: 468, draggable: false, resizable: false, closeOnEscape: false,
       buttons: {
         Actualizar: function() {
         $(".ui-dialog-buttonpane button:contains('Actualizar')").button("disable");
@@ -542,50 +492,12 @@
     <?php } ?>
     <div id="tituloCont">Gestión de Productos - Repuestos y Suministros</div>
     <div id="formFiltro">
-      <div class="tituloFiltro" style="width:1400px; float:left;">Búsqueda</div>
       <!--<div class="tituloFiltro">Filtros para Exportar a PDF</div>-->
-      <form name="filtroBusqueda" action="#" method="post" style="width:1380px; float:left;">
-        <?php
-          if ($this->input->post('id_producto')){
-            $id_producto = array('name'=>'id_producto','id'=>'id_producto','maxlength'=>'20','value'=>$this->input->post('id_producto'));
-          }else{
-            $id_producto = array('name'=>'id_producto','id'=>'id_producto','maxlength'=>'20');
-          }
-          // para el NOMBRE Y APELLIDO
-          if ($this->input->post('nombre')){
-            $nombre = array('name'=>'nombre','id'=>'nombre','maxlength'=> '50','minlength'=>'1' , 'value' => $this->input->post('nombre'));
-          }else{
-            $nombre = array('name'=>'nombre','id'=>'nombre','maxlength'=> '50','minlength'=>'1');
-          }
-          // para el almacen
-          if ($this->input->post('almacen')){
-            $selected_almacen =  $this->input->post('almacen');
-          }else{
-            $selected_almacen = "";
-          }
-        ?>
-        <?php echo form_open(base_url()."comercial/gestionproductos", 'id="buscar" style="width:780px;"') ?>
-          <table width="770" border="0" cellspacing="0" cellpadding="0">
-            <tr>
-              <td width="131" height="30">ID de Producto:</td>
-              <td width="219"><?php echo form_input($id_producto);?></td>
-            <td width="420" style="padding-bottom:4px;">
-              <input name="submit" type="submit" id="submit" value="Buscar" />
-              <input name="reset" type="button" onclick="resetear()" value="Reestablecer" />
-            </td>
-            </tr>
-            <tr>
-              <td height="30">Nom. de Producto:</td>
-              <td><?php echo form_input($nombre);?></td>
-            </tr>
-          </table>
-        <?php echo form_close() ?>
-      </form>
       <div id="options_productos">
         <div class="newprospect">Nuevo Producto</div>
         <div class="newct"><a href="<?php echo base_url(); ?>comercial/gestioncategoriaproductos/">Categoria de Producto</a></div>
         <div class="newtp"><a href="<?php echo base_url(); ?>comercial/gestiontipoproductos/">Tipo de Producto</a></div>
-        <input name="export_excel" type="submit" id="export_excel" value="Exportar Resumen a Excel" style="padding-bottom:3px; padding-top:3px; background-color: #0B610B; border-radius:6px;width: 155px;float: right;" />
+        <input name="export_excel" type="submit" id="export_excel" value="EXPORTAR INVENTARIO DE ALMACEN" style="padding-bottom:5px; padding-top:3px; background-color: #FF5722; border-radius:6px;width: 215px;margin-left:676px;" />
         <!--<input name="eliminar_registros" type="submit" id="eliminar_registros" value="Eliminar registros" style="padding-bottom:3px; padding-top:3px; background-color: #0B610B; border-radius:6px;width: 155px;float: right;" />
         <input name="actualizar_saldos_iniciales" type="submit" id="actualizar_saldos_iniciales" value="Actualizar saldos iniciales" style="padding-bottom:3px; padding-top:3px; background-color: #0B610B; border-radius:6px;width: 155px;float: right;" />
         <!--<input name="consolidar" type="submit" id="consolidar" value="Consolidar Stock" style="padding-bottom:3px; padding-top:3px; background-color: #0B610B; border-radius:6px;width: 155px;float: right;" />-->
@@ -600,22 +512,21 @@
           else
           {
         ?>
-        <table border="0" cellspacing="0" cellpadding="0" id="listaProductos" style="width:1380px;">
+        <table border="0" cellspacing="0" cellpadding="0" id="listaProductos" style="width:1370px;" class="table table-hover table-striped">
           <thead>
-            <tr class="tituloTable">
-              <td sort="idprod" width="70" height="25">Item</td>
-              <td sort="idproducto" width="100" height="25">ID Producto</td>
-              <td sort="nombreprod" width="330">Nombre o Descripción</td>
-              <td sort="nombreprod" width="120">Área</td>
-              <td sort="catprod" width="120">Categoria</td>
-              <td sort="catprod" width="120">Tipo Producto</td>
-              <!--<td sort="procprod" width="150">Procedencia</td>-->
-              <td sort="procprod" width="120">Unidad de Medida</td>
-              <td sort="procprod" width="125">Stock Sta. Clara</td>
-              <td sort="procprod" width="125">Stock Sta. Anita</td>
-              <td sort="procprod" width="20"></td>
-              <td width="20">&nbsp;</td>
-              <td width="20">&nbsp;</td>
+            <tr class="tituloTable" style="font-family: Helvetica Neu,Helvetica,Arial,sans-serif;font-size: 12px;height: 35px;">
+              <td sort="idprod" width="65" height="27">ITEM</td>
+              <td sort="procprod" width="120" height="27">ID PRODUCTO</td>
+              <td sort="procprod" width="340">NOMBRE O DESCRIPCIÓN</td>
+              <td sort="procprod" width="130">AREA</td>
+              <td sort="procprod" width="120">CATEGORIA</td>
+              <td sort="procprod" width="130">TIPO PRODUCTO</td>
+              <!--<td sort="procprod" width="120">UNIDAD MEDIDA</td>-->
+              <td sort="procprod" width="110">STA. CLARA</td>
+              <td sort="procprod" width="110">STA. ANITA</td>
+              <td width="28" style="background-image: none;"></td>
+              <td width="20" style="background-image: none;">&nbsp;</td>
+              <td width="20" style="background-image: none;">&nbsp;</td>
             </tr>
           </thead>
           <?php
@@ -623,70 +534,60 @@
             foreach($producto as $listaproductos){
               $vacio = 0;
           ?>  
-          <tr class="contentTable">
-            <td height="27"><?php echo str_pad($i, 4, 0, STR_PAD_LEFT); ?></td>
-            <td><?php echo $listaproductos->id_producto; ?></td>
-            <td><?php echo $listaproductos->no_producto; ?></td>
-            <td><?php echo $listaproductos->no_area; ?></td>
-            <td><?php echo $listaproductos->no_categoria; ?></td>
-            <td><?php echo $listaproductos->no_tipo_producto; ?></td>
+          <tr class="contentTable" style="font-size: 12px;">
+            <td height="23" style="vertical-align: middle;"><?php echo str_pad($i, 4, 0, STR_PAD_LEFT); ?></td>
+            <td style="vertical-align: middle;"><?php echo $listaproductos->id_producto; ?></td>
+            <td style="vertical-align: middle;"><?php echo $listaproductos->no_producto; ?></td>
+            <td style="vertical-align: middle;"><?php echo $listaproductos->no_area; ?></td>
+            <td style="vertical-align: middle;"><?php echo $listaproductos->no_categoria; ?></td>
+            <td style="vertical-align: middle;"><?php echo $listaproductos->no_tipo_producto; ?></td>
             <!--<td><?php //echo $listaproductos->no_procedencia; ?></td>-->
-            <td><?php echo $listaproductos->nom_uni_med; ?></td>
-            <td><?php echo $listaproductos->stock_area_sta_clara; ?></td>
-            <td><?php echo $listaproductos->stock_area_sta_anita; ?></td>
-            <td>
+            <!--<td style="vertical-align: middle;"><?php //echo $listaproductos->nom_uni_med; ?></td>-->
+            <td style="vertical-align: middle;"><?php echo $listaproductos->stock_area_sta_clara; ?></td>
+            <td style="vertical-align: middle;"><?php echo $listaproductos->stock_area_sta_anita; ?></td>
+            <td style="vertical-align: middle;">
               <?php 
                 if($listaproductos->column_temp == ""){
               ?>
-                <span class="icon-ban" style="color: red;"></span>
+                <span class="icon-ban" style="color: red;cursor: pointer;"></span>
               <?php
                 }else if($listaproductos->column_temp == "NUEVO" || $listaproductos->column_temp == "NUEVO 14" || $listaproductos->column_temp == "NUEVO 14S"){
               ?>
-                <span class="fa fa-thumbs-o-up" style="color: green;"></span>
+                <span class="fa fa-thumbs-o-up" style="color: green;cursor: pointer;"></span>
               <?php
                 }
               ?>
             </td>
-            <td width="20" align="center">
-              <img class="editar_producto" src="<?php echo base_url();?>assets/img/edit.png" width="20" height="20" title="Editar producto" onClick="editar_producto(<?php echo $listaproductos->id_pro; ?>, <?php if($listaproductos->id_detalle_producto_area != ''){echo $listaproductos->id_detalle_producto_area;}else{echo $vacio;} ?>)" />
+            <td width="20" style="vertical-align: middle;">
+              <img class="editar_producto" src="<?php echo base_url();?>assets/img/edit.png" width="20" height="20" title="Editar producto" onClick="editar_producto(<?php echo $listaproductos->id_pro; ?>, <?php if($listaproductos->id_detalle_producto_area != ''){echo $listaproductos->id_detalle_producto_area;}else{echo $vacio;} ?>)" style="cursor: pointer;"/>
             </td>
             <?php 
               if($listaproductos->id_detalle_producto_area == ''){
             ?>
-              <td width="20" align="center">
+              <td width="20" style="vertical-align: middle;">
                 <a href="" class="eliminar_producto" id="elim_<?php echo $listaproductos->id_pro; ?>">
-                <img src="<?php echo base_url();?>assets/img/trash.png" width="20" height="20" title="Eliminar Producto"/></a>
+                <img src="<?php echo base_url();?>assets/img/trash.png" width="20" height="20" title="Eliminar Producto" style="cursor: pointer;"/></a>
               </td>
             <?php
               }else{
             ?>
-              <td width="20" align="center">
+              <td width="20" style="vertical-align: middle;">
                 <a href="" class="eliminar_producto_area" id="elim_<?php echo $listaproductos->id_detalle_producto_area; ?>">
-                <img src="<?php echo base_url();?>assets/img/trash.png" width="20" height="20" title="Eliminar Producto"/></a>
+                <img src="<?php echo base_url();?>assets/img/trash.png" width="20" height="20" title="Eliminar Producto" style="cursor: pointer;"/></a>
               </td>
             <?php } ?>
           </tr>
-
           <?php
             $i++;
             } 
-          ?> 
-          <tfoot class="nav">
-                  <tr>
-                    <td colspan=12>
-                          <div class="pagination"></div>
-                          <div class="paginationTitle">Página</div>
-                          <div class="selectPerPage"></div>
-                      </td>
-                  </tr>                   
-          </tfoot>          
+          ?>      
         </table>
       <?php }?>
     </div>
   </div>
   <!---  Ventanas modales -->
   <div id="mdlNuevoProducto" style="display:none">
-      <div id="contenedor" style="width:320px; height:265px;"> <!--Aumenta el marco interior-->
+      <div id="contenedor" style="width:320px; height:295px;"> <!--Aumenta el marco interior-->
       <div id="tituloCont">Nuevo Producto</div>
       <div id="formFiltro" style="width:500px;">
       <?php
@@ -710,22 +611,22 @@
             </tr>
             <tr>
               <td>Área:</td>
-              <td width="263"><?php echo form_dropdown('area',$listaarea,$selected_area,"id='area'" );?></td>
+              <td width="263"><?php echo form_dropdown('area',$listaarea,$selected_area,"id='area' style='margin-left: 0px;width: 150px;'" );?></td>
             </tr>
             <tr> 
                 <td>Categoria:</td>
-                <td width="263"><?php echo form_dropdown('categoriaN',$listacategoria,'','id="categoriaN"');?>
+                <td width="263"><?php echo form_dropdown('categoriaN',$listacategoria,'',"id='categoriaN' style='margin-left: 0px;width: 150px;'");?>
                 <div align="right"></div></td>
             </tr>
             <tr> 
                 <td height="30">Tipo de Producto:</td>
                 <td>
-                  <select name="tipo" id="tipo" class='required' style='width:158px;'></select>
+                  <select name="tipo" id="tipo" class='required' style='width:158px;margin-left: 0px;width: 150px;'></select>
                 </td>
             </tr>
             <tr>
                 <td>Procedencia:</td>
-                <td><?php echo form_dropdown('procedenciaN',$listaprocedencia,'','id="procedenciaN"');?></td>
+                <td><?php echo form_dropdown('procedenciaN',$listaprocedencia,'',"id='procedenciaN' style='margin-left: 0px;width: 150px;'");?></td>
             </tr>
             <tr>
                 <td>Unidad de Medida:</td>

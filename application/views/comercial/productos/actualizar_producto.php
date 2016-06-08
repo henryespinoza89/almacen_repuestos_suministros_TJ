@@ -13,7 +13,7 @@
 	});
 </script>
 
-<div id="contenedor" style="width:300px; height:330px;">
+<div id="contenedor" style="width:300px; height:340px;">
 	<div id="tituloCont">Editar Producto</div>
 	<div id="formFiltro" style="width:500px;">
 		<?php 
@@ -60,25 +60,25 @@
 				</tr>
 				<tr>
               		<td width="127">Área:</td>
-	              	<td><?php echo form_dropdown('editarea',$listaarea, '',"id='editarea'" );?></td>
+	              	<td><?php echo form_dropdown('editarea',$listaarea, '',"id='editarea' style='margin-left: 0px;width: 150px;'" );?></td>
 	            </tr>
 	    		<tr>
 					<td width="127">Categoria:</td>
-					<td><?php echo form_dropdown('editcat', $listacat, '',"id='editcat'"); ?></td>
+					<td><?php echo form_dropdown('editcat', $listacat, '',"id='editcat' style='margin-left: 0px;width: 150px;'"); ?></td>
 				</tr>
 				<tr>
 					<td width="127">Tipo de Producto:</td>
 					<td>
-						<?php echo form_dropdown('edittipoprod', $listatipop, '',"id='edittipoprod'"); ?>
+						<?php echo form_dropdown('edittipoprod', $listatipop, '',"id='edittipoprod' style='margin-left: 0px;width: 150px;'"); ?>
 					</td>
 				</tr>
 	    		<tr>
 					<td width="127">Procedencia:</td>
-					<td><?php echo form_dropdown('editprocedencia', $listaproce, '',"id='editprocedencia'"); ?></td>
+					<td><?php echo form_dropdown('editprocedencia', $listaproce, '',"id='editprocedencia' style='margin-left: 0px;width: 150px;'"); ?></td>
 				</tr>
 				<tr>
 					<td width="127">Unidad de Medida:</td>
-					<td width="245"><?php echo form_dropdown('editunid_med', $listaunimed, '',"id='editunid_med'"); ?></td>
+					<td width="245"><?php echo form_dropdown('editunid_med', $listaunimed, '',"id='editunid_med' style='margin-left: 0px;width: 150px;'"); ?></td>
 				</tr>
 	    		<tr>
 					<td width="127">Observación:</td>
@@ -86,7 +86,7 @@
 				</tr>
 				<tr>
 					<td width="127">Estado:</td>
-					<td width="245"><?php echo form_dropdown('editestado', $editestado, '',"id='editestado'"); ?></td>
+					<td width="245"><?php echo form_dropdown('editestado', $editestado, '',"id='editestado' style='margin-left: 0px;width: 150px;'"); ?></td>
 				</tr>
 				<tr>
 					<td width="127">Indicador:</td>
