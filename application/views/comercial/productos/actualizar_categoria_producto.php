@@ -1,4 +1,4 @@
-<div id="contenedor" style="width:350px; height:60px;">
+<div id="contenedor" style="width:350px; height:90px;">
 	<div id="tituloCont">Editar Categoría de Producto</div>
 	<div id="formFiltro">
 		<?php 

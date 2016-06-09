@@ -38,6 +38,22 @@ footer{
 	padding-right: 8px;
 }
 
+#listaCategoriaProductos_paginate{
+	margin-right: 650px;
+}
+
+#listaCategoriaProductos_filter{
+	margin-right: 660px;
+}
+
+#listaTiposProductos_paginate{
+	margin-right: 650px;
+}
+
+#listaTiposProductos_filter{
+	margin-right: 660px;
+}
+
 #text_print{
     font-size: 11px;
     font-family: tahoma;

@@ -380,17 +380,11 @@
       modal: true, position: 'center', width: 350, height: 468, draggable: false, resizable: false, closeOnEscape: false,
       buttons: {
         Actualizar: function() {
-        $(".ui-dialog-buttonpane button:contains('Actualizar')").button("disable");
-        $(".ui-dialog-buttonpane button:contains('Actualizar')").attr("disabled", true).addClass("ui-state-disabled");
-        //CONTROLO LAS VARIABLES
         var editidprod = $('#editidprod').val(); editnombreprod = $('#editnombreprod').val(); editcat = $('#editcat').val(); editunid_med = $('#editunid_med').val(); 
         var editobser = $('#editobser').val(); editprocedencia = $('#editprocedencia').val(); edittipoprod = $('#edittipoprod').val();
         var editestado = $('#editestado').val(); editindicador = $('#editindicador').val(); editarea = $('#editarea').val();
         if(editidprod == '' || editnombreprod == '' || editcat == '' || editprocedencia == '' || editunid_med == '' || edittipoprod == '' || editarea == ''){
-          $("#modalerror").html('<b>ERROR:</b> Faltan completar algunos campos del formulario, por favor verifique.').dialog({
-            modal: true,position: 'center',width: 500, height: 125,resizable: false, title: 'Validación',
-            buttons: { Ok: function() {$(".ui-dialog-buttonpane button:contains('Actualizar')").button("enable");$( this ).dialog( "close" );}}
-          });
+          sweetAlert("Falta completar campos obligatorios del formulario, por favor verifique!", "", "error");
         }else{
           var dataString = 'editidprod='+editidprod+'&editnombreprod='+editnombreprod+'&editarea='+editarea+'&edittipoprod='+edittipoprod+'&editcat='+editcat+'&editunid_med='+editunid_med+'&editprocedencia='+editprocedencia+'&editobser='+editobser+'&editestado='+editestado+'&editindicador='+editindicador+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
           $.ajax({
@@ -399,20 +393,10 @@
             data: dataString,
             success: function(msg){
               if(msg == 1){
-                $("#finregistro").html('!El Producto ha sido actualizado con éxito!.').dialog({
-                  modal: true,position: 'center',width: 300,height: 125,resizable: false, title: 'Fin de Actualización',
-                  buttons: { Ok: function(){
-                    // window.location.href="<?php echo base_url();?>comercial/gestionproductos";
-                    $("#mdlEditarProducto").dialog("close");
-                    $( this ).dialog( "close" );
-                  }}
-                });
+                swal({ title: "El Producto ha sido actualizado con éxito!",text: "",type: "success",confirmButtonText: "OK",timer: 2000 });
+                $("#mdlEditarProducto").dialog("close");
               }else{
-                $("#modalerror").empty().append(msg).dialog({
-                  modal: true,position: 'center',width: 500,height: 125,resizable: false,
-                  buttons: { Ok: function() {$(".ui-dialog-buttonpane button:contains('Actualizar')").button("enable");$( this ).dialog( "close" );}}
-                });
-                $(".ui-dialog-buttonpane button:contains('Actualizar')").button("enable");
+                sweetAlert(msg, "", "error");
               }
             }
           });
