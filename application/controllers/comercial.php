@@ -2403,19 +2403,6 @@ class Comercial extends CI_Controller {
 		$this->model_comercial->eliminarMoneda($idmoneda);
 	}
 
-	public function eliminarproducto()
-	{
-		$id_pro = $this->input->get('eliminar');
-		$result = $this->model_comercial->eliminarProducto($id_pro);
-		if($result == 'producto_factura'){
-            echo '<b>--> Este Producto está asociado a una Factura.</b>';
-        }else if($result == 'producto_saldo_inicial'){
-        	echo '<b>--> Este Producto está asociado a un Cierre de Almacén.</b>';
-        }else if($result == 'eliminacion_correcta'){
-        	echo '1';
-        }
-	}
-
 	public function gestioninterfaz()
 	{
 		$nombre = $this->security->xss_clean($this->session->userdata('nombre'));
@@ -2560,12 +2547,23 @@ class Comercial extends CI_Controller {
 
 	public function eliminarproducto_area()
 	{
-		$id_detalle_producto_area = $this->input->get('eliminar');
+		$id_detalle_producto_area = $this->security->xss_clean($this->input->post('id_detalle_producto_area'));
 		$result = $this->model_comercial->eliminarProducto_area($id_detalle_producto_area);
 		if($result == 'existe_stock'){
-            echo '<b>--> No se puede eliminar el Registro. El Producto tiene Stock Asignado para esa Área</b>';
+            echo 'dont_delete';
         }else if($result == 'eliminacion_correcta'){
-        	echo '1';
+        	echo 'ok';
+        }
+	}
+
+	public function eliminarproducto()
+	{
+		$id_pro = $this->security->xss_clean($this->input->post('id_pro'));
+		$result = $this->model_comercial->eliminarProducto($id_pro);
+		if($result == 'producto_factura' || $result == 'producto_saldo_inicial'){
+            echo 'dont_delete';
+        }else if($result == 'eliminacion_correcta'){
+        	echo 'ok';
         }
 	}
 

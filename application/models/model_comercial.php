@@ -1938,7 +1938,7 @@ class Model_comercial extends CI_Model {
             $filtro .= " AND producto.id_almacen =".(int)$this->security->xss_clean($this->session->userdata('almacen')); 
         }
         /* $filtro .= " AND producto.estado = TRUE "; */
-        $filtro .= " LIMIT 10";
+        // $filtro .= " LIMIT 10";
         $sql = "SELECT DISTINCT producto.id_pro,producto.id_producto,producto.observacion,categoria.no_categoria,tipo_producto.no_tipo_producto,
                 detalle_producto.no_producto,procedencia.no_procedencia,unidad_medida.nom_uni_med,producto.column_temp,area.no_area,
                 detalle_producto_area.stock_area_sta_anita,detalle_producto_area.stock_area_sta_clara,detalle_producto_area.id_detalle_producto_area
