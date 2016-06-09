@@ -350,6 +350,8 @@
 
 
 
+
+
         
         // FIN DE ELIMINAR
         
@@ -422,6 +424,62 @@
             }
     });
   }
+
+  function delete_producto(id_pro){
+          swal({   
+            title: "Estas seguro?",
+            text: "No se podrá recuperar esta información!",
+            type: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#DD6B55",
+            confirmButtonText: "Si, eliminar!",
+            closeOnConfirm: false 
+          },
+          function(){
+            var dataString = 'id_pro='+id_pro+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
+            $.ajax({
+              type: "POST",
+              url: "<?php echo base_url(); ?>comercial/eliminarproducto/",
+              data: dataString,
+              success: function(msg){
+                if(msg == 'ok'){
+                  swal("Eliminado!", "El producto ha sido eliminado.", "success");
+                }else if(msg == 'dont_delete'){
+                  sweetAlert("No se puede eliminar el producto", "El producto debe estar asociado a una factura, salida o cierre de almacén.", "error");
+                }
+              }
+            });
+          });
+        }
+
+        
+
+        function delete_producto_area(id_detalle_producto_area){
+          swal({   
+            title: "Estas seguro?",
+            text: "No se podrá recuperar esta información!",
+            type: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#DD6B55",
+            confirmButtonText: "Si, eliminar!",
+            closeOnConfirm: false 
+          },
+          function(){
+            var dataString = 'id_detalle_producto_area='+id_detalle_producto_area+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
+            $.ajax({
+              type: "POST",
+              url: "<?php echo base_url(); ?>comercial/eliminarproducto_area/",
+              data: dataString,
+              success: function(msg){
+                if(msg == 'ok'){
+                  swal("Eliminado!", "El producto ha sido eliminado.", "success");
+                }else if(msg == 'dont_delete'){
+                  sweetAlert("No se puede eliminar el producto", "El Producto tiene Stock Asignado para esa Área.", "error");
+                }
+              }
+            });
+          });
+        }
 
 
 </script>
@@ -497,7 +555,7 @@
         <div class="newprospect">Nuevo Producto</div>
         <div class="newct"><a href="<?php echo base_url(); ?>comercial/gestioncategoriaproductos/">Categoria de Producto</a></div>
         <div class="newtp"><a href="<?php echo base_url(); ?>comercial/gestiontipoproductos/">Tipo de Producto</a></div>
-        <input name="export_excel" type="submit" id="export_excel" value="EXPORTAR INVENTARIO DE ALMACEN" style="padding-bottom:5px; padding-top:3px; background-color: #FF5722; border-radius:6px;width: 215px;margin-left:676px;" />
+        <input name="export_excel" type="submit" id="export_excel" value="EXPORTAR INVENTARIO DE ALMACEN" style="padding-bottom:5px; padding-top:3px; background-color: #FF5722; border-radius:6px;width: 215px;margin-left:666px;" />
         <!--<input name="eliminar_registros" type="submit" id="eliminar_registros" value="Eliminar registros" style="padding-bottom:3px; padding-top:3px; background-color: #0B610B; border-radius:6px;width: 155px;float: right;" />
         <input name="actualizar_saldos_iniciales" type="submit" id="actualizar_saldos_iniciales" value="Actualizar saldos iniciales" style="padding-bottom:3px; padding-top:3px; background-color: #0B610B; border-radius:6px;width: 155px;float: right;" />
         <!--<input name="consolidar" type="submit" id="consolidar" value="Consolidar Stock" style="padding-bottom:3px; padding-top:3px; background-color: #0B610B; border-radius:6px;width: 155px;float: right;" />-->
@@ -565,15 +623,21 @@
               if($listaproductos->id_detalle_producto_area == ''){
             ?>
               <td width="20" style="vertical-align: middle;">
-                <a href="" class="eliminar_producto" id="elim_<?php echo $listaproductos->id_pro; ?>">
-                <img src="<?php echo base_url();?>assets/img/trash.png" width="20" height="20" title="Eliminar Producto" style="cursor: pointer;"/></a>
+                <img class="delete_producto" src="<?php echo base_url();?>assets/img/trash.png" width="20" height="20" title="Eliminar Producto" onClick="delete_producto(<?php echo $listaproductos->id_pro; ?>)" style="cursor: pointer;"/>
+                <!--
+                <a href="" class="eliminar_producto" id="elim_<?php //echo $listaproductos->id_pro; ?>">
+                <img src="<?php //echo base_url();?>assets/img/trash.png" width="20" height="20" title="Eliminar Producto" style="cursor: pointer;"/></a>
+                -->
               </td>
             <?php
               }else{
             ?>
               <td width="20" style="vertical-align: middle;">
-                <a href="" class="eliminar_producto_area" id="elim_<?php echo $listaproductos->id_detalle_producto_area; ?>">
-                <img src="<?php echo base_url();?>assets/img/trash.png" width="20" height="20" title="Eliminar Producto" style="cursor: pointer;"/></a>
+                <img class="delete_producto_area" src="<?php echo base_url();?>assets/img/trash.png" width="20" height="20" title="Eliminar Producto" onClick="delete_producto_area(<?php echo $listaproductos->id_detalle_producto_area; ?>)" style="cursor: pointer;"/>
+                <!--
+                <a href="" class="eliminar_producto_area" id="elim_<?php //echo $listaproductos->id_detalle_producto_area; ?>">
+                <img src="<?php //echo base_url();?>assets/img/trash.png" width="20" height="20" title="Eliminar Producto" style="cursor: pointer;"/></a>
+                -->
               </td>
             <?php } ?>
           </tr>
