@@ -396,11 +396,7 @@
                 swal({ title: "El Producto ha sido actualizado con éxito!",text: "",type: "success",confirmButtonText: "OK",timer: 2000 });
                 $("#mdlEditarProducto").dialog("close");
               }else{
-                $("#modalerror").empty().append(msg).dialog({
-                  modal: true,position: 'center',width: 500,height: 125,resizable: false,
-                  buttons: { Ok: function() {$(".ui-dialog-buttonpane button:contains('Actualizar')").button("enable");$( this ).dialog( "close" );}}
-                });
-                $(".ui-dialog-buttonpane button:contains('Actualizar')").button("enable");
+                sweetAlert(msg, "", "error");
               }
             }
           });

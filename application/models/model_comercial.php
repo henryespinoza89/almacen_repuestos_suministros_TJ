@@ -20,6 +20,115 @@ class Model_comercial extends CI_Model {
         }
     }
 
+    function save_categoria_producto(){
+        $categoria_producto_modal = strtoupper($this->security->xss_clean($this->input->post('categoria_producto_modal')));
+        $this->db->select('no_categoria');
+        $this->db->where('no_categoria',$categoria_producto_modal);
+        $query = $this->db->get('categoria');
+        if($query->num_rows() <= 0){
+            $registro = array(
+                'no_categoria'=> $categoria_producto_modal
+            );
+            $this->db->insert('categoria', $registro);
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    function update_categoria_producto($actualizar_data, $editcatprod){
+        $id_categoria = $this->security->xss_clean($this->uri->segment(3));
+        // Validación de duplicidad
+        $this->db->select('id_categoria');
+        $this->db->where('no_categoria',$editcatprod);
+        $query = $this->db->get('categoria');
+        if($query->num_rows() <= 0){
+            // Actualización
+            $this->db->where('id_categoria',$id_categoria);
+            $this->db->update('categoria', $actualizar_data);
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    function eliminar_categoria_producto($id_categoria){
+        $this->db->select('id_categoria');
+        $this->db->where('id_categoria',$id_categoria);
+        $query = $this->db->get('producto');
+        if($query->num_rows() <= 0){
+            $sql = "DELETE FROM categoria WHERE id_categoria = " . $id_categoria . "";
+            $query = $this->db->query($sql);
+            if($query == 'TRUE'){
+                return true;
+            }else{
+                return false;
+            }
+        }else{
+            return false;
+        }
+    }
+
+    function save_tipo_producto(){
+        $tipo_producto_modal = strtoupper($this->security->xss_clean($this->input->post('tipo_producto_modal')));
+        $id_categoria = $this->security->xss_clean($this->input->post('categoria'));
+        $this->db->select('no_tipo_producto');
+        $this->db->where('no_tipo_producto',$tipo_producto_modal);
+        $this->db->where('id_categoria',$id_categoria);
+        $query = $this->db->get('tipo_producto');
+        if($query->num_rows() <= 0){
+            $registro = array(
+                'no_tipo_producto'=> $tipo_producto_modal,
+                'id_categoria'=> $id_categoria
+            );
+            $this->db->insert('tipo_producto', $registro);
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    function update_tipo_producto($actualizar_data, $edittipprod, $editcateprod){
+        $id_tp_act = null;
+        $id_tipo_producto = $this->security->xss_clean($this->uri->segment(3));
+
+        $this->db->select('id_tipo_producto');
+        $this->db->where('no_tipo_producto',$edittipprod);
+        $this->db->where('id_categoria',$editcateprod);
+        $query = $this->db->get('tipo_producto');
+        if($query->num_rows() > 0){
+            foreach($query->result() as $row){
+                $id_tp_act = $row->id_tipo_producto;
+            }
+        }
+        // Validación de duplicidad
+        if(($id_tipo_producto == $id_tp_act) || $id_tp_act == null){
+            // Actualización
+            $this->db->where('id_tipo_producto',$id_tipo_producto);
+            $this->db->update('tipo_producto', $actualizar_data);
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    function eliminar_tipo_producto($id_tipo_producto){
+        $this->db->select('id_tipo_producto');
+        $this->db->where('id_tipo_producto',$id_tipo_producto);
+        $query = $this->db->get('producto');
+        if($query->num_rows() <= 0){
+            $sql = "DELETE FROM tipo_producto WHERE id_tipo_producto = " . $id_tipo_producto . "";
+            $query = $this->db->query($sql);
+            if($query == 'TRUE'){
+                return true;
+            }else{
+                return false;
+            }
+        }else{
+            return false;
+        }
+    }
+
     public function listarTipoProdCombo($id_pro){
 
         $this->db->select('id_categoria');
