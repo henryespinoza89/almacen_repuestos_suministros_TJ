@@ -463,3 +463,99 @@ ERROR - 2016-07-12 23:43:26 --> 404 Page Not Found --> assets
 DEBUG - 2016-07-12 23:43:26 --> URI Class Initialized
 DEBUG - 2016-07-12 23:43:26 --> Router Class Initialized
 ERROR - 2016-07-12 23:43:26 --> 404 Page Not Found --> assets
+DEBUG - 2016-07-12 23:44:09 --> Config Class Initialized
+DEBUG - 2016-07-12 23:44:09 --> Hooks Class Initialized
+DEBUG - 2016-07-12 23:44:09 --> Utf8 Class Initialized
+DEBUG - 2016-07-12 23:44:09 --> UTF-8 Support Enabled
+DEBUG - 2016-07-12 23:44:09 --> URI Class Initialized
+DEBUG - 2016-07-12 23:44:09 --> Router Class Initialized
+DEBUG - 2016-07-12 23:44:09 --> Output Class Initialized
+DEBUG - 2016-07-12 23:44:09 --> Security Class Initialized
+DEBUG - 2016-07-12 23:44:09 --> Input Class Initialized
+DEBUG - 2016-07-12 23:44:09 --> Global POST and COOKIE data sanitized
+DEBUG - 2016-07-12 23:44:09 --> Language Class Initialized
+DEBUG - 2016-07-12 23:44:09 --> Loader Class Initialized
+DEBUG - 2016-07-12 23:44:09 --> Helper loaded: url_helper
+DEBUG - 2016-07-12 23:44:09 --> Helper loaded: form_helper
+DEBUG - 2016-07-12 23:44:09 --> Database Driver Class Initialized
+DEBUG - 2016-07-12 23:44:09 --> Form Validation Class Initialized
+DEBUG - 2016-07-12 23:44:09 --> Session Class Initialized
+DEBUG - 2016-07-12 23:44:09 --> Helper loaded: string_helper
+DEBUG - 2016-07-12 23:44:09 --> Session routines successfully run
+DEBUG - 2016-07-12 23:44:09 --> User Agent Class Initialized
+DEBUG - 2016-07-12 23:44:09 --> Session class already loaded. Second attempt ignored.
+DEBUG - 2016-07-12 23:44:09 --> Cart Class Initialized
+DEBUG - 2016-07-12 23:44:09 --> Controller Class Initialized
+DEBUG - 2016-07-12 23:44:09 --> Model Class Initialized
+DEBUG - 2016-07-12 23:44:09 --> Model Class Initialized
+DEBUG - 2016-07-12 23:44:09 --> Session class already loaded. Second attempt ignored.
+DEBUG - 2016-07-12 23:44:09 --> Model Class Initialized
+DEBUG - 2016-07-12 23:44:09 --> Session class already loaded. Second attempt ignored.
+DEBUG - 2016-07-12 23:44:09 --> Session class already loaded. Second attempt ignored.
+DEBUG - 2016-07-12 23:44:09 --> Table Class Initialized
+DEBUG - 2016-07-12 23:44:09 --> XSS Filtering completed
+DEBUG - 2016-07-12 23:44:10 --> File loaded: application/views/comercial/menu.php
+DEBUG - 2016-07-12 23:44:10 --> File loaded: application/views/comercial/consultar_traslado_productos.php
+DEBUG - 2016-07-12 23:44:10 --> Final output sent to browser
+DEBUG - 2016-07-12 23:44:10 --> Total execution time: 0.6356
+DEBUG - 2016-07-12 23:44:10 --> Config Class Initialized
+DEBUG - 2016-07-12 23:44:10 --> Hooks Class Initialized
+DEBUG - 2016-07-12 23:44:10 --> Utf8 Class Initialized
+DEBUG - 2016-07-12 23:44:10 --> UTF-8 Support Enabled
+DEBUG - 2016-07-12 23:44:10 --> URI Class Initialized
+DEBUG - 2016-07-12 23:44:10 --> Router Class Initialized
+ERROR - 2016-07-12 23:44:10 --> 404 Page Not Found --> assets
+DEBUG - 2016-07-12 23:44:10 --> Config Class Initialized
+DEBUG - 2016-07-12 23:44:10 --> Hooks Class Initialized
+DEBUG - 2016-07-12 23:44:10 --> Utf8 Class Initialized
+DEBUG - 2016-07-12 23:44:10 --> UTF-8 Support Enabled
+DEBUG - 2016-07-12 23:44:10 --> URI Class Initialized
+DEBUG - 2016-07-12 23:44:10 --> Router Class Initialized
+DEBUG - 2016-07-12 23:44:10 --> Output Class Initialized
+DEBUG - 2016-07-12 23:44:10 --> Security Class Initialized
+DEBUG - 2016-07-12 23:44:10 --> Input Class Initialized
+DEBUG - 2016-07-12 23:44:10 --> Global POST and COOKIE data sanitized
+DEBUG - 2016-07-12 23:44:10 --> Language Class Initialized
+DEBUG - 2016-07-12 23:44:10 --> Loader Class Initialized
+DEBUG - 2016-07-12 23:44:10 --> Helper loaded: url_helper
+DEBUG - 2016-07-12 23:44:10 --> Helper loaded: form_helper
+DEBUG - 2016-07-12 23:44:10 --> Database Driver Class Initialized
+DEBUG - 2016-07-12 23:44:10 --> Form Validation Class Initialized
+DEBUG - 2016-07-12 23:44:10 --> Session Class Initialized
+DEBUG - 2016-07-12 23:44:10 --> Helper loaded: string_helper
+DEBUG - 2016-07-12 23:44:10 --> Session routines successfully run
+DEBUG - 2016-07-12 23:44:10 --> User Agent Class Initialized
+DEBUG - 2016-07-12 23:44:10 --> Session class already loaded. Second attempt ignored.
+DEBUG - 2016-07-12 23:44:10 --> Cart Class Initialized
+DEBUG - 2016-07-12 23:44:10 --> Controller Class Initialized
+DEBUG - 2016-07-12 23:44:10 --> Model Class Initialized
+DEBUG - 2016-07-12 23:44:10 --> Model Class Initialized
+DEBUG - 2016-07-12 23:44:10 --> Session class already loaded. Second attempt ignored.
+DEBUG - 2016-07-12 23:44:10 --> Model Class Initialized
+DEBUG - 2016-07-12 23:44:10 --> Session class already loaded. Second attempt ignored.
+DEBUG - 2016-07-12 23:44:10 --> Session class already loaded. Second attempt ignored.
+DEBUG - 2016-07-12 23:44:10 --> Table Class Initialized
+DEBUG - 2016-07-12 23:44:10 --> XSS Filtering completed
+DEBUG - 2016-07-12 23:44:10 --> Final output sent to browser
+DEBUG - 2016-07-12 23:44:10 --> Total execution time: 0.2061
+DEBUG - 2016-07-12 23:45:10 --> Config Class Initialized
+DEBUG - 2016-07-12 23:45:10 --> Hooks Class Initialized
+DEBUG - 2016-07-12 23:45:10 --> Utf8 Class Initialized
+DEBUG - 2016-07-12 23:45:10 --> UTF-8 Support Enabled
+DEBUG - 2016-07-12 23:45:10 --> URI Class Initialized
+DEBUG - 2016-07-12 23:45:10 --> Router Class Initialized
+ERROR - 2016-07-12 23:45:11 --> 404 Page Not Found --> assets
+DEBUG - 2016-07-12 23:45:12 --> Config Class Initialized
+DEBUG - 2016-07-12 23:45:12 --> Config Class Initialized
+DEBUG - 2016-07-12 23:45:12 --> Hooks Class Initialized
+DEBUG - 2016-07-12 23:45:12 --> Hooks Class Initialized
+DEBUG - 2016-07-12 23:45:12 --> Utf8 Class Initialized
+DEBUG - 2016-07-12 23:45:12 --> UTF-8 Support Enabled
+DEBUG - 2016-07-12 23:45:12 --> URI Class Initialized
+DEBUG - 2016-07-12 23:45:12 --> Utf8 Class Initialized
+DEBUG - 2016-07-12 23:45:12 --> UTF-8 Support Enabled
+DEBUG - 2016-07-12 23:45:12 --> URI Class Initialized
+DEBUG - 2016-07-12 23:45:12 --> Router Class Initialized
+ERROR - 2016-07-12 23:45:12 --> 404 Page Not Found --> assets
+DEBUG - 2016-07-12 23:45:12 --> Router Class Initialized
+ERROR - 2016-07-12 23:45:12 --> 404 Page Not Found --> assets
