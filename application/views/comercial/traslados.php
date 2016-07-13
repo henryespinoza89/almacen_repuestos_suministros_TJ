@@ -1,8 +1,8 @@
 <?php
 	if ($this->input->post('fecharegistro')){
-		$fecharegistro = array('name'=>'fecharegistro','id'=>'fecharegistro','maxlength'=>'10','value'=>$this->input->post('fecharegistro'), 'style'=>'width:145px','readonly'=> 'readonly', 'class'=>'required');
+		$fecharegistro = array('name'=>'fecharegistro','id'=>'fecharegistro','maxlength'=>'10','value'=>$this->input->post('fecharegistro'), 'style'=>'width:180px','readonly'=> 'readonly', 'class'=>'required');
 	}else{
-		$fecharegistro = array('name'=>'fecharegistro','id'=>'fecharegistro','maxlength'=>'10', 'style'=>'width:145px','readonly'=> 'readonly', 'class'=>'required');
+		$fecharegistro = array('name'=>'fecharegistro','id'=>'fecharegistro','maxlength'=>'10', 'style'=>'width:180px','readonly'=> 'readonly', 'class'=>'required');
 	}
 	
 	if ($this->input->post('fecha_vencimiento')){
@@ -177,10 +177,7 @@
 			var almacen_llegada = $("#almacen_llegada").val();
 			var fecharegistro = $("#fecharegistro").val();
 			if( almacen_partida == '' || almacen_llegada == '' || fecharegistro == ''){
-				$("#modalerror").html('<strong>!Todos los Campos del Formulario son Obligatorios. Verificar!</strong>').dialog({
-		            modal: true,position: 'center',width: 450, height: 125,resizable: false,title: 'Validación de Registro',hide: 'blind',show: 'blind',
-		          	buttons: { Ok: function() {$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );}}
-		        });
+				sweetAlert("Falta completar campos obligatorios del formulario, por favor verifique!", "", "error");
 			}else{
 				var array_json = Array();
 
@@ -205,10 +202,7 @@
 
 		$("#submit_agregar_detalle_model_carrito").click(function(){
 			if($("#nombre_producto").val() == '' || $("#cantidad").val() == '' || $("#area").val() == ''){
-		        $("#modalerror").html('<strong>!Falta Completar algunos Campos del Formulario. Verificar!</strong>').dialog({
-		          modal: true,position: 'center',width: 450, height: 125,resizable: false,title: 'Validación de Registro',hide: 'blind',show: 'blind',
-		          buttons: { Ok: function() {$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );}}
-		        });
+		        sweetAlert("Falta completar campos obligatorios del formulario, por favor verifique!", "", "error");
 		    }else{
 	    		$.ajax({
 			        type: 'POST',
@@ -222,10 +216,7 @@
 			        	if(response == 'successfull'){
 			        		window.location.href="<?php echo base_url();?>comercial/gestiontraslados";
 			        	}else if(response == 'stock_insuficiente'){
-			        		$("#modalerror").html('<strong>!Stock Insuficiente para el Traslado. Verificar!</strong>').dialog({
-			        		  modal: true,position: 'center',width: 450, height: 125,resizable: false,title: 'Validación de Registro',hide: 'blind',show: 'blind',
-			        		  buttons: { Ok: function() {$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );}}
-			        		});
+			        		sweetAlert("Stock insuficiente!", "No existe stock para realizar el traslado del producto. Verificar!", "error");
 			        	}else if(response == 'error_get_data'){
 			        		$("#modalerror").html('<strong>!No se obtuve los datos correctos del producto. Verificar!</strong>').dialog({
 			        		  modal: true,position: 'center',width: 450, height: 125,resizable: false,title: 'Validación de Registro',hide: 'blind',show: 'blind',
@@ -250,10 +241,7 @@
 			?>
 				if( fecharegistro == '' || id_almacen_partida == '' || id_almacen_llegada == ''){
 					$("#div-loader").hide().dialog("destroy");
-					$("#modalerror").html('<strong>!Falta Completar campos del Formulario. Verificar!</strong>').dialog({
-			            modal: true,position: 'center',width: 450, height: 125,resizable: false,title: 'Validación de Registro',hide: 'blind',show: 'blind',
-			          	buttons: { Ok: function() {$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );}}
-			        });
+					sweetAlert("Falta completar campos obligatorios del formulario, por favor verifique!", "", "error");
 				}else{
 					var dataString = 'id_almacen_partida='+id_almacen_partida+'&id_almacen_llegada='+id_almacen_llegada+'&fecharegistro='+fecharegistro+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
 					$.ajax({
@@ -460,9 +448,9 @@
 	<div id="tituloCont" style="margin-bottom: 7px;padding-bottom: 7px;">Traslado de Productos</div>
 	<div id="formFiltro">
 		<div id="options" style="border-bottom: 1px solid #000; padding-bottom: 10px; margin-bottom: 0;">
-        	<div class="newagente"><a href="<?php echo base_url(); ?>comercial/consultar_traslado_productos/">Consultar Traslados</a></div>
+        	<div class="newagente" style="height: 20px;margin-top: 3px;"><a href="<?php echo base_url(); ?>comercial/consultar_traslado_productos/">Consultar Traslados</a></div>
       	</div>
-		<div style="width: 400px;float: left;background: whitesmoke;border-bottom: 1px solid #000;height: 170px;padding-top: 15px;padding-left: 15px;">
+		<div style="width: 400px;float: left;background: whitesmoke;border-bottom: 1px solid #000;height: 170px;padding-top: 15px;padding-left: 15px;font-size: 11px;font-family: 'verdana';">
 			<table width="518" border="0" cellspacing="0" cellpadding="0">
 		        <tr>
 		          	<td width="148" valign="middle" height="30">Punto de Partida:</td>
@@ -475,7 +463,7 @@
 			            else
 			            {
 		          	?>
-		          		<td width="370" height="30"><?php echo form_dropdown('almacen_partida',$listaalmacen_partida,$selected_almacen_partida,"id='almacen_partida' disabled='disabled' style='width:180px;'");?></td>
+		          		<td width="370" height="30"><?php echo form_dropdown('almacen_partida',$listaalmacen_partida,$selected_almacen_partida,"id='almacen_partida' disabled='disabled' style='width:180px;margin-left: 0px;'");?></td>
 		          	<?php }?>
 		        </tr>
 		    </table>
@@ -491,7 +479,7 @@
 			            else
 			            {
 		          	?>
-		          		<td width="370" height="30"><?php echo form_dropdown('almacen_llegada',$listaalmacen_llegada,$selected_almacen_llegada,"id='almacen_llegada' disabled='disabled' style='width:180px;'");?></td>
+		          		<td width="370" height="30"><?php echo form_dropdown('almacen_llegada',$listaalmacen_llegada,$selected_almacen_llegada,"id='almacen_llegada' disabled='disabled' style='width:180px;margin-left: 0px;'");?></td>
 		          	<?php }?>
 		        </tr>
 		    </table>
@@ -503,11 +491,11 @@
 		    </table>
 		    <table width="556" border="0" cellspacing="0" cellpadding="0">			        
 				<tr> 
-		        	<td height="30" colspan="2" style="padding-top: 5px; padding-left: 170px;"><input name="submit" type="submit" id="submit_finalizar_registro" value="Finalizar Registro" style="padding-bottom:3px; padding-top:3px; margin-bottom: 4px; background-color: #F5A700; border-radius:6px; width:163px;padding-left: 13px;" /></td>
+		        	<td height="30" colspan="2" style="padding-top: 5px; padding-left: 165px;"><input name="submit" type="submit" id="submit_finalizar_registro" value="FINALIZAR REGISTRO" style="padding-bottom:3px; padding-top:3px; margin-bottom: 4px; background-color: #FF5722; border-radius:6px; width:163px;padding-left: 13px;" /></td>
 		        </tr>						        
 			</table>
 		</div>
-		<div style="width: 965px;height: 170px;float: left;background: whitesmoke;border-bottom: 1px solid #000;padding-top: 15px;margin-bottom: 15px;">
+		<div style="width: 960px;height: 170px;float: left;background: whitesmoke;border-bottom: 1px solid #000;padding-top: 15px;margin-bottom: 15px;font-size: 11px;font-family: 'verdana';">
 			<!--
 			<table width="518" border="0" cellspacing="0" cellpadding="0">
 				<tr>
@@ -517,7 +505,7 @@
 				</tr>
 			</table>
 			-->
-			<table width="446" border="0" cellspacing="0" cellpadding="0" style="margin-bottom: 3px;">
+			<table width="400" border="0" cellspacing="0" cellpadding="0">
 		        <tr>
 		          	<td width="175" valign="middle" height="30">Área:</td>
 		          	<?php
@@ -533,13 +521,13 @@
 		          	<?php }?>
 		        </tr>
 		    </table>
-			<table width="457" border="0" cellspacing="0" cellpadding="0">
+			<table width="397" border="0" cellspacing="0" cellpadding="0">
 		        <tr>
 		          	<td width="128" valign="middle" height="30" style="width: 132px;">Producto:</td>
 		          	<td width="228" height="30"><?php echo form_input($nombre_producto)?></td>
 		        </tr>
 			</table>
-			<table width="227" border="0" cellspacing="0" cellpadding="0">
+			<table width="202" border="0" cellspacing="0" cellpadding="0">
 				<tr>
 	          		<td width="180" valign="middle" height="30" style="padding-top: 4px;">Stock Sta. Anita:</td>
 	          		<td width="70" height="30"><?php echo form_input($stock_sta_anita);?></td>
@@ -549,11 +537,11 @@
 	          		<td width="70" height="30"><?php echo form_input($stock_sta_clara);?></td>
 				</tr>
 			</table>
-			<table width="490">
+			<table width="394">
 				<tr>
 					<td width="146" valign="middle" height="30">Cantidad:</td>
 		          	<td width="120" height="30"><?php echo form_input($cantidad);?></td>
-		          	<td style="padding-top: 3px;" colspan="6"><input name="submit" type="submit" id="submit_agregar_detalle_model_carrito" value="Agregar Producto" style="padding-bottom:3px; padding-top:3px; margin-bottom: 4px; background-color: #005197; border-radius:6px; width: 150px;visibility: visible;height: 20px;" /></td>
+		          	<td style="padding-top: 3px;" colspan="6"><input name="submit" type="submit" id="submit_agregar_detalle_model_carrito" value="AGREGAR PRODUCTO" style="padding-bottom:3px; padding-top:3px; margin-bottom: 4px; background-color: #FF5722; border-radius:6px; width: 150px;visibility: visible;height: 20px;" /></td>
 				</tr>
 			</table>
 		</div>
@@ -575,10 +563,10 @@
 	        <table border="0" cellspacing="0" cellpadding="0" id="listaProductos">
 		        <thead>
 		            <tr class="tituloTable">
-		              <td sort="idprod" width="80" height="25">Item</td>
-		              <td sort="catprod" width="120">Cantidad</td>
-		              <td sort="catprod" width="120">Área</td>
-		              <td sort="nombreprod" width="380">Producto o Descripción</td>
+		              <td sort="idprod" width="80" height="27">ITEM</td>
+		              <td sort="catprod" width="120">CANTIDAD</td>
+		              <td sort="catprod" width="120">AREA</td>
+		              <td sort="nombreprod" width="380">PRODUCTO O DESCRIPCION</td>
 		              <td sort="procprod" width="20">&nbsp;</td>
 		            </tr>
 		        </thead>
@@ -616,9 +604,9 @@
 	        </table>
 	        <table border="0" cellspacing="0" cellpadding="0" id="listaProductos">
 	            <tr>
-	            	<td style="width: 605px;"><?php echo anchor('comercial/vaciar_listado_traslado', 'Vaciar Listado de Productos', array('style'=>'text-decoration: none; background-color: #005197; color: white; font-family: tahoma; border-radius: 6px; padding: 3px 15px; font-size: 11px;')); ?></td>
+	            	<td style="width: 605px;"><?php echo anchor('comercial/vaciar_listado_traslado', 'VACIAR LISTADO', array('style'=>'text-decoration: none; background-color: #FF5722; color: white; font-family: tahoma; border-radius: 6px; padding: 5px 15px; font-size: 11px;')); ?></td>
 	            	<td style="padding-top: 3px;width: 180px;">
-	            		<i id="imprimir_traslado"><span id="text_print">Imprimir Documento<span class="fa fa-file-pdf-o" id="icon_print"></span></span></i>
+	            		<i id="imprimir_traslado"><span id="text_print">IMPRIMIR DOCUMENTO<span class="fa fa-file-pdf-o" id="icon_print"></span></span></i>
 	            	</td>
 	            	<td>&nbsp;</td>
 	            	<td>&nbsp;</td>

@@ -60,43 +60,7 @@
     });
     <?php } ?>
 
-    //Script para crear la tabla que será el contenedor de los productos registrados
-    $('#listaProveedores').jTPS( {perPages:[10,20,30,50,'Todos'],scrollStep:1,scrollDelay:30,clickCallback:function () {     
-            // target table selector
-            var table = '#listaProveedores';
-            // store pagination + sort in cookie 
-            document.cookie = 'jTPS=sortasc:' + $(table + ' .sortableHeader').index($(table + ' .sortAsc')) + ',' +
-                    'sortdesc:' + $(table + ' .sortableHeader').index($(table + ' .sortDesc')) + ',' +
-                    'page:' + $(table + ' .pageSelector').index($(table + ' .hilightPageSelector')) + ';';
-            }
-        });
-
-        // reinstate sort and pagination if cookie exists
-        var cookies = document.cookie.split(';');
-        for (var ci = 0, cie = cookies.length; ci < cie; ci++) {
-                var cookie = cookies[ci].split('=');
-                if (cookie[0] == 'jTPS') {
-                        var commands = cookie[1].split(',');
-                        for (var cm = 0, cme = commands.length; cm < cme; cm++) {
-                                var command = commands[cm].split(':');
-                                if (command[0] == 'sortasc' && parseInt(command[1]) >= 0) {
-                                        $('#listaProveedores .sortableHeader:eq(' + parseInt(command[1]) + ')').click();
-                                } else if (command[0] == 'sortdesc' && parseInt(command[1]) >= 0) {
-                                        $('#listaProveedores .sortableHeader:eq(' + parseInt(command[1]) + ')').click().click();
-                                } else if (command[0] == 'page' && parseInt(command[1]) >= 0) {
-                                        $('#listaProveedores .pageSelector:eq(' + parseInt(command[1]) + ')').click();
-                                }
-                        }
-                }
-        }
-
-        // bind mouseover for each tbody row and change cell (td) hover style
-        $('#listaProveedores tbody tr:not(.stubCell)').bind('mouseover mouseout',
-                function (e) {
-                        // hilight the row
-                        e.type == 'mouseover' ? $(this).children('td').addClass('hilightRow') : $(this).children('td').removeClass('hilightRow');
-                }
-        );
+    $('#listaProveedores').DataTable();
 
     // Eliminar Proveedor
     $('a.eliminar_proveedor').bind('click', function () {
@@ -309,40 +273,7 @@
     <?php } ?>
     <div id="tituloCont">Gestión de Proveedores</div>
     <div id="formFiltro">
-      <div class="tituloFiltro">Búsqueda</div>
-      <form name="filtroBusqueda" action="#" method="post">
-        <?php
-          // para el ID
-          if ($this->input->post('ruc_prov')){
-            $ruc_prov = array('name'=>'ruc_prov','id'=>'ruc_prov','maxlength'=>'11','value'=>$this->input->post('ruc_prov'));
-          }else{
-            $ruc_prov = array('name'=>'ruc_prov','id'=>'ruc_prov','maxlength'=>'11');
-          }
-          // para el NOMBRE Y APELLIDO
-          if ($this->input->post('nombre')){
-            $nombre = array('name'=>'nombre','id'=>'nombre','maxlength'=> '50','minlength'=>'1' , 'value' => $this->input->post('nombre'));
-          }else{
-            $nombre = array('name'=>'nombre','id'=>'nombre','maxlength'=> '50','minlength'=>'1');
-          }
-        ?>
-        <?php echo form_open(base_url()."comercial/gestionproveedores", 'id="buscar"') ?>
-          <table width="581" border="0" cellspacing="0" cellpadding="0">
-            <tr>
-              <td width="96">RUC:</td>
-              <td width="222"><?php echo form_input($ruc_prov);?></td>
-              <td width="263" style="padding-bottom:4px;">
-                <input name="submit" type="submit" id="submit" value="Buscar"/>
-                <input name="reset" type="button" onclick="resetear()" value="Reestablecer" />
-              </td>
-            </tr>
-            <tr>
-              <td>Proveedor:</td>
-              <td><?php echo form_input($nombre);?></td>
-            </tr>
-          </table>
-        <?php echo form_close() ?>
-      </form>
-      <div id="options">
+      <div id="options" style="margin-bottom: 18px;">
         <div class="newprospect"><a href="<?php echo base_url();?>comercial/registrarproveedor">Nuevo Proveedor</a></div>
         <!--
         <?php
@@ -369,32 +300,32 @@
           {
         ?>
 
-      <table style="width:1270px;" border="0" cellspacing="0" cellpadding="0" id="listaProveedores">
+      <table border="0" cellspacing="0" cellpadding="0" id="listaProveedores" style="width:1360px;" class="table table-hover table-striped">
         <thead>
-          <tr class="tituloTable">
-            <td sort="idprov" width="85" height="25">Item</td>
-            <td sort="rzprov" width="470">Razón Social</td>
+          <tr class="tituloTable" style="font-family: Helvetica Neu,Helvetica,Arial,sans-serif;font-size: 12px;height: 35px;">
+            <td sort="idprov" width="85" height="27">ITEM</td>
+            <td sort="rzprov" width="470" height="27">RAZON SOCIAL</td>
             <td sort="rucprov" width="170">RUC</td>
-            <td sort="paisprov" width="190">País</td>
-            <td sort="contprov" width="460">Dirección</td>
-            <td sort="telprov" width="120">Teléfono</td>
-            <td sort="telprov" width="150">Fecha de Registro</td>
-            <td width="20">&nbsp;</td>
-            <td width="20">&nbsp;</td>
+            <td sort="paisprov" width="190">PAIS</td>
+            <td sort="contprov" width="460">DIRECCION</td>
+            <td sort="telprov" width="120">TELEFONO</td>
+            <!--<td sort="telprov" width="150">FECHA DE REGISTRO</td>-->
+            <td width="20" style="background-image: none;">&nbsp;</td>
+            <td width="20" style="background-image: none;">&nbsp;</td>
           </tr>
         </thead>
         <?php
           $i = 1;
           foreach($proveedor as $listaproveedores){ 
         ?>  
-          <tr class="contentTable">
-            <td style="height: 27px;"><?php echo str_pad($i, 5, 0, STR_PAD_LEFT); ?></td>
-            <td><?php echo $listaproveedores->razon_social; ?></td>
-            <td><?php echo $listaproveedores->ruc; ?></td>
-            <td><?php echo $listaproveedores->pais; ?></td>
-            <td><?php echo $listaproveedores->direccion; ?></td>
-            <td><?php echo $listaproveedores->telefono1; ?></td>
-            <td><?php echo $listaproveedores->fe_registro; ?></td>
+          <tr class="contentTable" style="font-size: 12px;">
+            <td style="height: 27px;" style="vertical-align: middle;"><?php echo str_pad($i, 5, 0, STR_PAD_LEFT); ?></td>
+            <td style="vertical-align: middle;"><?php echo $listaproveedores->razon_social; ?></td>
+            <td style="vertical-align: middle;"><?php echo $listaproveedores->ruc; ?></td>
+            <td style="vertical-align: middle;"><?php echo $listaproveedores->pais; ?></td>
+            <td style="vertical-align: middle;"><?php echo $listaproveedores->direccion; ?></td>
+            <td style="vertical-align: middle;"><?php echo $listaproveedores->telefono1; ?></td>
+            <!--<td style="vertical-align: middle;"><?php //echo $listaproveedores->fe_registro; ?></td>-->
             <td width="20" align="center"><img class="editar_proveedor" src="<?php echo base_url();?>assets/img/edit.png" width="20" height="20" title="Editar proveedor" onClick="editar_proveedor(<?php echo $listaproveedores->id_proveedor; ?>)" /></td>
             <td width="20" align="center">
               <a href="" class="eliminar_proveedor" id="elim_<?php echo $listaproveedores->id_proveedor; ?>">
@@ -404,16 +335,7 @@
         <?php 
           $i++;
           } 
-        ?>
-        <tfoot class="nav">
-                <tr>
-                  <td colspan=9>
-                        <div class="pagination"></div>
-                        <div class="paginationTitle">Página</div>
-                        <div class="selectPerPage"></div>
-                    </td>
-                </tr>                   
-        </tfoot>          
+        ?>        
       </table>
       <?php }?>
     </div>

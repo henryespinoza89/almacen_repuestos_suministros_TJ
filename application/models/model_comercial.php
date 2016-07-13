@@ -3231,8 +3231,26 @@ class Model_comercial extends CI_Model {
         if($this->input->post('fechainicial') AND $this->input->post('fechafinal')){
             $filtro .= " AND DATE(traslado.fecha_traslado) BETWEEN'".$this->security->xss_clean($this->input->post('fechainicial'))."'AND'".$this->security->xss_clean($this->input->post('fechafinal'))."'"; 
         }
-        $filtro .= " AND traslado.id_almacen_llegada =".(int)$this->security->xss_clean($this->session->userdata('almacen'));
-        $filtro .= " LIMIT 100";
+        $filtro .= " AND traslado.id_almacen_partida =".(int)$this->security->xss_clean($this->session->userdata('almacen'));
+        // $filtro .= " LIMIT 100";
+        $sql = "SELECT detalle_producto.no_producto,detalle_traslado.cantidad_traslado,traslado.fecha_traslado,detalle_traslado.id_detalle_traslado,
+                detalle_traslado.id_detalle_producto,traslado.id_almacen_partida,traslado.id_almacen_llegada,traslado.id_traslado
+                FROM traslado
+                INNER JOIN detalle_traslado ON detalle_traslado.id_traslado = traslado.id_traslado
+                INNER JOIN detalle_producto ON detalle_traslado.id_detalle_producto = detalle_producto.id_detalle_producto
+                WHERE traslado.id_traslado IS NOT NULL".$filtro;
+        $query = $this->db->query($sql);
+        if($query->num_rows()>0)
+        {
+            return $query->result();
+        }
+    }
+
+    public function get_traslado_producto_area($f_inicial,$f_final){
+        $filtro = "";
+        $filtro .= " AND DATE(traslado.fecha_traslado) BETWEEN'".$f_inicial."'AND'".$f_final."'"; 
+        $filtro .= " AND traslado.id_almacen_partida =".(int)$this->security->xss_clean($this->session->userdata('almacen'));
+        // $filtro .= " LIMIT 100";
         $sql = "SELECT detalle_producto.no_producto,detalle_traslado.cantidad_traslado,traslado.fecha_traslado,detalle_traslado.id_detalle_traslado,
                 detalle_traslado.id_detalle_producto,traslado.id_almacen_partida,traslado.id_almacen_llegada,traslado.id_traslado
                 FROM traslado

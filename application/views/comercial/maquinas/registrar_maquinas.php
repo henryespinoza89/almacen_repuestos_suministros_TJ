@@ -98,7 +98,7 @@
     //Venta Modal Registrar Producto
     $(".newprospect").click(function() { //activacion de ventana modal
       $("#mdlNuevaMaquina" ).dialog({  //declaracion de ventana modal
-          modal: true,resizable: false,show: "blind",position: 'center',width: 350,height: 340,draggable: false,closeOnEscape: false, //Aumenta el marco general
+          modal: true,resizable: false,show: "blind",position: 'center',width: 350,height: 360,draggable: false,closeOnEscape: false, //Aumenta el marco general
           buttons: {
           Registrar: function() {
               $(".ui-dialog-buttonpane button:contains('Registrar')").button("disable");
@@ -143,43 +143,8 @@
           }
       });
     });
-    //Script para crear la tabla que será el contenedor de los productos registrados
-    $('#listaMaquinas').jTPS( {perPages:[10,20,30,50,'Todos'],scrollStep:1,scrollDelay:30,clickCallback:function () {     
-            // target table selector
-            var table = '#listaMaquinas';
-            // store pagination + sort in cookie 
-            document.cookie = 'jTPS=sortasc:' + $(table + ' .sortableHeader').index($(table + ' .sortAsc')) + ',' +
-                    'sortdesc:' + $(table + ' .sortableHeader').index($(table + ' .sortDesc')) + ',' +
-                    'page:' + $(table + ' .pageSelector').index($(table + ' .hilightPageSelector')) + ';';
-            }
-        });
 
-        // reinstate sort and pagination if cookie exists
-        var cookies = document.cookie.split(';');
-        for (var ci = 0, cie = cookies.length; ci < cie; ci++) {
-                var cookie = cookies[ci].split('=');
-                if (cookie[0] == 'jTPS') {
-                        var commands = cookie[1].split(',');
-                        for (var cm = 0, cme = commands.length; cm < cme; cm++) {
-                                var command = commands[cm].split(':');
-                                if (command[0] == 'sortasc' && parseInt(command[1]) >= 0) {
-                                        $('#listaMaquinas .sortableHeader:eq(' + parseInt(command[1]) + ')').click();
-                                } else if (command[0] == 'sortdesc' && parseInt(command[1]) >= 0) {
-                                        $('#listaMaquinas .sortableHeader:eq(' + parseInt(command[1]) + ')').click().click();
-                                } else if (command[0] == 'page' && parseInt(command[1]) >= 0) {
-                                        $('#listaMaquinas .pageSelector:eq(' + parseInt(command[1]) + ')').click();
-                                }
-                        }
-                }
-        }
-
-        // bind mouseover for each tbody row and change cell (td) hover style
-        $('#listaMaquinas tbody tr:not(.stubCell)').bind('mouseover mouseout',
-                function (e) {
-                        // hilight the row
-                        e.type == 'mouseover' ? $(this).children('td').addClass('hilightRow') : $(this).children('td').removeClass('hilightRow');
-                }
-        );
+    $('#listaMaquinas').DataTable();
 
         $("#almacen").append('<option value="" selected="selected">:: SELECCIONE ::</option>');
 
@@ -251,7 +216,7 @@
         var urlMaq = '<?php echo base_url();?>comercial/editarmaquina/'+id_maquina;
         //alert(urlMaq);
         $("#mdlEditarMaquina").load(urlMaq).dialog({
-          modal: true, position: 'center', width: 350, height: 340, draggable: false, resizable: false, closeOnEscape: false,
+          modal: true, position: 'center', width: 350, height: 360, draggable: false, resizable: false, closeOnEscape: false,
           buttons: {
             Actualizar: function() {
             $(".ui-dialog-buttonpane button:contains('Actualizar')").button("disable");
@@ -365,46 +330,15 @@
         <div id="retorno"></div>
       </div>
     <?php } ?>
-    <div id="tituloCont">Gestión de Maquinarias</div>
+    <div id="tituloCont">Gestión de maquinas</div>
     <div id="formFiltro">
-      <div class="tituloFiltro">Búsqueda</div>
-      <form name="filtroBusqueda" action="#" method="post">
-        <?php
-          // para el ID
-          if ($this->input->post('mod_maquina')){
-            $mod_maquina = array('name'=>'mod_maquina','id'=>'mod_maquina','minlength'=>'1' ,'maxlength'=>'10','value'=>$this->input->post('mod_maquina'),'onkeypress'=>'onlytext()');
-          }else{
-            $mod_maquina = array('name'=>'mod_maquina','id'=>'mod_maquina','maxlength'=>'10','onkeypress'=>'onlytext()');
-          }
-          // para el NOMBRE Y APELLIDO
-          if ($this->input->post('nombre')){
-            $nombre = array('name'=>'nombre','id'=>'nombre','maxlength'=> '50','minlength'=>'1' , 'value' => $this->input->post('nombre'),'onkeypress'=>'onlytext()');
-          }else{
-            $nombre = array('name'=>'nombre','id'=>'nombre','maxlength'=> '50','minlength'=>'1','onkeypress'=>'onlytext()');
-          }
-        ?>
-        <?php echo form_open(base_url()."comercial/gestionmaquinas", 'id="buscar"') ?>
-          <table width="679" border="0" cellspacing="0" cellpadding="0">
-            <tr>
-              <td width="128">Nom. de Máquina:</td>
-              <td width="235"><?php echo form_input($nombre);?></td>
-            <td width="316" style="padding-bottom:4px;"><input name="submit" type="submit" id="submit" value="Buscar" />
-                  <input name="reset" type="button" onclick="resetear()" value="Reestablecer" />
-            </td>
-            </tr>
-            <tr>
-              <td>Marca de Máquina:</td>
-              <td><?php echo form_input($mod_maquina);?></td>
-            </tr>
-          </table>
-        <?php echo form_close() ?>
-      </form>
-      <div id="options">
-        <div class="newprospect" >Registro de Máquina</div>
-        <div class="newnamemaq"><a href="<?php echo base_url(); ?>comercial/nuevonombremaquina/">Tipo de Máquina</a></div>
-        <div class="newmarcmaq"><a href="<?php echo base_url(); ?>comercial/marcamaquina/">Marca de Máquina</a></div>
-        <div class="newmodmaq"><a href="<?php echo base_url(); ?>comercial/modelomaquina/">Modelo de Máquina</a></div>
-        <div class="newmarcmaq"><a href="<?php echo base_url(); ?>comercial/seriemaquina/">Serie de Máquina</a></div>
+      <div id="options" style="margin-bottom: 18px;">
+        <div class="newprospect" style="width: 170px;">Registro de Máquina</div>
+        <div class="newnamemaq" style="width: 150px;"><a href="<?php echo base_url(); ?>comercial/nuevonombremaquina/">Tipo de Máquina</a></div>
+
+        <div class="newmarcmaq" style="width: 165px;"><a href="<?php echo base_url(); ?>comercial/marcamaquina/">Marca de Máquina</a></div>
+        <div class="newmodmaq" style="width: 165px;"><a href="<?php echo base_url(); ?>comercial/modelomaquina/">Modelo de Máquina</a></div>
+        <div class="newmarcmaq" style="width: 165px;"><a href="<?php echo base_url(); ?>comercial/seriemaquina/">Serie de Máquina</a></div>
         <!--
         <?php
            // $existe = count($maquina);
@@ -423,54 +357,45 @@
           else
           {
         ?>
-        <table border="0" cellspacing="0" cellpadding="0" id="listaMaquinas">
+        <table border="0" cellspacing="0" cellpadding="0" id="listaMaquinas" style="width:1360px;" class="table table-hover table-striped">
           <thead>
-            <tr class="tituloTable">
-              <td sort="idproducto" width="100" height="25">ID Máquina</td>
-              <td sort="nombreprod" width="155">Máquina</td>
-              <td sort="catprod" width="155">Marca</td>
-              <td sort="procprod" width="155">Modelo</td>
-              <td sort="procprod" width="155">Serie</td>
-              <td sort="obserprod" width="120">Estado</td>
-              <td sort="obserprod" width="220">Observación</td>
-              <td sort="obserprod" width="140">Fecha de Registro</td>
-              <td width="20">&nbsp;</td>
-              <td width="20">&nbsp;</td>
+            <tr class="tituloTable" style="font-family: Helvetica Neu,Helvetica,Arial,sans-serif;font-size: 12px;height: 35px;">
+              <td sort="idproducto" width="70" height="27">ID</td>
+              <td sort="nombreprod" width="155">MAQUINA</td>
+              <td sort="catprod" width="155">MARCA</td>
+              <td sort="procprod" width="155">MODELO</td>
+              <td sort="procprod" width="155">SERIE</td>
+              <td sort="obserprod" width="120">ESTADO</td>
+              <td sort="obserprod" width="220">OBSERVACION</td>
+              <td sort="obserprod" width="170">FECHA DE REGISTRO</td>
+              <td width="20" style="background-image: none;">&nbsp;</td>
+              <td width="20" style="background-image: none;">&nbsp;</td>
             </tr>
           </thead>
           <?php   foreach($maquina as $listamaquinas){ ?>  
-          <tr class="contentTable">
-            <td style="height: 27px;"><?php echo str_pad($listamaquinas->id_maquina, 5, 0, STR_PAD_LEFT); ?></td>
-            <td><?php echo $listamaquinas->nombre_maquina; ?></td>
-            <td><?php echo $listamaquinas->no_marca; ?></td>
-            <td><?php echo $listamaquinas->no_modelo; ?></td>
-            <td><?php echo $listamaquinas->no_serie; ?></td>
-            <td><?php echo $listamaquinas->no_estado_maquina; ?></td>
-            <td><?php echo $listamaquinas->observacion_maq; ?></td>
-            <td><?php echo $listamaquinas->fe_registro; ?></td>
-            <td width="20" align="center"><img class="editar_maquina" src="<?php echo base_url();?>assets/img/edit.png" width="20" height="20" title="Editar Máquina" onClick="editar_maquina(<?php echo $listamaquinas->id_maquina; ?>)" /></td>
+          <tr class="contentTable" style="font-size: 12px;">
+            <td style="height: 27px;" style="vertical-align: middle;"><?php echo str_pad($listamaquinas->id_maquina, 5, 0, STR_PAD_LEFT); ?></td>
+            <td style="vertical-align: middle;"><?php echo $listamaquinas->nombre_maquina; ?></td>
+            <td style="vertical-align: middle;"><?php echo $listamaquinas->no_marca; ?></td>
+            <td style="vertical-align: middle;"><?php echo $listamaquinas->no_modelo; ?></td>
+            <td style="vertical-align: middle;"><?php echo $listamaquinas->no_serie; ?></td>
+            <td style="vertical-align: middle;"><?php echo $listamaquinas->no_estado_maquina; ?></td>
+            <td style="vertical-align: middle;"><?php echo $listamaquinas->observacion_maq; ?></td>
+            <td style="vertical-align: middle;"><?php echo $listamaquinas->fe_registro; ?></td>
+            <td width="20" align="center"><img class="editar_maquina" src="<?php echo base_url();?>assets/img/edit.png" width="20" height="20" title="Editar Máquina" onClick="editar_maquina(<?php echo $listamaquinas->id_maquina; ?>)" style="cursor: pointer;"/></td>
             <td width="20" align="center">
               <a href="" class="eliminar_maquina" id="elim_<?php echo $listamaquinas->id_maquina; ?>">
-              <img src="<?php echo base_url();?>assets/img/trash.png" width="20" height="20" title="Eliminar Máquina"/></a>
+              <img src="<?php echo base_url();?>assets/img/trash.png" width="20" height="20" title="Eliminar Máquina" style="cursor: pointer;"/></a>
             </td>
           </tr>
-              <?php } ?> 
-          <tfoot class="nav">
-                  <tr>
-                    <td colspan=10>
-                          <div class="pagination"></div>
-                          <div class="paginationTitle">Página</div>
-                          <div class="selectPerPage"></div>
-                      </td>
-                  </tr>                   
-          </tfoot>          
+          <?php } ?>        
         </table>
       <?php }?>
     </div>
   </div>
   <!---  Ventanas modales -->
   <div id="mdlNuevaMaquina" style="display:none">
-      <div id="contenedor" style="width:300px; height:210px;"> <!--Aumenta el marco interior-->
+      <div id="contenedor" style="width:300px; height:230px;"> <!--Aumenta el marco interior-->
       <div id="tituloCont">Nueva Maquinaria</div>
       <div id="formFiltro">
       <?php
@@ -479,7 +404,7 @@
         $observacion = array('name'=>'obser','id'=>'obser','maxlength'=>'100');//este es un input
       ?>  
             <form method="post" id="nuevo_producto" style=" border-bottom:0px">
-            <table>
+            <table style="width: 290px;">
               <tr>
                   <td width="300">Tipo Máquina:</td>
                   <?php
@@ -491,30 +416,30 @@
                       else
                       {
                     ?>
-                        <td width="300"><?php echo form_dropdown('maquina',$listamaquina,'',"id='maquina' style='width:120px;'");?></td>
+                        <td width="300"><?php echo form_dropdown('maquina',$listamaquina,'',"id='maquina' style='width:120px;margin-left: 0px;'");?></td>
                   <?php }?>
               </tr>
               <tr>
                 <td width="148" valign="middle">Marca:</td>
                 <td>
-                  <select name="marca" id="marca" class='required' style='width:120px;'></select>
+                  <select name="marca" id="marca" class='required' style='width:120px;margin-left: 0px;'></select>
                 </td>
               </tr>
               <tr>
                 <td width="148" valign="middle">Modelo:</td>
                 <td>
-                  <select name="modelo" id="modelo" class='required' style='width:170px;'></select>
+                  <select name="modelo" id="modelo" class='required' style='width:170px;margin-left: 0px;'></select>
                 </td>
               </tr>
               <tr>
                 <td width="148" valign="middle">Serie:</td>
                 <td>
-                  <select name="serie" id="serie" class='required' style='width:170px;'></select>
+                  <select name="serie" id="serie" class='required' style='width:170px;margin-left: 0px;'></select>
                 </td>
               </tr>
               <tr>
                   <td>Estado:</td>
-                  <td><?php echo form_dropdown('estado',$estado, '','id="estado"');?></td>
+                  <td><?php echo form_dropdown('estado',$estado, '',"id='editestado' style='margin-left: 0px;'");?></td>
               </tr>
               <tr>
                   <td width="300">Observaciones:</td>

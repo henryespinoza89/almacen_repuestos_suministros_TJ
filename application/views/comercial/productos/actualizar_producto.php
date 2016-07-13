@@ -13,7 +13,7 @@
 	});
 </script>
 
-<div id="contenedor" style="width:300px; height:340px;">
+<div id="contenedor" style="width:300px; height:350px;">
 	<div id="tituloCont">Editar Producto</div>
 	<div id="formFiltro" style="width:500px;">
 		<?php 

@@ -1,9 +1,9 @@
 <?php
 	
 	if ($this->input->post('solicitante')){
-		$solicitante = array('name'=>'solicitante','id'=>'solicitante','value'=>$this->input->post('solicitante'), 'style'=>'width:142px', 'onkeypress'=>'onlytext()');
+		$solicitante = array('name'=>'solicitante','id'=>'solicitante','value'=>$this->input->post('solicitante'), 'style'=>'width:150px', 'onkeypress'=>'onlytext()');
 	}else{
-		$solicitante = array('name'=>'solicitante','id'=>'solicitante', 'style'=>'width:142px','onkeypress'=>'onlytext()');
+		$solicitante = array('name'=>'solicitante','id'=>'solicitante', 'style'=>'width:150px','onkeypress'=>'onlytext()');
 	}
 	if ($this->input->post('stockactual')){
 		$stockactual = array('name'=>'stockactual','id'=>'stockactual','value'=>$this->input->post('stockactual'), 'style'=>'width:70px','readonly'=> 'readonly');
@@ -21,19 +21,19 @@
 		$cantidad = array('name'=>'cantidad','id'=>'cantidad','maxlength'=>'10', 'style'=>'width:70px', 'class'=>'required', 'onpaste'=>'return false');
 	}
 	if($this->session->userdata('fecharegistro') != ""){
-		$fecharegistro = array('name'=>'fecharegistro','id'=>'fecharegistro','maxlength'=>'10','value'=>$this->session->userdata('fecharegistro'), 'style'=>'width:142px','readonly'=> 'readonly', 'class'=>'required');
+		$fecharegistro = array('name'=>'fecharegistro','id'=>'fecharegistro','maxlength'=>'10','value'=>$this->session->userdata('fecharegistro'), 'style'=>'width:150px','readonly'=> 'readonly', 'class'=>'required');
 	}else{
 		if ($this->input->post('fecharegistro')){
-			$fecharegistro = array('name'=>'fecharegistro','id'=>'fecharegistro','maxlength'=>'10','value'=>$this->input->post('fecharegistro'), 'style'=>'width:142px','readonly'=> 'readonly', 'class'=>'required');
+			$fecharegistro = array('name'=>'fecharegistro','id'=>'fecharegistro','maxlength'=>'10','value'=>$this->input->post('fecharegistro'), 'style'=>'width:150px','readonly'=> 'readonly', 'class'=>'required');
 		}else{
-			$fecharegistro = array('name'=>'fecharegistro','id'=>'fecharegistro','maxlength'=>'10', 'style'=>'width:142px','readonly'=> 'readonly', 'class'=>'required');
+			$fecharegistro = array('name'=>'fecharegistro','id'=>'fecharegistro','maxlength'=>'10', 'style'=>'width:150px','readonly'=> 'readonly', 'class'=>'required');
 		}
 	}
 
 	if ($this->input->post('nombre_producto')){
-	    $nombre_producto = array('name'=>'nombre_producto','id'=>'nombre_producto','value'=>$this->input->post('nombre_producto'), 'style'=>'width:285px;font-family: verdana;height: 15px;','placeholder'=>' :: Nombre del Producto ::');
+	    $nombre_producto = array('name'=>'nombre_producto','id'=>'nombre_producto','value'=>$this->input->post('nombre_producto'), 'style'=>'width:285px;font-family: verdana;','placeholder'=>' :: Nombre del Producto ::');
 	}else{
-	    $nombre_producto = array('name'=>'nombre_producto','id'=>'nombre_producto', 'style'=>'width:285px;font-family: verdana;height: 15px;','placeholder'=>' :: Nombre del Producto ::'); 
+	    $nombre_producto = array('name'=>'nombre_producto','id'=>'nombre_producto', 'style'=>'width:285px;font-family: verdana;','placeholder'=>' :: Nombre del Producto ::'); 
 	}
 
 	if ($this->input->post('unidadmedida')){
@@ -96,10 +96,7 @@ $(function() {
 		var cantidad = $("#cantidad").val();
 		// Validación contra campos vacios valores nulos
 		if(id_area == '' || fecharegistro == '' || nombre_producto == '' || cantidad == ''){
-	        $("#modalerror").html('<strong>!Falta Completar algunos Campos del Formulario. Verificar!</strong>').dialog({
-	            modal: true,position: 'center',width: 450, height: 125,resizable: false,title: 'Validación de Registro',hide: 'blind',show: 'blind',
-	          	buttons: { Ok: function() {$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );}}
-	        });
+	        sweetAlert("Falta completar campos obligatorios del formulario, por favor verifique!", "", "error");
 	    }else{
 	    	var dataString = 'id_area='+id_area+'&fecharegistro='+fecharegistro+'&id_detalle_producto_hidden='+id_detalle_producto_hidden+'&solicitante='+solicitante+'&nombre_producto='+nombre_producto+'&cantidad='+cantidad+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
 	    	$.ajax({
@@ -108,13 +105,12 @@ $(function() {
 	          	data: dataString,
 	          	success: function(response){
 	            if(response == 1){
-	              	$("#modalerror").empty().append('<span style="color:black"><b>!Salida Registrada con Éxito!</b></span>').dialog({
-	                	modal: true,position: 'center',width: 400,height: 125,resizable: false,title: 'Registro de Salidas',hide: 'blind',show: 'blind',
-	                	buttons: { Ok: function() {
-	                		window.location.href="<?php echo base_url();?>comercial/gestionsalida";
-	                	}}
-	              	});
-	              	$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");
+	              	swal({ title: "Salida Registrada con Éxito!",text: "",type: "success",confirmButtonText: "OK",timer: 2000 });
+	              	$('#solicitante').val('');
+                    $('#nombre_producto').val('');
+                    $('#stockactual').val('');
+                    $('#unidadmedida').val('');
+                    $('#cantidad').val('');
 	            }else if(response == "error_stock"){
 	              	$("#modalerror").empty().append('<span style="color:red"><b>!No existe Stock Disponible!</b><br><b>Verificar la Cantidad Solicitada.</b></span>').dialog({
 	                	modal: true,position: 'center',width: 350,height: 145,resizable: false,title: 'Validación',hide: 'blind',show: 'blind',
@@ -680,16 +676,15 @@ $(function() {
         <div id="retorno"></div>
       </div>
     <?php } ?>
-	<div id="tituloCont">Registro de Salida de Productos</div>
+	<div id="tituloCont" style="margin-bottom: 10px;">Registro de Salida de Productos</div>
 	<div id="formFiltro">
 		<div id="options" style="border-bottom: 1px solid #000; padding-bottom: 10px;margin-bottom: 0px;">
 			<div class="newarea"><a href="<?php echo base_url(); ?>comercial/gestionarea/">Gestionar Área y Responsable</a></div>
 			<div class="newsalida"><a href="<?php echo base_url(); ?>comercial/gestion_consultar_salida_registros/">Consultar Registro de Salida</a></div>
-			<!--<div class="reportOut"><a href="<?php //echo base_url(); ?>comercial/gestionreportesalida/">Gestionar Reporte de Salidas</a></div>-->
 		</div>
 		<div id="datosalida">
 			<input type="hidden" name="id_detalle_producto_hidden" id="id_detalle_producto_hidden" value="">
-			<table style="float: left; margin-top: 5px; width: 300px; margin-left: 0px;">
+			<table style="float: left; margin-top: 5px; width: 300px; margin-left: 0px;display: none;">
 				<tr>
 					<td width="148" valign="middle">Máquina:</td>
 		          	<?php
@@ -735,7 +730,7 @@ $(function() {
 			            else
 			            {
 		          	?>
-		          			<td width="330"><?php echo form_dropdown('area',$listaarea,$selected_area,"id='area' style='width:150px;'" );?></td>
+		          			<td width="330"><?php echo form_dropdown('area',$listaarea,$selected_area,"id='area' style='width:150px;margin-left: 0px;'" );?></td>
 		          	<?php }?>
 			    </tr>
 				<tr style="height:30px;">
@@ -763,7 +758,7 @@ $(function() {
 			        <td width="109"><?php echo form_input($cantidad);?></td>
 				</tr>
 				<tr style="height:30px;"> 
-		        	<td colspan="5" style=" padding-top: 5px; padding-left: 277px;"><input name="submit" type="submit" id="submit_finalizar" value="Registrar Salida" style="padding-bottom:3px; padding-top:3px; margin-bottom: 4px; background-color: #005197; border-radius:6px; width: 150px;" /></td>
+		        	<td colspan="5" style=" padding-top: 5px; padding-left: 270px;"><input name="submit" type="submit" id="submit_finalizar" value="REGISTRAR SALIDA" style="padding-bottom:3px; padding-top:3px; margin-bottom: 4px; background-color: #FF5722; border-radius:6px; width: 150px;" /></td>
 		        </tr>
 		        <!---
 		        <tr style="height:30px;"> 
@@ -787,21 +782,21 @@ $(function() {
 	    }
 	    else{
     ?>
-		<table border="0" cellspacing="0" cellpadding="0" id="listaSalidaProductos" style="width:300px;">
+		<table border="0" cellspacing="0" cellpadding="0" id="listaSalidaProductos" style="width:360px;">
     		<thead>
 	            <tr class="tituloTable">
-		            <td sort="idprod" width="80" height="25">Item</td>
-		            <td sort="idproducto" width="220" height="25">Áreas</td>
-		            <td width="20">&nbsp;</td>
+		            <td sort="idprod" width="80" height="29">ITEM</td>
+		            <td sort="idproducto" width="240" height="29">AREA</td>
+		            <td width="40">&nbsp;</td>
 	            </tr>
     		</thead>
     		<?php 
     		$i = 1;
         	foreach($areas_salidas as $data){ ?>  
 	            <tr class="contentTable">
-		            <td height="27"><?php echo str_pad($i, 3, 0, STR_PAD_LEFT); ?></td>
+		            <td height="29"><?php echo str_pad($i, 3, 0, STR_PAD_LEFT); ?></td>
 		            <td><?php echo $data->no_area; ?></td>
-		            <td width="20" align="center"><img class="view_salidas" src="<?php echo base_url();?>assets/img/view.png" width="20" height="20" title="Ver Salidas" onClick="view_salidas(<?php echo $data->id_area; ?>)" /></td>
+		            <td width="40" align="center"><img class="view_salidas" src="<?php echo base_url();?>assets/img/view.png" width="20" height="20" title="Ver Salidas" onClick="view_salidas(<?php echo $data->id_area; ?>)" /></td>
 		            <!--<td width="20" align="center">
 		              	<a href="" class="eliminar_salida" id="elim_<?php //echo $listasalidaproductos->id_salida_producto; ?>">
 		              	<img src="<?php //echo base_url();?>assets/img/trash.png" width="20" height="20" title="Eliminar Registro"/></a>
