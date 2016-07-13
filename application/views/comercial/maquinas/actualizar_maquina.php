@@ -36,9 +36,9 @@
       });
     });
 
-    $("select").append('<option value="" selected="selected">:: SELECCIONE ::</option>');
+    //$("select").append('<option value="" selected="selected">:: SELECCIONE ::</option>');
 </script>
-<div id="contenedor" style="width:300px; height:210px;">
+<div id="contenedor" style="width:300px; height:230px;">
 	<div id="tituloCont">Editar Máquina</div>
 	<div id="formFiltro">
 		<?php 
@@ -50,7 +50,7 @@
 			{
 		?>
     	<form style="border-bottom:0px">
-	    	<table>
+	    	<table style="width: 290px;">
 	    	<?php
 				$i=1;
 				foreach($datosmaq as $maq){
@@ -66,23 +66,23 @@
 	            </script>
 	    		<tr>
 					<td width="300">Tipo Máquina:</td>
-					<td width="300"><?php echo form_dropdown('editnombremaq', $listamaquina, '',"id='editnombremaq' style='width:120px;'"); ?></td>
+					<td width="300"><?php echo form_dropdown('editnombremaq', $listamaquina, '',"id='editnombremaq' style='width:120px;margin-left: 0px;'"); ?></td>
 				</tr>
 	    		<tr>
 					<td width="300">Marca:</td>
-					<td width="300"><?php echo form_dropdown('editmarca', $listmarca, '',"id='editmarca' style='width:120px;'"); ?></td>
+					<td width="300"><?php echo form_dropdown('editmarca', $listmarca, '',"id='editmarca' style='width:120px;margin-left: 0px;'"); ?></td>
 				</tr>
 	    		<tr>
 					<td width="300">Modelo:</td>
-					<td width="300"><?php echo form_dropdown('editmodelo', $listmodelo, '',"id='editmodelo' style='width:170px;'"); ?></td>
+					<td width="300"><?php echo form_dropdown('editmodelo', $listmodelo, '',"id='editmodelo' style='width:170px;margin-left: 0px;'"); ?></td>
 				</tr>
 				<tr>
 					<td width="300">Serie:</td>
-					<td width="300"><?php echo form_dropdown('editserie', $listserie, '',"id='editserie' style='width:170px;'"); ?></td>
+					<td width="300"><?php echo form_dropdown('editserie', $listserie, '',"id='editserie' style='width:170px;margin-left: 0px;'"); ?></td>
 				</tr>
 	    		<tr>
 	    			<td>Estado:</td>
-	    			<td><?php echo form_dropdown('editestado', $editestado, '',"id='editestado'"); ?></td>
+	    			<td><?php echo form_dropdown('editestado', $editestado, '',"id='editestado' style='margin-left: 0px;'"); ?></td>
 	    		</tr>
 	    		<tr>
 					<td width="300">Observación:</td>

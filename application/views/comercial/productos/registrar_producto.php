@@ -377,7 +377,7 @@
 
     var urlMaq = '<?php echo base_url();?>comercial/editarproducto/'+jObject;
     $("#mdlEditarProducto").load(urlMaq).dialog({
-      modal: true, position: 'center', width: 350, height: 468, draggable: false, resizable: false, closeOnEscape: false,
+      modal: true, position: 'center', width: 350, height: 483, draggable: false, resizable: false, closeOnEscape: false,
       buttons: {
         Actualizar: function() {
         var editidprod = $('#editidprod').val(); editnombreprod = $('#editnombreprod').val(); editcat = $('#editcat').val(); editunid_med = $('#editunid_med').val(); 
@@ -577,7 +577,7 @@
               $vacio = 0;
           ?>  
           <tr class="contentTable" style="font-size: 12px;">
-            <td height="23" style="vertical-align: middle;"><?php echo str_pad($i, 4, 0, STR_PAD_LEFT); ?></td>
+            <td height="27" style="vertical-align: middle;"><?php echo str_pad($i, 4, 0, STR_PAD_LEFT); ?></td>
             <td style="vertical-align: middle;"><?php echo $listaproductos->id_producto; ?></td>
             <td style="vertical-align: middle;"><?php echo $listaproductos->no_producto; ?></td>
             <td style="vertical-align: middle;"><?php echo $listaproductos->no_area; ?></td>
@@ -635,7 +635,7 @@
   </div>
   <!---  Ventanas modales -->
   <div id="mdlNuevoProducto" style="display:none">
-      <div id="contenedor" style="width:320px; height:295px;"> <!--Aumenta el marco interior-->
+      <div id="contenedor" style="width:320px; height:290px;"> <!--Aumenta el marco interior-->
       <div id="tituloCont">Nuevo Producto</div>
       <div id="formFiltro" style="width:500px;">
       <?php

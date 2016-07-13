@@ -552,6 +552,7 @@ nav a {
 	margin-bottom: 10px;
 	float: left;
 	margin-top: 0;
+	height: 210px;
 }
 
 #formFiltro #agregarcarrito_otros{
@@ -575,6 +576,7 @@ nav a {
 	padding-top: 5px;
 	padding-left: 15px;
 	background: whitesmoke;
+	height: 210px;
 }
 
 #formFiltro #reporte_maquina_admin{
@@ -609,11 +611,11 @@ nav a {
 }
 
 #datosalida{
-	height: 140px;
+	height: 150px;
     width: 1365px;
     background: whitesmoke;
     padding-left: 15px;
-    padding-top: 5px;
+    padding-top: 15px;
     border-bottom: 1px solid #000;
     color: #000;
 }
@@ -918,7 +920,7 @@ nav a {
 
 #options .facturas_opcion_masiva {
 	width: 260px;
-	height: 15px;
+	height: 20px;
 	background: url('../img/add.png') no-repeat;
 	padding: 3px 0px 0px 28px;
 	overflow: hidden;
@@ -931,6 +933,14 @@ nav a {
 #options .facturas_opcion_masiva a {
 	text-decoration: none;
 	color: #000;
+}
+
+#listar_traslados_paginate{
+	margin-right: 309px;
+}
+
+#listar_traslados_filter{
+	margin-right: 309px;
 }
 
 #options .reportIn {
@@ -968,8 +978,8 @@ nav a {
 }
 
 #options .newconsult {
-	width: 200px;
-	height: 15px;
+	width: 205px;
+	height: 20px;
 	background: url('../img/add.png') no-repeat;
 	padding: 3px 0px 0px 28px;
 	overflow: hidden;
@@ -1025,8 +1035,8 @@ nav a {
 }
 
 #options .newagente {
-	width: 240px;
-	height: 15px;
+	width: 260px;
+	height: 20px;
 	background: url('../img/add.png') no-repeat;
 	padding: 3px 0px 0px 28px;
 	overflow: hidden;
@@ -1075,8 +1085,8 @@ nav a {
 }
 
 #options .newarea {
-	width: 180px;
-	height: 15px;
+	width: 220px;
+	height: 20px;
 	background: url('../img/add.png') no-repeat;
 	padding: 3px 0px 0px 28px;
 	overflow: hidden;
@@ -1092,8 +1102,8 @@ nav a {
 }
 
 #options .newsalida {
-	width: 165px;
-	height: 15px;
+	width: 195px;
+	height: 20px;
 	background: url('../img/add.png') no-repeat;
 	padding: 3px 0px 0px 28px;
 	overflow: hidden;

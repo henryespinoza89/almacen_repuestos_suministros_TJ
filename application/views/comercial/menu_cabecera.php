@@ -188,9 +188,9 @@
 					</li>
 					<!--<li><a href='<?php echo base_url();?>comercial/gestioninterfaz'><span>Interfaz</span></a></li>-->
 					<!--<li><a href='<?php //echo base_url();?>comercial/backup'><span>Backup de la BD</span></a></li>-->
-					<li><a href="" style="width: 140px;"><span>Gestión Reportes</span></a>
+					<li><a href="" style="width: 160px;"><span>Gestión Reportes</span></a>
 						<ul>
-							<li><a href='<?php echo base_url();?>comercial/gestionreportentrada' style="width: 126px;"><span>Reporte de Facturas</span></a>
+							<li><a href='<?php echo base_url();?>comercial/gestionreportentrada' style="width: 160px;"><span>Reporte de Facturas</span></a>
 							<li><a href='<?php echo base_url();?>comercial/gestionreportsalida'><span>Reporte de Salidas</span></a>
 							<li><a href='<?php echo base_url();?>comercial/gestionreportmensual'><span>Reporte Mensual</span></a>
 						</ul>

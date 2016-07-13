@@ -1504,7 +1504,8 @@ class Comercial extends CI_Controller {
 		$data['listaarea']= $this->model_comercial->listarArea();
 		$data['listaalmacen_partida']= $this->model_comercial->listaAlmacenCombo_traslado_inicio();
 		$data['listaalmacen_llegada']= $this->model_comercial->listaAlmacenCombo_traslado_llegada();
-		$this->load->view('comercial/menu');
+		$this->load->view('comercial/menu_script');
+		$this->load->view('comercial/menu_cabecera');
 		$this->load->view('comercial/traslados', $data);
 	}
 
@@ -1579,6 +1580,118 @@ class Comercial extends CI_Controller {
         	echo 'error_get_data';
         }
 	}
+
+	public function al_exportar_report_traslados(){
+        $data = $this->security->xss_clean($this->uri->segment(3));
+        $data = json_decode($data, true);
+        $f_inicial = $data[0];
+        $f_final = $data[1];
+
+        $this->load->library('pHPExcel');
+        /* variables de PHPExcel */
+        $objPHPExcel = new PHPExcel();
+        $nombre_archivo = "phpExcel";
+
+        /* propiedades de la celda */
+        $objPHPExcel->getDefaultStyle()->getFont()->setName('Arial Narrow');
+        $objPHPExcel->getDefaultStyle()->getFont()->setSize(10);
+
+        // Add new sheet
+        $objWorkSheet = $objPHPExcel->createSheet(0); //Setting index when creating
+        $objPHPExcel->setActiveSheetIndex(0); // Esta línea y en esta posición hace que los formatos vayan a la primera hoja
+
+        $style = array(
+            'alignment' => array(
+                'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
+            )
+        );
+
+        $borders = array(
+            'borders' => array(
+                'allborders' => array(
+                    'style' => PHPExcel_Style_Border::BORDER_THIN,
+                    'color' => array('argb' => 'FF000000'),
+                )
+            ),
+        );
+
+        $styleArray = array(
+            'font' => array(
+                'bold' => true
+            )
+        );
+
+        /* propiedades de la celda */
+        $objPHPExcel->getActiveSheet()->getRowDimension('1')->setRowHeight(15);
+        $objPHPExcel->getActiveSheet()->getStyle('A1:E1')->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
+
+        $objPHPExcel->getActiveSheet()->getStyle('A1:E1')->applyFromArray($style);
+        $objPHPExcel->getActiveSheet()->getStyle('A1:E1')->applyFromArray($borders);
+        $objPHPExcel->getActiveSheet()->getStyle('A1:E1')->applyFromArray($styleArray);
+        
+
+        $objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(10);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(25);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth(25);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth(80);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth(25);
+
+        //Write cells
+        $objWorkSheet->setCellValue('A1', 'ITEM')
+        			 ->setCellValue('B1', 'Nº DE GUIA')
+                     ->setCellValue('C1', 'FECHA DE TRASLADO')
+                     ->setCellValue('D1', 'PRODUCTO O DESCRIPCION')
+                     ->setCellValue('E1', 'CANTIDAD TRASLADO');
+
+        /* Traer informacion de la BD */
+        $movimientos_salida = $this->model_comercial->get_traslado_producto_area($f_inicial,$f_final);
+        $existe = count($movimientos_salida);
+        $sumatoria_totales = 0;
+        $p = 2; // contador de filas del excel
+        $i = 1; // Este calor es el contador de cuantos registros existen
+        if($existe > 0){
+            foreach ($movimientos_salida as $data) {
+                /* $no_producto = htmlentities($data->no_producto, ENT_QUOTES,'UTF-8'); */
+                /* Formatos */
+                $objPHPExcel->getActiveSheet()->getStyle('J'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                $objPHPExcel->getActiveSheet()->getStyle('K'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                /* Centrar contenido */
+                $objPHPExcel->getActiveSheet()->getStyle('A'.$p)->applyFromArray($style);
+                $objPHPExcel->getActiveSheet()->getStyle('B'.$p)->applyFromArray($style);
+                $objPHPExcel->getActiveSheet()->getStyle('C'.$p)->applyFromArray($style);
+                $objPHPExcel->getActiveSheet()->getStyle('D'.$p)->applyFromArray($style);
+                $objPHPExcel->getActiveSheet()->getStyle('E'.$p)->applyFromArray($style);
+
+                /* border */
+                $objPHPExcel->getActiveSheet()->getStyle('A'.$p)->applyFromArray($borders);
+                $objPHPExcel->getActiveSheet()->getStyle('B'.$p)->applyFromArray($borders);
+                $objPHPExcel->getActiveSheet()->getStyle('C'.$p)->applyFromArray($borders);
+                $objPHPExcel->getActiveSheet()->getStyle('D'.$p)->applyFromArray($borders);
+                $objPHPExcel->getActiveSheet()->getStyle('E'.$p)->applyFromArray($borders);
+
+                $objWorkSheet->setCellValue('A'.$p, $i)
+                             ->setCellValue('B'.$p, $data->id_traslado)
+                             ->setCellValue('C'.$p, $data->fecha_traslado)
+                             ->setCellValue('D'.$p, $data->no_producto)
+                             ->setCellValue('E'.$p, $data->cantidad_traslado);
+                $p = $p + 1;
+                $i = $i + 1;
+                //$sumatoria_totales = $sumatoria_totales + ($data->cantidad_salida*$data->p_u_salida);
+            }
+        }
+        /* ---------------------------------------------------------------------- */
+        /* Rename sheet */
+        $objWorkSheet->setTitle("Reporte_de_traslados");
+        $objPHPExcel->setActiveSheetIndex(0);
+
+        /* datos de la salida del excel */
+        header("Content-type: application/vnd.ms-excel");
+        header("Content-Disposition: attachment; filename=Reporte_de_traslados.xls");
+        header("Cache-Control: max-age=0");
+        $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+        $objWriter->save('php://output');
+        echo 'ok';
+    }
 
 	public function finalizar_registro_traslado()
 	{

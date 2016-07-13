@@ -1,32 +1,32 @@
 <?php
 	if ($this->input->post('fecharegistro')){
-		$fecharegistro = array('name'=>'fecharegistro','id'=>'fecharegistro','maxlength'=>'10','value'=>$this->input->post('fecharegistro'), 'style'=>'width:150px','readonly'=> 'readonly', 'class'=>'required');
+		$fecharegistro = array('name'=>'fecharegistro','id'=>'fecharegistro','maxlength'=>'10','value'=>$this->input->post('fecharegistro'), 'style'=>'width:158px','readonly'=> 'readonly', 'class'=>'required');
 	}else{
-		$fecharegistro = array('name'=>'fecharegistro','id'=>'fecharegistro','maxlength'=>'10', 'style'=>'width:150px','readonly'=> 'readonly', 'class'=>'required');
+		$fecharegistro = array('name'=>'fecharegistro','id'=>'fecharegistro','maxlength'=>'10', 'style'=>'width:158px','readonly'=> 'readonly', 'class'=>'required');
 	}
 	
 	if ($this->input->post('numcomprobante')){
-		$numcomprobante = array('name'=>'numcomprobante','id'=>'numcomprobante','maxlength'=>'12','value'=>$this->input->post('numcomprobante'), 'style'=>'width:108px', 'class'=>'required','onpaste'=>'return false');
+		$numcomprobante = array('name'=>'numcomprobante','id'=>'numcomprobante','maxlength'=>'12','value'=>$this->input->post('numcomprobante'), 'style'=>'width:74px', 'class'=>'required','onpaste'=>'return false');
 	}else{
-		$numcomprobante = array('name'=>'numcomprobante','id'=>'numcomprobante','maxlength'=>'12', 'style'=>'width:108px', 'class'=>'required','onpaste'=>'return false');
+		$numcomprobante = array('name'=>'numcomprobante','id'=>'numcomprobante','maxlength'=>'12', 'style'=>'width:74px', 'class'=>'required','onpaste'=>'return false');
 	}
 
 	if ($this->input->post('numcomprobante_enable')){
-		$numcomprobante_enable = array('name'=>'numcomprobante_enable','id'=>'numcomprobante_enable','maxlength'=>'10','value'=>$this->input->post('numcomprobante_enable'), 'style'=>'width:91px', 'class'=>'required','onpaste'=>'return false','readonly'=> 'readonly');
+		$numcomprobante_enable = array('name'=>'numcomprobante_enable','id'=>'numcomprobante_enable','maxlength'=>'10','value'=>$this->input->post('numcomprobante_enable'), 'style'=>'width:74px', 'class'=>'required','onpaste'=>'return false','readonly'=> 'readonly');
 	}else{
-		$numcomprobante_enable = array('name'=>'numcomprobante_enable','id'=>'numcomprobante_enable','maxlength'=>'10', 'style'=>'width:91px', 'class'=>'required','onpaste'=>'return false','readonly'=> 'readonly');
+		$numcomprobante_enable = array('name'=>'numcomprobante_enable','id'=>'numcomprobante_enable','maxlength'=>'10', 'style'=>'width:74px', 'class'=>'required','onpaste'=>'return false','readonly'=> 'readonly');
 	}
 
 	if ($this->input->post('seriecomprobante')){
-		$seriecomprobante = array('name'=>'seriecomprobante','id'=>'seriecomprobante','maxlength'=>'5','value'=>$this->input->post('seriecomprobante'), 'style'=>'width:30px', 'class'=>'required','onpaste'=>'return false');
+		$seriecomprobante = array('name'=>'seriecomprobante','id'=>'seriecomprobante','maxlength'=>'5','value'=>$this->input->post('seriecomprobante'), 'style'=>'width:74px', 'class'=>'required','onpaste'=>'return false');
 	}else{
-		$seriecomprobante = array('name'=>'seriecomprobante','id'=>'seriecomprobante','maxlength'=>'5', 'style'=>'width:30px', 'class'=>'required','onpaste'=>'return false');
+		$seriecomprobante = array('name'=>'seriecomprobante','id'=>'seriecomprobante','maxlength'=>'5', 'style'=>'width:74px', 'class'=>'required','onpaste'=>'return false');
 	}
 
 	if ($this->input->post('seriecomprobante_enable')){
-		$seriecomprobante_enable = array('name'=>'seriecomprobante_enable','id'=>'seriecomprobante_enable','maxlength'=>'3','value'=>$this->input->post('seriecomprobante_enable'), 'style'=>'width:30px', 'class'=>'required','onpaste'=>'return false','readonly'=> 'readonly');
+		$seriecomprobante_enable = array('name'=>'seriecomprobante_enable','id'=>'seriecomprobante_enable','maxlength'=>'3','value'=>$this->input->post('seriecomprobante_enable'), 'style'=>'width:74px', 'class'=>'required','onpaste'=>'return false','readonly'=> 'readonly');
 	}else{
-		$seriecomprobante_enable = array('name'=>'seriecomprobante_enable','id'=>'seriecomprobante_enable','maxlength'=>'3', 'style'=>'width:30px', 'class'=>'required','onpaste'=>'return false','readonly'=> 'readonly');
+		$seriecomprobante_enable = array('name'=>'seriecomprobante_enable','id'=>'seriecomprobante_enable','maxlength'=>'3', 'style'=>'width:74px', 'class'=>'required','onpaste'=>'return false','readonly'=> 'readonly');
 	}
 	
 	if ($this->input->post('id_agente')){
@@ -179,10 +179,7 @@ $(function(){
         source: function (request, respond) {
         	var id_area = $("#area").val();
 			if(id_area == ""){
-				$("#modalerror").html('<strong>!Seleccionar el Área del Producto. Verificar!</strong>').dialog({
-                	modal: true,position: 'center',width: 450, height: 125,resizable: false,title: 'Validación de Registro',hide: 'blind',show: 'blind',
-                	buttons: { Ok: function() {$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );}}
-              	});
+              	sweetAlert("Seleccionar el Área del Producto. Verificar!", "", "error");
 			}else{
 	        	$.post("<?php echo base_url('comercial/traer_producto_autocomplete'); ?>", {<?php echo $this->security->get_csrf_token_name(); ?>: "<?php echo $this->security->get_csrf_hash(); ?>", q: request.term, a: id_area},
 		        function (response) {
@@ -253,7 +250,7 @@ $(function(){
 	    });
 
 	    $("#error_carrito_prod").html('!Falta seleccionar el campo Producto!').dialog({
-	      modal: true,position: 'center',width: 400,height: 125,resizable: false, title: 'Validación de Campos Vacios',
+	      modal: true,position: 'center',width: 400,height: 145,resizable: false, title: 'Validación de Campos Vacios',
 	      buttons: { Ok: function(){
 	        //window.location.href="<?php echo base_url();?>comercial/gestionarea";
 	        $(this).dialog('close');
@@ -261,7 +258,7 @@ $(function(){
 	    });
 
 	    $("#error_carrito_qty").html('!Falta seleccionar el campo Cantidad!').dialog({
-	      modal: true,position: 'center',width: 400,height: 125,resizable: false, title: 'Validación de Campos Vacios',
+	      modal: true,position: 'center',width: 400,height: 145,resizable: false, title: 'Validación de Campos Vacios',
 	      buttons: { Ok: function(){
 	        //window.location.href="<?php echo base_url();?>comercial/gestionarea";
 	        $(this).dialog('close');
@@ -269,7 +266,7 @@ $(function(){
 	    });
 
 	    $("#error_carrito_pu").html('!Falta seleccionar el campo Precio Unitario!').dialog({
-	      modal: true,position: 'center',width: 400,height: 125,resizable: false, title: 'Validación de Campos Vacios',
+	      modal: true,position: 'center',width: 400,height: 145,resizable: false, title: 'Validación de Campos Vacios',
 	      buttons: { Ok: function(){
 	        //window.location.href="<?php echo base_url();?>comercial/gestionarea";
 	        $(this).dialog('close');
@@ -277,7 +274,7 @@ $(function(){
 	    });
 	    /*
 	    $("#error_porcentaje_model").html('!Ingresar el Porcentaje de Gastos al Agente de Aduana!').dialog({
-	      modal: true,position: 'center',width: 400,height: 125,resizable: false, title: 'Error/Campos Vacios',
+	      modal: true,position: 'center',width: 400,height: 145,resizable: false, title: 'Error/Campos Vacios',
 	      buttons: { Ok: function(){
 	        //window.location.href="<?php echo base_url();?>comercial/gestionarea";
 	        $(this).dialog('close');
@@ -285,7 +282,7 @@ $(function(){
 	    });
 		*/
 	    $("#error_tipo_cambio").html('!No existe un Tipo de Cambio para el día con el que se Registra la Factura!').dialog({
-	      modal: true,position: 'center',width: 500,height: 125,resizable: false, title: 'No existe Tipo de Cambio',
+	      modal: true,position: 'center',width: 500,height: 145,resizable: false, title: 'No existe Tipo de Cambio',
 	      buttons: { Ok: function(){
 	        //window.location.href="<?php echo base_url();?>comercial/gestionarea";
 	        $(this).dialog('close');
@@ -293,7 +290,7 @@ $(function(){
 	    });
 
 	    $("#factura_duplicada").html('!La Factura ya se encuentra registrada. Verificar!').dialog({
-	      modal: true,position: 'center',width: 500,height: 125,resizable: false, title: 'Registro duplicado',
+	      modal: true,position: 'center',width: 500,height: 145,resizable: false, title: 'Registro duplicado',
 	      buttons: { Ok: function(){
 	        //window.location.href="<?php echo base_url();?>comercial/gestionarea";
 	        $(this).dialog('close');
@@ -301,7 +298,7 @@ $(function(){
 	    });
 
 	    $("#mensaje_registro_correcto").html('<b>!La Factura se registro satisfactoriamente!</b>').dialog({
-	      modal: true,position: 'center',width: 400,height: 125,resizable: false, title: 'Mensaje',
+	      modal: true,position: 'center',width: 400,height: 145,resizable: false, title: 'Mensaje',
 	      buttons: { Ok: function(){
 	      	$("#fecharegistro").val("");
 	      	$("#moneda").append('<option value="" selected="selected">:: SELECCIONE ::</option>');
@@ -312,7 +309,7 @@ $(function(){
 	    });
 
 	    $("#error_csigv").html('!Falta seleccionar el campo Con/Sin IGV!').dialog({
-	      modal: true,position: 'center',width: 500,height: 125,resizable: false, title: 'Error/Campos Vacios',
+	      modal: true,position: 'center',width: 500,height: 145,resizable: false, title: 'Error/Campos Vacios',
 	      buttons: { Ok: function(){
 	        //window.location.href="<?php echo base_url();?>comercial/gestionarea";
 	        $(this).dialog('close');
@@ -320,7 +317,7 @@ $(function(){
 	    });
 
 	    $("#error_area").html('!Falta seleccionar el campo Área!').dialog({
-	      modal: true,position: 'center',width: 500,height: 125,resizable: false, title: 'Error/Campos Vacios',
+	      modal: true,position: 'center',width: 500,height: 145,resizable: false, title: 'Error/Campos Vacios',
 	      buttons: { Ok: function(){
 	        //window.location.href="<?php echo base_url();?>comercial/gestionarea";
 	        $(this).dialog('close');
@@ -344,7 +341,7 @@ $(function(){
 	    });
 
 	    $("#error_compro").html('!Falta completar el campo N° de Comprobante!').dialog({
-	      modal: true,position: 'center',width: 400,height: 125,resizable: false, title: 'Error/Campos Vacios',
+	      modal: true,position: 'center',width: 400,height: 145,resizable: false, title: 'Error/Campos Vacios',
 	      buttons: { Ok: function(){
 	        //window.location.href="<?php echo base_url();?>comercial/gestionarea";
 	        $(this).dialog('close');
@@ -352,7 +349,7 @@ $(function(){
 	    });
 
 	    $("#error_fe").html('!Falta completar el campo Fecha de Registro!').dialog({
-	      modal: true,position: 'center',width: 400,height: 125,resizable: false, title: 'Error/Campos Vacios',
+	      modal: true,position: 'center',width: 400,height: 145,resizable: false, title: 'Error/Campos Vacios',
 	      buttons: { Ok: function(){
 	        //window.location.href="<?php echo base_url();?>comercial/gestionarea";
 	        $(this).dialog('close');
@@ -360,7 +357,7 @@ $(function(){
 	    });
 
 	    $("#error_moneda").html('!Falta completar el campo Moneda!').dialog({
-	      modal: true,position: 'center',width: 400,height: 125,resizable: false, title: 'Error/Campos Vacios',
+	      modal: true,position: 'center',width: 400,height: 145,resizable: false, title: 'Error/Campos Vacios',
 	      buttons: { Ok: function(){
 	        //window.location.href="<?php echo base_url();?>comercial/gestionarea";
 	        $(this).dialog('close');
@@ -368,7 +365,7 @@ $(function(){
 	    });
 
 	    $("#error_prov").html('!Falta completar el campo Proveedor!').dialog({
-	      modal: true,position: 'center',width: 400,height: 125,resizable: false, title: 'Error/Campos Vacios',
+	      modal: true,position: 'center',width: 400,height: 145,resizable: false, title: 'Error/Campos Vacios',
 	      buttons: { Ok: function(){
 	        //window.location.href="<?php echo base_url();?>comercial/gestionarea";
 	        $(this).dialog('close');
@@ -376,7 +373,7 @@ $(function(){
 	    });
 
 	    $("#error_agente").html('!Falta completar el campo Agente de Aduana!').dialog({
-	      modal: true,position: 'center',width: 400,height: 125,resizable: false, title: 'Error/Campos Vacios',
+	      modal: true,position: 'center',width: 400,height: 145,resizable: false, title: 'Error/Campos Vacios',
 	      buttons: { Ok: function(){
 	        //window.location.href="<?php echo base_url();?>comercial/gestionarea";
 	        $(this).dialog('close');
@@ -619,7 +616,7 @@ $(function(){
         <div id="retorno"></div>
       </div>
     <?php } ?>
-	<div id="tituloCont">Registro de Ingreso de Productos</div>
+	<div id="tituloCont" style="margin-bottom: 10px;">Registro de Ingreso de Productos</div>
 	<div id="formFiltro">
 		<div id="options" style="border-bottom: 1px solid #000; padding-bottom: 10px; margin-bottom: 0;">
         	<div class="newagente"><a href="<?php echo base_url(); ?>comercial/gestionaduana/">Gestionar Datos del Agente Aduanero</a></div>
@@ -649,11 +646,11 @@ $(function(){
 									$existe = $this->cart->total_items();
 									if($existe <= 0){
 								?>
-				          			<td width="370" height="30"><?php echo form_dropdown('comprobante',$listacomprobante,'selected_compro',"id='comprobante' disabled='disabled' style='width:158px;'");?></td>
+				          			<td width="370" height="30"><?php echo form_dropdown('comprobante',$listacomprobante,'selected_compro',"id='comprobante' disabled='disabled' style='width:158px;margin-left: 0px;'");?></td>
 				          		<?php	
 									}else{
 								?>
-									<td width="370" height="30"><?php echo form_dropdown('comprobante',$listacomprobante,'selected_compro','id="comprobante" style="width:158px; "');?></td>
+									<td width="370" height="30"><?php echo form_dropdown('comprobante',$listacomprobante,'selected_compro','id="comprobante" style="width:158px;margin-left: 0px; "');?></td>
 								<?php
 					          		}
 					          	?>
@@ -664,22 +661,22 @@ $(function(){
 				          	<td width="370" height="30" style="padding-top: 4px;"><?php echo form_input($fecharegistro);?></td>
 				        </tr>
 				    </table>
-				    <table width="361" border="0" cellspacing="0" cellpadding="0">
+				    <table width="309" border="0" cellspacing="0" cellpadding="0">
 						<tr>
 							
 							<?php 
 								$existe = $this->cart->total_items();
 								if($existe <= 0){
 							?>
-								<td width="96" valign="middle" height="30">N° de Comprobante:</td>
-								<td width="30" height="30"><?php echo form_input($seriecomprobante_enable);?></td>
+								<td width="148" valign="middle" height="30">N° de Comprobante:</td>
+								<td width="85" height="30"><?php echo form_input($seriecomprobante_enable);?></td>
 								<td width="61" height="30"><?php echo form_input($numcomprobante_enable);?></td>								
 							<?php	
 								}else{
 							?>
-				          		<td width="134" valign="middle" height="30">N° de Comprobante:</td>
-				          		<td width="30" height="30"><?php echo form_input($seriecomprobante);?></td>
-				          		<td width="154" height="30"><?php echo form_input($numcomprobante);?></td>
+				          		<td width="148" valign="middle" height="30">N° de Comprobante:</td>
+				          		<td width="85" height="30"><?php echo form_input($seriecomprobante);?></td>
+				          		<td width="61" height="30"><?php echo form_input($numcomprobante);?></td>
 				          	<?php
 				          		}
 				          	?>
@@ -701,11 +698,11 @@ $(function(){
 										$existe = $this->cart->total_items();
 										if($existe <= 0){
 									?>
-				          				<td width="370" height="30"><?php echo form_dropdown('moneda',$listasimmon,$selected_moneda,"id='moneda' disabled='disabled' style='width:158px;'");?></td>
+				          				<td width="370" height="30"><?php echo form_dropdown('moneda',$listasimmon,$selected_moneda,"id='moneda' disabled='disabled' style='width:158px;margin-left: 0px;'");?></td>
 				          			<?php	
 										}else{
 									?>
-				          				<td width="370" height="30"><?php echo form_dropdown('moneda',$listasimmon,$selected_moneda,'id="moneda" style="width:158px;"');?></td>
+				          				<td width="370" height="30"><?php echo form_dropdown('moneda',$listasimmon,$selected_moneda,'id="moneda" style="width:158px;margin-left: 0px;"');?></td>
 				          			<?php
 						          		}
 						          	?>
@@ -730,7 +727,7 @@ $(function(){
 				            </tr>
 						</tr>						        
 				        <tr> 
-				        	<td height="30" colspan="2" style="padding-top: 4px; padding-left: 194px;"><input name="submit" type="submit" id="submit" value="Finalizar Registro de Ingreso" style="padding-bottom:3px; padding-top:3px; margin-bottom: 14px; background-color: #F5A700; border-radius:6px; width:180px;padding-left: 13px;" /></td>
+				        	<td height="30" colspan="2" style="padding-top: 4px; padding-left: 169px;"><input name="submit" type="submit" id="submit" value="FINALIZAR REGISTRO" style="padding-bottom:3px; padding-top:3px; margin-bottom: 14px; background-color: #FF5722; border-radius:6px; width:180px;padding-left: 13px;" /></td>
 				        </tr>
 				    </table>
 				</div>
@@ -743,11 +740,11 @@ $(function(){
 				          	<?php 
 				          		if($this->session->userdata('csigv') == ""){
 				          	?>
-				          		<td><?php echo form_dropdown('csigv',$csigv,$selected_csigv,'id="csigv"');?></td>
+				          		<td><?php echo form_dropdown('csigv',$csigv,$selected_csigv,'id="csigv" style="width:158px;margin-left: 0px;"');?></td>
 				          	<?php	
 								}else{
 							?>
-								<td><?php echo form_dropdown('csigv',$csigv,$selected_csigv,'id="csigv"');?></td>
+								<td><?php echo form_dropdown('csigv',$csigv,$selected_csigv,'id="csigv" style="width:158px;margin-left: 0px;"');?></td>
 							<?php
 				          		}
 				          	?>
@@ -763,13 +760,13 @@ $(function(){
 				        </tr>
 				        -->	
 				        <tr>
-			              	<td>Área:</td>
-			              	<td width="263"><?php echo form_dropdown('area',$listaarea,$selected_area,"id='area'" );?></td>
+			              	<td style="width: 127px;">Área:</td>
+			              	<td width="263"><?php echo form_dropdown('area',$listaarea,$selected_area,"id='area' style='width:158px;margin-left: 0px;'" );?></td>
 			            </tr>
 					</table>
 					<table width="900" border="0" cellspacing="0" cellpadding="0" style="margin-top: 3px;">
 						<tr>
-			                <td width="137" valign="middle" height="30" style="padding-bottom: 4px;">Producto:</td>
+			                <td width="135" valign="middle" height="30" style="padding-bottom: 4px;">Producto:</td>
 			                <td width="290" height="30"><?php echo form_input($nombre_producto);?></td>
 			                <td width="127" valign="middle" style="color:#005197;padding-bottom: 4px;" height="30">Unidad de Medida:</td>
 				          	<td width="128" height="30"><?php echo form_input($unidadmedida);?></td>
@@ -782,19 +779,19 @@ $(function(){
 					</table>			
 					<table width="258" border="0" cellspacing="0" cellpadding="0">			        
 						<tr>
-							<td width="127" valign="middle" height="30">Cantidad:</td>
+							<td width="124" valign="middle" height="30">Cantidad:</td>
 				          	<td width="128" height="30"><?php echo form_input($cantidad);?></td>
 						</tr>
 					</table>
 					<table width="285" border="0" cellspacing="0" cellpadding="0">			        
 						<tr>
-						    <td width="122" valign="middle" height="30" style="width: 64px;">Precio Unitario:</td>
+						    <td width="122" valign="middle" height="30" style="width: 56px;">Precio Unitario:</td>
 						    <td width="65" height="30"><?php echo form_input($pu);?></td>
 						</tr>
 					</table>
 					<table width="614" border="0" cellspacing="0" cellpadding="0">
 						<tr>
-					       	<td width="117" style="padding-top: 3px;" colspan="6"><input name="submit" type="submit" id="submit" value="Agregar Producto" style="padding-bottom:3px; padding-top:3px; margin-bottom: 4px; background-color: #005197; border-radius:6px; margin-left: 300px; width: 150px;" /></td>
+					       	<td width="117" style="padding-top: 3px;" colspan="6"><input name="submit" type="submit" id="submit" value="AGREGAR PRODUCTO" style="padding-bottom:3px; padding-top:3px; margin-bottom: 4px; background-color: #FF5722; border-radius:6px; margin-left: 300px; width: 150px;" /></td>
 					    </tr>
 					</table>
 				</div>	
@@ -863,13 +860,13 @@ $(function(){
 		        <table border="0" cellspacing="0" cellpadding="0" id="listaProductos"> <!--style="margin-left: 90px;"-->
 			        <thead>
 			            <tr class="tituloTable">
-			              <td sort="idprod" width="80" height="25">Item</td>
-			              <td sort="idproducto" width="80" height="25">Cantidad</td>
-			              <td sort="nombreprod" width="380">Producto o Descripción</td>
-			              <td sort="catprod" width="120">ID Producto</td>
-			              <td sort="catprod" width="120">Área</td>
-			              <td sort="procprod" width="136">Precio Unitario</td>
-			              <td sort="procprod" width="136">Valor Total</td>
+			              <td sort="idprod" width="80" height="27">ITEM</td>
+			              <td sort="idproducto" width="80" height="27">CANTIDAD</td>
+			              <td sort="nombreprod" width="380">PRODUCTO O DESCRIPCION</td>
+			              <td sort="catprod" width="120">ID PRODUCTO</td>
+			              <td sort="catprod" width="120">AREA</td>
+			              <td sort="procprod" width="136">PRECIO UNITARIO</td>
+			              <td sort="procprod" width="136">VALOR TOTAL</td>
 			              <td sort="procprod" width="20">&nbsp;</td>
 			            </tr>
 			        </thead>
@@ -906,14 +903,14 @@ $(function(){
 						$i++;
 						} 
 					?>
-					<tr>
+					<tr style="height: 29px;">
 		            	<td>&nbsp;</td>
 		            	<td>&nbsp;</td>
 		            	<td>&nbsp;</td>
 		            	<td>&nbsp;</td>
 		            	<td>&nbsp;</td>
-		            	<td style="text-align:center; padding:2px; color:#898989; height: 25px; border-color: #F1EEEE;border-bottom-style: solid;"> SUB-TOTAL: </td>
-		            	<td style="text-align:center; padding:2px; color:#898989; height: 25px; border-color: #F1EEEE;border-bottom-style: solid;"> <?php
+		            	<td style="text-align:center; padding:2px; color:#000; height: 25px; border-color: #F1EEEE;border-bottom-style: solid;"> SUB-TOTAL: </td>
+		            	<td style="text-align:center; padding:2px; color:#000; height: 25px; border-color: #F1EEEE;border-bottom-style: solid;"> <?php
 		            																																	if($this->session->userdata('csigv') == "false"){
 		            																																		echo number_format($this->cart->total(),2,'.',',');
 		            																																	}else if($this->session->userdata('csigv') == "true"){
@@ -921,14 +918,14 @@ $(function(){
 		            																																	}
 		            																																?></td>
 		            </tr>
-					<tr>
+					<tr style="height: 29px;">
 		            	<td>&nbsp;</td>
 		            	<td>&nbsp;</td>
 		            	<td>&nbsp;</td>
 		            	<td>&nbsp;</td>
 		            	<td>&nbsp;</td>
-		            	<td style="text-align:center; padding:2px; color:#898989; height: 25px; border-color: #F1EEEE;border-bottom-style: solid;"> I.G.V. 18%: </td>
-		            	<td style="text-align:center; padding:2px; color:#898989; height: 25px; border-color: #F1EEEE;border-bottom-style: solid;"> <?php
+		            	<td style="text-align:center; padding:2px; color:#000; height: 25px; border-color: #F1EEEE;border-bottom-style: solid;"> I.G.V. 18%: </td>
+		            	<td style="text-align:center; padding:2px; color:#000; height: 25px; border-color: #F1EEEE;border-bottom-style: solid;"> <?php
 		            																																	if($this->session->userdata('csigv') == "false"){
 		            																																		echo number_format(($this->cart->total()*0.18),2,'.',',');
 		            																																	}else if($this->session->userdata('csigv') == "true"){
@@ -936,15 +933,15 @@ $(function(){
 		            																																	}	
 		            																																?></td>
 		            </tr>
-		            <tr>
+		            <tr style="height: 29px;">
 		                <td></td>
 		                <td>&nbsp;</td>
 		                <td>&nbsp;</td>
 		                <td>&nbsp;</td>
 		                <td>&nbsp;</td>
-		                <td style="text-align:center; padding:2px; color:#898989; height: 25px; border-color: #F1EEEE;border-bottom-style: solid;"> TOTAL: </td>
+		                <td style="text-align:center; padding:2px; color:#000; height: 25px; border-color: #F1EEEE;border-bottom-style: solid;"> TOTAL: </td>
 		                <!--<td colspan="5">TOTAL:</td>-->
-		                <td style="text-align:center; padding:2px; color:#898989; height: 25px; border-color: #F1EEEE;border-bottom-style: solid;"> <?php
+		                <td style="text-align:center; padding:2px; color:#000; height: 25px; border-color: #F1EEEE;border-bottom-style: solid;"> <?php
 		                																																if($this->session->userdata('csigv') == "false"){
 		            																																		echo number_format(($this->cart->total()+($this->cart->total()*0.18)),2,'.',','); 
 		            																																	}else if($this->session->userdata('csigv') == "true"){
@@ -960,8 +957,8 @@ $(function(){
 		            	<td>&nbsp;</td>
 		            </tr>
 		            <tr>
-		            	<td><input name="actualizar" type="submit" id="submit" value="Actualizar" style="padding-bottom:3px; padding-top:3px; background-color: #005197; border-radius:6px;" /></td>
-		            	<td colspan="2"><?php echo anchor('comercial/vaciar_listado', 'Vaciar Listado de Productos', array('style'=>'text-decoration: none; background-color: #005197; color: white; font-family: tahoma; border-radius: 6px; padding: 3px 15px; font-size: 11px;')); ?></td>
+		            	<td><input name="actualizar" type="submit" id="submit" value="ACTUALIZAR" style="padding-bottom:3px; padding-top:3px; background-color: #FF5722; border-radius:6px;" /></td>
+		            	<td colspan="2"><?php echo anchor('comercial/vaciar_listado', 'VACIAR LISTADO', array('style'=>'text-decoration: none; background-color: #FF5722; color: white; font-family: tahoma; border-radius: 6px; padding: 4px 15px 5px 15px; font-size: 11px;margin-left: 15px;')); ?></td>
 		            	<td>&nbsp;</td>
 		            	<td>&nbsp;</td>            	
 		            </tr>
