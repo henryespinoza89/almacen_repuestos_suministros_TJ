@@ -142,19 +142,20 @@
           var compra_fr = $("#datacompra_fr").val();
           var venta_fr = $("#dataventa_fr").val();
           var dataString = 'compra_dol=' + compra_dol+ '&venta_dol=' + venta_dol+ '&compra_eur=' + compra_eur+ '&venta_eur=' + venta_eur+ '&compra_fr=' + compra_fr+ '&venta_fr=' + venta_fr;
-          /*'compra=' + compra + '&venta=' + venta+ */
           $.ajax({
             type: "POST",
             url: base_url+"comercial/guardarTipoCambio",
             data: dataString,
             success: function(msg){
               if(msg == 'ok'){
-                $("#finregistro").html('!El Tipo de Cambio ha sido regristado con éxito!.').dialog({
-                  modal: true,position: 'center',width: 350,height: 125,resizable: false, title: 'Fin de Registro',
-                  buttons: { Ok: function(){
-                    window.location.href="<?php echo base_url();?>comercial/gestioningreso";
-                  }}
-                });
+                $('#datacompra_dol').val('');
+                $('#dataventa_dol').val('');
+                $('#datacompra_eur').val('');
+                $('#dataventa_eur').val('');
+                $('#datacompra_fr').val('');
+                $('#dataventa_fr').val('');
+                swal({ title: "El Tipo de Cambio ha sido regristado con éxito!",text: "",type: "success",confirmButtonText: "OK",timer: 2000 });
+                $("#newtipocambio").dialog("close");
               }else{
                 $("#retorno").empty().append(msg);
                 $(".ui-dialog-buttonpane button:contains('Guardar')").button("enable");

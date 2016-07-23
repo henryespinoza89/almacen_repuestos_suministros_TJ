@@ -2743,6 +2743,17 @@ class Comercial extends CI_Controller {
         }
 	}
 
+	public function eliminar_proveedor_ajax()
+	{
+		$id_proveedor = $this->security->xss_clean($this->input->post('id_proveedor'));
+		$result = $this->model_comercial->eliminar_proveedor_ajax($id_proveedor);
+		if($result == 'proveedor_factura'){
+            echo 'dont_delete';
+        }else if($result == 'eliminacion_correcta'){
+        	echo 'ok';
+        }
+	}
+
 	public function eliminaragente()
 	{
 		$idagente = $this->input->get('eliminar');
@@ -8194,10 +8205,6 @@ class Comercial extends CI_Controller {
 
 	public function guardarTipoCambio()
 	{
-		/*
-		$this->form_validation->set_rules('compra', 'Compra', 'trim|required|min_length[4]|max_length[5]|xss_clean');
-		$this->form_validation->set_rules('venta', 'Venta', 'trim|required|min_length[4]|max_length[5]|xss_clean');
-		*/
 		$this->form_validation->set_rules('compra_dol', 'Compra en Dólares', 'trim|required|min_length[4]|max_length[5]|xss_clean');
 		$this->form_validation->set_rules('venta_dol', 'Venta en Dólares', 'trim|required|min_length[4]|max_length[5]|xss_clean');
 		$this->form_validation->set_rules('compra_eur', 'Compra en Euros', 'trim|required|min_length[4]|max_length[5]|xss_clean');
@@ -8213,15 +8220,10 @@ class Comercial extends CI_Controller {
 
 		if($this->form_validation->run() == FALSE)
 		{
-			#El formulario no se valido.
 			echo validation_errors();
 		}
 		else
 		{
-			/*
-			$compra = $this->security->xss_clean($this->input->post('compra'));
-        	$venta = $this->security->xss_clean($this->input->post('venta'));
-        	*/
         	$datacompra_dol = $this->security->xss_clean($this->input->post('compra_dol'));
         	$dataventa_dol = $this->security->xss_clean($this->input->post('venta_dol'));
         	$datacompra_eur = $this->security->xss_clean($this->input->post('compra_eur'));
@@ -8229,14 +8231,10 @@ class Comercial extends CI_Controller {
         	$datacompra_fr = $this->security->xss_clean($this->input->post('compra_fr'));
         	$dataventa_fr = $this->security->xss_clean($this->input->post('venta_fr'));
         	if(!empty($datacompra_dol) && !empty($dataventa_dol) && !empty($datacompra_eur) && !empty($dataventa_eur) && !empty($datacompra_fr) && !empty($dataventa_fr)){	
-        		//Guardamos el Tipo de Cambio del Día
 		        $result = $this->model_comercial->saveTipoCambio();
-		        // Verificamos que existan resultados
 		        if(!$result){
-		            //Sí no se encotnraron datos.
 		            echo '<span style="color:red">ERROR: No se puede guardar ni actualizar.</span>';
 		        }else{
-		        	//Registramos la sesion del usuario
 		        	echo 'ok';
 		        }
         	}else{ 
@@ -8248,10 +8246,10 @@ class Comercial extends CI_Controller {
 	public function eliminarregistroingreso()
 	{
 		$almacen = $this->security->xss_clean($this->session->userdata('almacen'));
-		$id_registro_ingreso = $this->input->get('eliminar');
+		$id_registro_ingreso = $this->security->xss_clean($this->input->post('id_ingreso_producto'));
 		$result = $this->model_comercial->eliminarRegistroIngreso_aleatorio($id_registro_ingreso,$almacen);
 		if(!$result){
-            echo '<b>--> No puede eliminar Registros de un periodo donde se ya realizo el Cierre Mensual de Almacén.</b>';
+            echo 'dont_delete';
         }else{
         	echo '1';
         }
@@ -9537,6 +9535,7 @@ class Comercial extends CI_Controller {
 		    	$no_categoria = $reg->no_categoria;
 		    	$nom_uni_med = $reg->nom_uni_med;
 		    	$id_salida_producto = $reg->id_salida_producto;
+		    	$p_u_salida = $reg->p_u_salida;
 
 		    	// Identificando las facturas utilizadas para la salida del producto
 		    	$invoice = $this->model_comercial->get_select_facturas_asociadas($id_salida_producto);
@@ -9553,7 +9552,20 @@ class Comercial extends CI_Controller {
 			    			$razon_social = $data->razon_social;
 			    			$no_comprobante = $data->no_comprobante;
 			    			$precio_entrada = $data->precio;
+			    			$fecha_registro = $data->fecha;
+			    			$no_moneda = $data->no_moneda;
+			    			$id_moneda = $data->id_moneda;
 			    		}
+			    		// obtener el tipo de cambio del precio de entrada de la factura 
+			    		$this->db->select('dolar_venta,euro_venta,fr_venta');
+				        $this->db->where('fecha_actual',$fecha_registro);
+				        $query = $this->db->get('tipo_cambio');
+				        foreach($query->result() as $row){
+				            $dolar_venta_fecha = $row->dolar_venta;
+				            $euro_venta_fecha = $row->euro_venta;
+				            $fr_venta_fecha = $row->fr_venta;
+				        }
+
     			    	$objPHPExcel->getActiveSheet()->getStyle('K'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
     			    	$objPHPExcel->getActiveSheet()->getStyle('L'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
     			    	$objPHPExcel->getActiveSheet()->getStyle('M'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
@@ -9597,8 +9609,8 @@ class Comercial extends CI_Controller {
 			    					 ->setCellValue('I'.$p, $no_categoria)
 			    					 ->setCellValue('J'.$p, $nom_uni_med)
 			    					 ->setCellValue('K'.$p, $cantidad_utilizada)
-			    					 ->setCellValue('L'.$p, $precio_entrada)
-			    					 ->setCellValue('M'.$p, ($cantidad_utilizada*$precio_entrada));
+			    					 ->setCellValue('L'.$p, $p_u_salida)
+			    					 ->setCellValue('M'.$p, ($cantidad_utilizada*$p_u_salida));
 			    		$p++;
 			    		$contador_filas++;
 			    	}

@@ -134,7 +134,7 @@
         var urlMaq = '<?php echo base_url();?>comercial/editarproveedor/'+id_proveedor;
         //alert(urlMaq);
         $("#mdlEditarProveedor").load(urlMaq).dialog({
-          modal: true, position: 'center', width: 360, height: 585, draggable: false, resizable: false, closeOnEscape: false,
+          modal: true, position: 'center', width: 360, height: 595, draggable: false, resizable: false, closeOnEscape: false,
           buttons: {
             Actualizar: function() {
             $(".ui-dialog-buttonpane button:contains('Actualizar')").button("disable");
@@ -186,6 +186,42 @@
       window.location.href="<?php echo base_url();?>comercial/gestionproveedores";
   }
 
+  function delete_proveedor(id_proveedor){
+    swal({   
+      title: "Estas seguro?",
+      text: "No se podrá recuperar esta información!",
+      type: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#DD6B55",
+      confirmButtonText: "Si, eliminar!",
+      closeOnConfirm: false 
+    },
+    function(){
+      var dataString = 'id_proveedor='+id_proveedor+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
+      $.ajax({
+        type: "POST",
+        url: "<?php echo base_url(); ?>comercial/eliminar_proveedor_ajax/",
+        data: dataString,
+        success: function(msg){
+          if(msg == 'ok'){
+            swal({
+              title: "El proveedor ha sido eliminado con Éxito!",
+              text: "",
+              type: "success",
+              confirmButtonText: "OK"
+            },function(isConfirm){
+              if (isConfirm) {
+                window.location.href="<?php echo base_url();?>comercial/gestionproveedores";  
+              }
+            });
+          }else if(msg == 'dont_delete'){
+            sweetAlert("No se puede eliminar el proveedor", "El proveedor a sido asignado a una factura. Verificar!", "error");
+          }
+        }
+      });
+    });
+  }
+
 </script>
 </head>
 <body>
@@ -213,21 +249,6 @@
               <td width="347" height="30"><a href="http://www.sbs.gob.pe/app/stats/tc-cv.asp" id="tipo_cambio" target="_blank">Superintendencia de Banca, Seguros y AFP</a></td>
             </tr>
           </table>
-          <!--
-          <fieldset style="border: 1px dashed #999999;width: 240px;float: left;margin-right: 15px;">
-            <legend><strong>Tipo de Cambio en Soles</strong></legend>
-            <table width="220" border="0" cellspacing="2" cellpadding="2" align="center">
-              <tr>
-                <td height="30">Valor de Compra:</td>
-                <td height="30"><?php echo form_input($datacompra); ?></td>
-              </tr>
-              <tr>
-                <td height="30">Valor de Venta:</td>
-                <td height="30"><?php echo form_input($dataventa); ?></td>
-              </tr>
-            </table>
-          </fieldset>
-          -->
           <fieldset style="border: 1px dashed #999999;width: 240px;float: left;margin-right: 15px;margin-bottom:5px;">
             <legend><strong>Tipo de Cambio en Dólares</strong></legend>
             <table width="220" border="0" cellspacing="2" cellpadding="2" align="center">
@@ -326,10 +347,9 @@
             <td style="vertical-align: middle;"><?php echo $listaproveedores->direccion; ?></td>
             <td style="vertical-align: middle;"><?php echo $listaproveedores->telefono1; ?></td>
             <!--<td style="vertical-align: middle;"><?php //echo $listaproveedores->fe_registro; ?></td>-->
-            <td width="20" align="center"><img class="editar_proveedor" src="<?php echo base_url();?>assets/img/edit.png" width="20" height="20" title="Editar proveedor" onClick="editar_proveedor(<?php echo $listaproveedores->id_proveedor; ?>)" /></td>
+            <td width="20" align="center"><img class="editar_proveedor" src="<?php echo base_url();?>assets/img/edit.png" width="20" height="20" title="Editar proveedor" onClick="editar_proveedor(<?php echo $listaproveedores->id_proveedor; ?>)" style="cursor:pointer;"/></td>
             <td width="20" align="center">
-              <a href="" class="eliminar_proveedor" id="elim_<?php echo $listaproveedores->id_proveedor; ?>">
-              <img src="<?php echo base_url();?>assets/img/trash.png" width="20" height="20" title="Eliminar Proveedor"/></a>
+              <img class="delete_proveedor" src="<?php echo base_url();?>assets/img/trash.png" width="20" height="20" title="Eliminar Proveedor" onClick="delete_proveedor(<?php echo $listaproveedores->id_proveedor; ?>)" style="cursor: pointer;"/>
             </td>
           </tr>
         <?php 

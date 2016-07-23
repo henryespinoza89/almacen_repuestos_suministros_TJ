@@ -3309,8 +3309,9 @@ class Model_comercial extends CI_Model {
         if($this->input->post('serie')){
             $filtro .= " AND serie_maquina.id_serie_maquina =".(int)$this->security->xss_clean($this->input->post('serie')); 
         }
+        $filtro .= " AND DATE(salida_producto.fecha) > '2016-01-01'";
         $filtro .= " ORDER BY area.no_area ASC";
-        $filtro .= " LIMIT 100";
+        // $filtro .= " LIMIT 100";
         $sql = "SELECT salida_producto.id_salida_producto,salida_producto.solicitante,salida_producto.fecha,detalle_producto.no_producto,
         salida_producto.cantidad_salida,area.no_area,nombre_maquina.nombre_maquina,marca_maquina.no_marca,modelo_maquina.no_modelo,
         serie_maquina.no_serie
@@ -4086,7 +4087,8 @@ class Model_comercial extends CI_Model {
         $filtro = "";
         $filtro .= " AND ingreso_producto.id_ingreso_producto =".(int)$id_ingreso_producto;
         $sql = "SELECT ingreso_producto.serie_comprobante,ingreso_producto.nro_comprobante,proveedor.razon_social,comprobante.no_comprobante,
-        ingreso_producto.id_ingreso_producto,detalle_ingreso_producto.id_detalle_producto,detalle_ingreso_producto.precio
+        ingreso_producto.id_ingreso_producto,detalle_ingreso_producto.id_detalle_producto,detalle_ingreso_producto.precio,ingreso_producto.id_agente,
+        ingreso_producto.fecha
         FROM ingreso_producto
         INNER JOIN proveedor ON ingreso_producto.id_proveedor = proveedor.id_proveedor
         INNER JOIN comprobante ON ingreso_producto.id_comprobante = comprobante.id_comprobante
@@ -4971,6 +4973,21 @@ class Model_comercial extends CI_Model {
                 $query = $this->db->query($sql);
                 return 'eliminacion_correcta';
             }
+        }
+    }
+
+    function eliminar_proveedor_ajax($id_proveedor)
+    {
+        // Se verifica si el producto esta asociado a una factura registrada
+        $this->db->select('id_ingreso_producto');
+        $this->db->where('id_proveedor',$id_proveedor);
+        $query = $this->db->get('ingreso_producto');
+        if($query->num_rows() > 0){
+            return 'proveedor_factura';
+        }else{
+            $sql = "DELETE FROM proveedor WHERE id_proveedor = " . $id_proveedor . "";
+            $query = $this->db->query($sql);
+            return 'eliminacion_correcta';
         }
     }
 
@@ -8727,11 +8744,6 @@ class Model_comercial extends CI_Model {
     }
 
     public function saveTipoCambio(){
-        //Recuperamos los Inputs
-        /*
-        $compra = $this->security->xss_clean($this->input->post('compra'));
-        $venta = $this->security->xss_clean($this->input->post('venta'));
-        */
         $compra_dol = $this->security->xss_clean($this->input->post('compra_dol'));
         $venta_dol = $this->security->xss_clean($this->input->post('venta_dol'));
         $compra_eur = $this->security->xss_clean($this->input->post('compra_eur'));
@@ -8739,21 +8751,15 @@ class Model_comercial extends CI_Model {
         $compra_fr = $this->security->xss_clean($this->input->post('compra_fr'));
         $venta_fr = $this->security->xss_clean($this->input->post('venta_fr'));
 
-        //Verifico sí éxiste el tipo de cambio del día
         $this->db->where('fecha_actual', date('Y-m-d'));           
         $query = $this->db->get('tipo_cambio');
 
-        // Revisamos los resultados
         if ($query->num_rows() > 0)
         {
             $actualizo = array(
-                            /*
-                            'soles_compra'=>$compra, 
-                            'soles_venta'=>$venta,
-                            */
-                            'dolar_compra'=>$compra_dol, 
+                            'dolar_compra'=>$compra_dol,
                             'dolar_venta'=>$venta_dol,
-                            'euro_compra'=>$compra_eur, 
+                            'euro_compra'=>$compra_eur,
                             'euro_venta'=>$venta_eur,
                             'fr_compra'=>$compra_fr,
                             'fr_venta'=>$venta_fr
@@ -8765,10 +8771,6 @@ class Model_comercial extends CI_Model {
         else
         {
             $registro = array(
-                            /*
-                            'soles_compra'=>$compra, 
-                            'soles_venta'=>$venta,
-                            */
                             'dolar_compra'=>$compra_dol, 
                             'dolar_venta'=>$venta_dol,
                             'euro_compra'=>$compra_eur, 
@@ -8779,8 +8781,6 @@ class Model_comercial extends CI_Model {
             $this->db->insert('tipo_cambio', $registro);
             return true;
         }
-        // If the previous process did not validate
-        // then return false.
         return false;
     }
 

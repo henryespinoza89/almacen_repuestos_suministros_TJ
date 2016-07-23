@@ -48,6 +48,14 @@
 $active_group = 'default';
 $active_record = TRUE;
 
+// server
+/*
+$db['default']['hostname'] = '74.63.242.235';
+$db['default']['username'] = 'tejidosj_hespinoza';
+$db['default']['password'] = 'publicclass01';
+$db['default']['database'] = 'tejidosj_almacen_hilanderia';
+*/
+// local
 $db['default']['hostname'] = 'localhost';
 $db['default']['username'] = 'postgres';
 $db['default']['password'] = '120492';

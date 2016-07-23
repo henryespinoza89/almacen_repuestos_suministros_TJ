@@ -4,7 +4,7 @@
 	$("#edit_tel2").validCampoFranz('0123456789-');
 	$("#edit_fax").validCampoFranz('0123456789-');
 </script>
-<div id="contenedor" style="width:310px; height:455px;">
+<div id="contenedor" style="width:310px; height:465px;">
 	<div id="tituloCont">Editar Proveedor</div>
 	<div id="formFiltro" style="width:500px;">
 		<?php 
