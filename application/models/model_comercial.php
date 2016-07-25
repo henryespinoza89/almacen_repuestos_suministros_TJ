@@ -5804,10 +5804,8 @@ class Model_comercial extends CI_Model {
             }
             */
         }else{
-
             // ubicar los datos de la tabla que asocia una salida con una factura
             // regresar el stock referencial de la factura que se uso
-            
             $this->db->select('cantidad_utilizada,id_ingreso_producto');
             $this->db->where('id_salida_producto',$id_salida_producto);
             $query = $this->db->get('adm_facturas_asociadas');
@@ -5831,9 +5829,8 @@ class Model_comercial extends CI_Model {
                 $this->db->where('id_detalle_producto',$id_detalle_producto);
                 $this->db->update('detalle_ingreso_producto', $actualizar_referencia);
             }
-            
+
             // Eliminar el registro de la factura asociada a la salida
-            
             $sql = "DELETE FROM adm_facturas_asociadas WHERE id_salida_producto = " . $id_salida_producto . "";
             $query = $this->db->query($sql);
             

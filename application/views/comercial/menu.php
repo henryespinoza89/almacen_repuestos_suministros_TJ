@@ -3,7 +3,7 @@
 <head>
 	<link type="text/css" rel="stylesheet" href="<?php echo base_url();?>assets/font_awesome_icon/fonts/style.css">
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
-	<link rel="shortcut icon" type="image/jpg" href="<?php echo base_url(); ?>assets/img/logo_tejidos.jpg">
+	<link rel="shortcut icon" type="image/jpg" href="<?php echo base_url(); ?>assets/img/tienda_movistar.jpg">
 	<link rel="stylesheet" type="text/css" href="<?php echo base_url(); ?>assets/css/estilos.css">
 	<link rel="stylesheet" type="text/css" href="<?php echo base_url(); ?>assets/css/sweetalert.css">
 	<link type="text/css" rel="stylesheet" href="<?php echo base_url();?>assets/css/jTPS.css" />
