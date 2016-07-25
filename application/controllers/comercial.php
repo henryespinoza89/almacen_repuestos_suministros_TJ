@@ -8258,12 +8258,12 @@ class Comercial extends CI_Controller {
 	public function eliminarsalidaproducto()
 	{
 		$almacen = $this->security->xss_clean($this->session->userdata('almacen'));
-		$id_salida_producto = $this->input->get('eliminar');
+		$id_salida_producto = $this->security->xss_clean($this->input->post('id_salida_producto'));
 		$result = $this->model_comercial->eliminarSalidaProducto($id_salida_producto,$almacen);
-		if(!$result){
-            echo '<b>--> No puede eliminar Registros de un periodo donde se ya realizo el Cierre Mensual de Almacén.</b>';
-        }else{
-        	echo '1';
+		if($result == 'periodo_cierre'){
+            echo 'periodo_cierre';
+        }else if($result == 'registro_correcto'){
+        	echo 'ok';
         }
 	}
 

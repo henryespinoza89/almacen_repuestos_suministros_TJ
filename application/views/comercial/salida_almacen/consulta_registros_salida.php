@@ -279,7 +279,34 @@ $("#actualizar_saldos_iniciales").on("click",function(){
 
   //Fuera de $(function(){         });
   function resetear(){
-      window.location.href="<?php echo base_url();?>comercial/gestionconsultarSalidaRegistros";
+    window.location.href="<?php echo base_url();?>comercial/gestionconsultarSalidaRegistros";
+  }
+
+  function delete_salida(id_salida_producto){
+    swal({
+      title: "Estas seguro?",
+      text: "No se podrá recuperar esta información!",
+      type: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#DD6B55",
+      confirmButtonText: "Si, eliminar!",
+      closeOnConfirm: false 
+    },
+    function(){
+      var dataString = 'id_salida_producto='+id_salida_producto+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
+      $.ajax({
+        type: "POST",
+        url: "<?php echo base_url(); ?>comercial/eliminarsalidaproducto/",
+        data: dataString,
+        success: function(msg){
+          if(msg == 'ok'){
+            swal("Eliminado!", "El registro de salida ha sido eliminado correctamente.", "success");
+          }else if(msg == 'periodo_cierre'){
+            sweetAlert("No se puede eliminar el registro", "El registro de salida pertenece a un periodo donde se realizo un cierre de almacen!", "error");
+          }
+        }
+      });
+    });
   }
 
 </script>
@@ -351,8 +378,11 @@ $("#actualizar_saldos_iniciales").on("click",function(){
                 <td width="20" align="center"><img class="editar_producto" src="<?php echo base_url();?>assets/img/edit.png" width="20" height="20" title="Editar producto" onClick="editar_producto(<?php echo $listasalidaproductos->id_salida_producto; ?>)" /></td>
                 -->
                 <td width="20" align="center">
-                  <a href="" class="eliminar_salida" id="elim_<?php echo $listasalidaproductos->id_salida_producto; ?>">
-                  <img src="<?php echo base_url();?>assets/img/trash.png" width="20" height="20" title="Eliminar Salida"/></a>
+                  <img class="delete_salida" src="<?php echo base_url();?>assets/img/trash.png" width="20" height="20" title="Eliminar Producto" onClick="delete_salida(<?php echo $listasalidaproductos->id_salida_producto; ?>)" style="cursor: pointer;"/>
+                  <!--
+                  <a href="" class="eliminar_salida" id="elim_<?php // echo $listasalidaproductos->id_salida_producto; ?>">
+                  <img src="<?php // echo base_url();?>assets/img/trash.png" width="20" height="20" title="Eliminar Salida"/></a>
+                  -->
                 </td>
                 
               </tr>
