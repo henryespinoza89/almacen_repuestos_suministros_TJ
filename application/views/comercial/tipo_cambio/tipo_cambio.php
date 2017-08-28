@@ -62,43 +62,33 @@
 
     $(".newprospect").click(function() { //activacion de ventana modal
       $("#mdlNuevoTipoCambio" ).dialog({  //declaracion de ventana modal
-          modal: true,resizable: false,show: "blind",position: 'center',width: 290,height: 360,draggable: false,closeOnEscape: false, //Aumenta el marco general
+          modal: true,resizable: false,show: "blind",position: 'center',width: 290,height: 390,draggable: false,closeOnEscape: false, //Aumenta el marco general
           buttons: {
           Registrar: function() {
-              $(".ui-dialog-buttonpane button:contains('Registrar')").button("disable");
-              $(".ui-dialog-buttonpane button:contains('Registrar')").attr("disabled", true).addClass("ui-state-disabled");
-              //CONTROLO LAS VARIABLES
               var fecha_registro = $('#fecha_registro').val(); dolar_compra_reg = $('#dolar_compra_reg').val(); dolar_venta_reg = $('#dolar_venta_reg').val();
               var euro_compra_reg = $('#euro_compra_reg').val(); euro_venta_reg = $('#euro_venta_reg').val(); fr_compra_reg = $('#fr_compra_reg').val(); 
               var fr_venta_reg= $('#fr_venta_reg').val();
               if(fecha_registro == '' || dolar_compra_reg == '' || dolar_venta_reg == ''|| euro_compra_reg == '' || fr_compra_reg == '' || fr_venta_reg == '' || euro_venta_reg == ''){
-                $("#modalerror").html('<b>ERROR:</b> Faltan completar algunos campos del formulario, por favor verifique.').dialog({
-                  modal: true,position: 'center',width: 450, height: 150,resizable: false,
-                  buttons: { Ok: function() {$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );}}
-                });
+                sweetAlert("Falta completar campos obligatorios del formulario, por favor verifique!", "", "error");
               }else{
-                //REGISTRO
                     var dataString = 'fecha_registro='+fecha_registro+'&dolar_compra_reg='+dolar_compra_reg+'&dolar_venta_reg='+dolar_venta_reg+'&euro_compra_reg='+euro_compra_reg+'&euro_venta_reg='+euro_venta_reg+'&fr_compra_reg='+fr_compra_reg+'&fr_venta_reg='+fr_venta_reg+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
-                    //alert(nombrepro); //Esta pasando el valor de procedencia como un integer
                     $.ajax({
                       type: "POST",
                       url: "<?php echo base_url(); ?>comercial/registrartipocambio/",
                       data: dataString,
                       success: function(msg){
                         if(msg == 1){
-                          //alert('¡El Producto ha sido registrado con éxito!');
-                          $("#finregistro").html('!El Tipo de Cambio ha sido regristado con éxito!.').dialog({
-                            modal: true,position: 'center',width: 340,height: 125,resizable: false, title: 'Fin de Registro',
-                            buttons: { Ok: function(){
-                              window.location.href="<?php echo base_url();?>comercial/gestiontipocambio";
-                            }}
-                          });
+                          swal({ title: "El Tipo de Cambio ha sido regristado con éxito!",text: "",type: "success",confirmButtonText: "OK",timer: 2000 });
+                          $("#mdlNuevoTipoCambio").dialog("close");
+                          $('#fecha_registro').val('');
+                          $('#dolar_compra_reg').val('');
+                          $('#dolar_venta_reg').val('');
+                          $('#euro_compra_reg').val('');
+                          $('#euro_venta_reg').val('');
+                          $('#fr_compra_reg').val('');
+                          $('#fr_venta_reg').val('');
                         }else{
-                          $("#modalerror").empty().append(msg).dialog({
-                            modal: true,position: 'center',width: 500,height: 125,resizable: false,
-                            buttons: { Ok: function() {$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );}}
-                          });
-                          $(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");
+                          sweetAlert(msg, "", "error");
                         }
                       }
                     });
@@ -129,44 +119,7 @@
       });
     $(".ui-datepicker-trigger").css('padding-left','7px'); // esta linea separa la imagen del calendario del input
 
-    //Script para crear la tabla que será el contenedor de los productos registrados
-    $('#listaTipoCambio').jTPS( {perPages:[10,20,30,50,'Todos'],scrollStep:1,scrollDelay:30,clickCallback:function () {     
-            // target table selector
-            var table = '#listaTipoCambio';
-            // store pagination + sort in cookie 
-            document.cookie = 'jTPS=sortasc:' + $(table + ' .sortableHeader').index($(table + ' .sortAsc')) + ',' +
-                    'sortdesc:' + $(table + ' .sortableHeader').index($(table + ' .sortDesc')) + ',' +
-                    'page:' + $(table + ' .pageSelector').index($(table + ' .hilightPageSelector')) + ';';
-            }
-        });
-
-        // reinstate sort and pagination if cookie exists
-        var cookies = document.cookie.split(';');
-        for (var ci = 0, cie = cookies.length; ci < cie; ci++) {
-                var cookie = cookies[ci].split('=');
-                if (cookie[0] == 'jTPS') {
-                        var commands = cookie[1].split(',');
-                        for (var cm = 0, cme = commands.length; cm < cme; cm++) {
-                                var command = commands[cm].split(':');
-                                if (command[0] == 'sortasc' && parseInt(command[1]) >= 0) {
-                                        $('#listaTipoCambio .sortableHeader:eq(' + parseInt(command[1]) + ')').click();
-                                } else if (command[0] == 'sortdesc' && parseInt(command[1]) >= 0) {
-                                        $('#listaTipoCambio .sortableHeader:eq(' + parseInt(command[1]) + ')').click().click();
-                                } else if (command[0] == 'page' && parseInt(command[1]) >= 0) {
-                                        $('#listaTipoCambio .pageSelector:eq(' + parseInt(command[1]) + ')').click();
-                                }
-                        }
-                }
-        }
-
-        // bind mouseover for each tbody row and change cell (td) hover style
-        $('#listaTipoCambio tbody tr:not(.stubCell)').bind('mouseover mouseout',
-                function (e) {
-                        // hilight the row
-                        e.type == 'mouseover' ? $(this).children('td').addClass('hilightRow') : $(this).children('td').removeClass('hilightRow');
-                }
-        );
-
+    $('#listaTipoCambio').DataTable();
   });
   
   //Fuera de $(function(){         });
@@ -176,54 +129,38 @@
 
   // Editar Producto
   function editar_tipo_cambio(id_tipo_cambio){
-        //var urlMaq = '<?php echo base_url();?>comercial/editarproducto/'+id_pro;
-        var urlMaq = '<?php echo base_url();?>comercial/editartipocambio/'+id_tipo_cambio;
-        //alert(urlMaq);
-        $("#mdlEditarTipoCambio").load(urlMaq).dialog({
-          modal: true, position: 'center', width: 290, height: 360, draggable: false, resizable: false, closeOnEscape: false,
-          buttons: {
-            Actualizar: function() {
-            $(".ui-dialog-buttonpane button:contains('Actualizar')").button("disable");
-            $(".ui-dialog-buttonpane button:contains('Actualizar')").attr("disabled", true).addClass("ui-state-disabled");
-            //CONTROLO LAS VARIABLES
-            var edit_fecha_actual = $('#edit_fecha_actual').val(); edit_dolar_compra = $('#edit_dolar_compra').val(); edit_dolar_venta = $('#edit_dolar_venta').val(); edit_euro_compra = $('#edit_euro_compra').val(); 
-            var edit_euro_venta = $('#edit_euro_venta').val(); edit_fr_compra = $('#edit_fr_compra').val(); edit_fr_venta = $('#edit_fr_venta').val();
-            if(edit_fecha_actual == '' || edit_dolar_compra == '' || edit_dolar_venta == '' || edit_fr_compra == '' || edit_euro_venta == '' || edit_fr_venta == '' || edit_euro_compra == ''){
-              $("#modalerror").html('<b>ERROR:</b> Faltan completar algunos campos del formulario, por favor verifique.').dialog({
-                modal: true,position: 'center',width: 450, height: 150,resizable: false,
-                buttons: { Ok: function() {$(".ui-dialog-buttonpane button:contains('Actualizar')").button("enable");$( this ).dialog( "close" );}}
-              });
-            }else{
-              var dataString = 'edit_fecha_actual='+edit_fecha_actual+'&edit_dolar_compra='+edit_dolar_compra+'&edit_dolar_venta='+edit_dolar_venta+'&edit_euro_compra='+edit_euro_compra+'&edit_fr_venta='+edit_fr_venta+'&edit_fr_compra='+edit_fr_compra+'&edit_euro_venta='+edit_euro_venta+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
-              $.ajax({
-                type: "POST",
-                url: "<?php echo base_url(); ?>comercial/actualizartipocambio/"+id_tipo_cambio,
-                data: dataString,
-                success: function(msg){
-                  if(msg == 1){
-                    $("#finregistro").html('!El Tipo de Cambio ha sido actualizado con éxito!.').dialog({
-                      modal: true,position: 'center',width: 350,height: 125,resizable: false, title: 'Fin de Actualización',
-                      buttons: { Ok: function(){
-                        window.location.href="<?php echo base_url();?>comercial/gestiontipocambio";
-                      }}
-                    });
-                  }else{
-                    $("#modalerror").empty().append(msg).dialog({
-                      modal: true,position: 'center',width: 500,height: 125,resizable: false,
-                      buttons: { Ok: function() {$(".ui-dialog-buttonpane button:contains('Actualizar')").button("enable");$( this ).dialog( "close" );}}
-                    });
-                    $(".ui-dialog-buttonpane button:contains('Actualizar')").button("enable");
-                  }
-                }
-              });
+    var urlMaq = '<?php echo base_url();?>comercial/editartipocambio/'+id_tipo_cambio;
+    $("#mdlEditarTipoCambio").load(urlMaq).dialog({
+      modal: true, position: 'center', width: 290, height: 360, draggable: false, resizable: false, closeOnEscape: false,
+      buttons: {
+        Actualizar: function() {
+        var edit_fecha_actual = $('#edit_fecha_actual').val(); edit_dolar_compra = $('#edit_dolar_compra').val(); edit_dolar_venta = $('#edit_dolar_venta').val(); edit_euro_compra = $('#edit_euro_compra').val(); 
+        var edit_euro_venta = $('#edit_euro_venta').val(); edit_fr_compra = $('#edit_fr_compra').val(); edit_fr_venta = $('#edit_fr_venta').val();
+        if(edit_fecha_actual == '' || edit_dolar_compra == '' || edit_dolar_venta == '' || edit_fr_compra == '' || edit_euro_venta == '' || edit_fr_venta == '' || edit_euro_compra == ''){
+          sweetAlert("Falta completar campos obligatorios del formulario, por favor verifique!", "", "error");
+        }else{
+          var dataString = 'edit_fecha_actual='+edit_fecha_actual+'&edit_dolar_compra='+edit_dolar_compra+'&edit_dolar_venta='+edit_dolar_venta+'&edit_euro_compra='+edit_euro_compra+'&edit_fr_venta='+edit_fr_venta+'&edit_fr_compra='+edit_fr_compra+'&edit_euro_venta='+edit_euro_venta+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
+          $.ajax({
+            type: "POST",
+            url: "<?php echo base_url(); ?>comercial/actualizartipocambio/"+id_tipo_cambio,
+            data: dataString,
+            success: function(msg){
+              if(msg == 1){
+                swal({ title: "El Tipo de Cambio ha sido actualizado con éxito!",text: "",type: "success",confirmButtonText: "OK",timer: 2000 });
+                $("#mdlEditarTipoCambio").dialog("close");
+              }else{
+                sweetAlert(msg, "", "error");
+              }
             }
-          },
-          Cancelar: function(){
-            $("#mdlEditarTipoCambio").dialog("close");
-          }
-                }
-        });
+          });
+        }
+      },
+      Cancelar: function(){
+        $("#mdlEditarTipoCambio").dialog("close");
       }
+      }
+    });
+  }
 
 </script>
 
@@ -298,37 +235,9 @@
     <?php } ?>
     <div id="tituloCont">Gestión de Tipo de Cambio</div>
     <div id="formFiltro">
-      <div class="tituloFiltro" style="width:1400px; float:left;">Búsqueda</div>
-      <!--<div class="tituloFiltro">Filtros para Exportar a PDF</div>-->
-      <form name="filtroBusqueda" action="#" method="post" style="width:1380px; float:left;">
-        <?php
-          //Ingresar Fecha de consultar
-          if ($this->input->post('fecharegistro')){
-            $fecharegistro = array('name'=>'fecharegistro','id'=>'fecharegistro','maxlength'=>'10','value'=>$this->input->post('fecharegistro'), 'style'=>'width:100px','readonly'=> 'readonly', 'class'=>'required');
-
-          }else{
-            $fecharegistro = array('name'=>'fecharegistro','id'=>'fecharegistro','maxlength'=>'10', 'style'=>'width:100px','readonly'=> 'readonly', 'class'=>'required');
-          }
-        ?>
-        <?php echo form_open(base_url()."comercial/gestiontipocambio", 'id="buscar" style="width:780px;"') ?>
-          <table width="770" border="0" cellspacing="0" cellpadding="0">
-            <tr>
-              <td width="131" height="30">Fecha de Registro:</td>
-              <td width="219" style="width: 160px;"><?php echo form_input($fecharegistro);?></td>
-            <td width="420" style="padding-bottom:4px;">
-              <input name="submit" type="submit" id="submit" value="Buscar" />
-              <input name="reset" type="button" onclick="resetear()" value="Reestablecer" />
-            </td>
-            </tr>
-          </table>
-        <?php echo form_close() ?>
-      </form>
-
-      <div id="options_tipo_cambio">
-        <div class="newprospect">Registrar Tipo de Cambio</div>
+      <div id="options_tipo_cambio" style="margin-bottom: 15px;">
+        <div class="newprospect" style="width: 200px;">Registrar Tipo de Cambio</div>
       </div>
-
-      <!--Iniciar listar-->
         <?php 
           $existe = count($tipoCambio);
           if($existe <= 0){
@@ -337,48 +246,39 @@
           else
           {
         ?>
-        <table border="0" cellspacing="0" cellpadding="0" id="listaTipoCambio" style="width:1365px;">
+        <table border="0" cellspacing="0" cellpadding="0" id="listaTipoCambio" style="float: left;width:1365px;" class="table table-hover table-striped">
           <thead>
-            <tr class="tituloTable">
-              <td sort="idprod" width="85" height="25">Item</td>
-              <td sort="idproducto" width="140" height="25">Fecha de Registro</td>
-              <td sort="nombreprod" width="180">Valor de Compra Dólar</td>
-              <td sort="catprod" width="180">Valor de Venta Dólar</td>
-              <td sort="nombreprod" width="180">Valor de Compra Euro</td>
-              <td sort="catprod" width="180">Valor de Venta Euro</td>
-              <td sort="nombreprod" width="200">Valor de Compra Franco Suizo</td>
-              <td sort="catprod" width="200">Valor de Venta Franco Suizo</td>
-              <td width="20">&nbsp;</td>
+            <tr class="tituloTable" style="font-family: Helvetica Neu,Helvetica,Arial,sans-serif;font-size: 12px;height: 35px;">
+              <!--<td sort="idprod" width="85" height="27">ITEM</td>-->
+              <td sort="idproducto" width="160" height="27">FECHA DE REGISTRO</td>
+              <td sort="nombreprod" width="180">VALOR DE COMPRA DOLAR</td>
+              <td sort="catprod" width="180">VALOR DE VENTA DOLAR</td>
+              <td sort="nombreprod" width="180">VALOR DE COMPRA EURO</td>
+              <td sort="catprod" width="180">VALOR DE VENTA EURO</td>
+              <td sort="nombreprod" width="190">VALOR DE COMPRA F.S</td>
+              <td sort="catprod" width="190">VALOR DE VENTA F.S</td>
+              <td width="20" style="background-image: none;">&nbsp;</td>
             </tr>
           </thead>
           <?php
             $i = 1;
             foreach($tipoCambio as $listatipoCambio){ 
           ?>  
-          <tr class="contentTable">
-            <td height="27"><?php echo str_pad($i, 4, 0, STR_PAD_LEFT); ?></td>
-            <td><?php echo $listatipoCambio->fecha_actual; ?></td>
-            <td><?php echo $listatipoCambio->dolar_compra; ?></td>
-            <td><?php echo $listatipoCambio->dolar_venta; ?></td>
-            <td><?php echo $listatipoCambio->euro_compra; ?></td>
-            <td><?php echo $listatipoCambio->euro_venta; ?></td>
-            <td><?php echo $listatipoCambio->fr_compra; ?></td>
-            <td><?php echo $listatipoCambio->fr_venta; ?></td>
-            <td width="20" align="center"><img class="editar_tipo_cambio" src="<?php echo base_url();?>assets/img/edit.png" width="20" height="20" title="Editar Tipo de Cambio" onClick="editar_tipo_cambio(<?php echo $listatipoCambio->id_tipo_cambio; ?>)" /></td>
+          <tr class="contentTable" style="font-size: 12px;">
+            <!--<td height="27" style="vertical-align: middle;"><?php // echo str_pad($i, 4, 0, STR_PAD_LEFT); ?></td>-->
+            <td style="vertical-align: middle;"><?php echo $listatipoCambio->fecha_actual; ?></td>
+            <td style="vertical-align: middle;"><?php echo $listatipoCambio->dolar_compra; ?></td>
+            <td style="vertical-align: middle;"><?php echo $listatipoCambio->dolar_venta; ?></td>
+            <td style="vertical-align: middle;"><?php echo $listatipoCambio->euro_compra; ?></td>
+            <td style="vertical-align: middle;"><?php echo $listatipoCambio->euro_venta; ?></td>
+            <td style="vertical-align: middle;"><?php echo $listatipoCambio->fr_compra; ?></td>
+            <td style="vertical-align: middle;"><?php echo $listatipoCambio->fr_venta; ?></td>
+            <td width="20" align="center"><img class="editar_tipo_cambio" src="<?php echo base_url();?>assets/img/edit.png" width="20" height="20" title="Editar Tipo de Cambio" onClick="editar_tipo_cambio(<?php echo $listatipoCambio->id_tipo_cambio; ?>)" style="cursor: pointer;"/></td>
           </tr>
           <?php
             $i++;
             } 
-          ?> 
-          <tfoot class="nav">
-                  <tr>
-                    <td colspan=9>
-                          <div class="pagination"></div>
-                          <div class="paginationTitle">Página</div>
-                          <div class="selectPerPage"></div>
-                      </td>
-                  </tr>                   
-          </tfoot>          
+          ?>       
         </table>
       <?php }?>
 
@@ -398,7 +298,7 @@
       <div id="finregistro"></div>
       <!---  Ventanas modales -->
       <div id="mdlNuevoTipoCambio" style="display:none">
-        <div id="contenedor" style="width:240px; height:230px;"> <!--Aumenta el marco interior-->
+        <div id="contenedor" style="width:240px; height:260px;"> <!--Aumenta el marco interior-->
         <div id="tituloCont">Nuevo Tipo de Cambio</div>
         <div id="formFiltro" style="width:500px;">
         <?php

@@ -33,9 +33,33 @@ footer{
 	cursor: pointer;
 }
 
+#lista_monto_cierre_paginate{
+	margin-right: 550px;
+}
+
+#lista_monto_cierre_filter{
+	margin-right: 560px;
+}
+
 #icon_print{
 	padding-left: 7px;
 	padding-right: 8px;
+}
+
+#listaAreas_paginate{
+	margin-right: 650px;
+}
+
+#listaAreas_filter{
+	margin-right: 660px;
+}
+
+#listaAgenteAduana_paginate{
+	margin-right: 650px;
+}
+
+#listaAgenteAduana_filter{
+	margin-right: 660px;
 }
 
 #listaCategoriaProductos_paginate{
@@ -261,6 +285,7 @@ ul, ol
 	padding: 5px;
 	background-color: #EEEEEE;
 	display: none;
+	z-index: 2;
 }
 
 nav a {
@@ -283,6 +308,7 @@ nav a {
 	text-align: left;
 	margin-left: 68px;
 	margin-top: 0px;
+	z-index: 1;
 }
 
 #contenedor {
@@ -760,6 +786,22 @@ nav a {
 	margin-bottom: 18px;
 	float: left;
 	width: 1380px;
+}
+
+#options_productos .newprospect_new_area {
+	width: 150px;
+	height: 20px;
+	background: url('../img/add.png') no-repeat;
+	padding: 3px 0px 0px 28px;
+	overflow: hidden;
+	float: left;
+	cursor: pointer;
+	color: #000;
+}
+
+#options_productos .newprospect_new_area a {
+	text-decoration: none;
+	color: #898989;
 }
 
 #options_productos .newprospect {
@@ -1383,6 +1425,7 @@ nav a {
 	position: absolute;
 	background-color: #E5E5E5;
 	margin-top: 75px;
+	z-index: 2;
 	margin-left: 770px;
 }
 

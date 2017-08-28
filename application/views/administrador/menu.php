@@ -1,13 +1,26 @@
 <!DOCTYPE html>
 <html>
 <head>
+	<link type="text/css" rel="stylesheet" href="<?php echo base_url();?>assets/font_awesome_icon/fonts/style.css">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
 	<link rel="shortcut icon" type="image/jpg" href="<?php echo base_url(); ?>assets/img/tienda_movistar.jpg">
 	<link rel="stylesheet" type="text/css" href="<?php echo base_url(); ?>assets/css/estilos.css">
+	<link rel="stylesheet" type="text/css" href="<?php echo base_url(); ?>assets/css/sweetalert.css">
 	<link type="text/css" rel="stylesheet" href="<?php echo base_url();?>assets/css/jTPS.css" />
 	<!-- JQuery UI -->
 	<script src="<?php echo base_url();?>assets/js/jquery.min.js" type="text/javascript"></script>
 	<link type="text/css" rel="stylesheet" href="<?php echo base_url();?>assets/css/smoothness/jquery-ui-1.9.2.custom.css" />
 	<script language="JavaScript" type="text/javascript" src="<?php echo base_url();?>assets/js/jquery-ui-1.9.2.custom.js"></script>
+
+	<link type="text/css" rel="stylesheet" href="<?php echo base_url();?>assets/js/plugins/jquery-ui/jquery-ui.css" />
+	<link type="text/css" rel="stylesheet" href="<?php echo base_url();?>assets/js/plugins/jquery-ui/jquery-ui.theme.min.css" />
+	<script language="JavaScript" type="text/javascript" src="<?php echo base_url();?>assets/js/plugins/jquery-ui/jquery-ui.js"></script>
+
+	<link type="text/css" rel="stylesheet" href="<?php echo base_url();?>assets/css/jquery.dataTables.css">
+	<script language="JavaScript" type="text/javascript" src="<?php echo base_url();?>assets/js/jquery.dataTables.js"></script>
+	<link type="text/css" rel="stylesheet" href="<?php echo base_url();?>assets/css/bootstrap.min.css">
+	<script language="JavaScript" type="text/javascript" src="<?php echo base_url();?>assets/js/sweetalert.min.js"></script>
+
 	<!-- Steps Plugin -->
 	<link type="text/css" rel="stylesheet" href="<?php echo base_url();?>assets/css/normalize.css">
 	<link type="text/css" rel="stylesheet" href="<?php echo base_url();?>assets/css/jquery.steps.css">
@@ -36,6 +49,8 @@
 				$("#mdlUpPass" ).dialog({  //declaracion de ventana modal
 					modal: true,resizable: false,show: "blind",position: 'center',width: 370,height: 323,draggable: false,closeOnEscape: false, //Aumenta el marco general
 			        buttons: {
+
+
 			        Actualizar: function() {
 			            $(".ui-dialog-buttonpane button:contains('Registrar')").button("disable");
 			            $(".ui-dialog-buttonpane button:contains('Registrar')").attr("disabled", true).addClass("ui-state-disabled");
@@ -43,7 +58,10 @@
 			            var user = $('#user').val(); password = $('#password').val(); datacontrasena_actualizar = $('#datacontrasena_actualizar').val();
 			            
 			                //REGISTRO
+			               
 			                var dataString = 'user='+user+'&password='+password+'&datacontrasena_actualizar='+datacontrasena_actualizar+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
+
+
 		                    $.ajax({
 		                      type: "POST",
 		                      url: "<?php echo base_url(); ?>administrador/UpdatePassword/",
@@ -67,8 +85,8 @@
 		                    });
 			            
 			        },
-			        Cancelar: function(){
-			             $("#mdlUpPass").dialog("close");
+			        error: function(){
+			            alert("#mdlUpPass").dialog("close");
 			        }
 			        }
 				});
@@ -99,6 +117,9 @@
 		color: #FFF;
 		margin-right: 260px;
 	}
+	body{
+		zoom:80% !important;
+	}
 	</style>
 </head>
 <body>
@@ -121,7 +142,9 @@
 					<li><a href='<?php echo base_url();?>administrador/gestionmaquinas_admin'><span>Gestión de Maquinarias</span></a></li>
 					<li><a href='<?php echo base_url();?>administrador/gestionproductos_admin'><span>Gestión de Productos</span></a></li>
 					<li><a href='<?php echo base_url();?>administrador/gestionproveedores_admin'><span>Gestión de Proveedores</span></a></li>
+
 					<li><a href='<?php echo base_url();?>administrador/gestionusuarios_admin'><span>Gestión de Usuarios</span></a></li>
+					
 					<li><a href='<?php echo base_url();?>administrador/gestionusuarios_admin'><span>Gestión de Interfaces</span></a>
 						<ul>
 							<li><a href='<?php echo base_url();?>administrador/gestion_ingreso_producto'><span>Tabla ingreso_producto</span></a>
@@ -135,13 +158,12 @@
 							<li><a href='<?php echo base_url();?>administrador/gestion_proveedor'><span>Tabla proveedor</span></a>
 						</ul>
 					</li>
-					<!--<li><a href='<?php //echo base_url();?>administrador/gestioningreso'><span>Registro de Ingreso</span></a></li>
-					<li><a href='<?php //echo base_url();?>administrador/gestionsalida'><span>Registro de Salida</span></a></li>-->
 				</ul>
 			</div>
 		</div>
 	</header>
 <!--<footer><div><h2 align="center">Sistema de Almacén - Repuestos y Suministros</h2></div></footer>-->
+
 <div id="mdlUpPass" style="display:none">
         <div id="contenedor" style="width:320px; height:200px;"> <!--Aumenta el marco interior-->
         <div id="tituloCont">Actualizar Contraseña</div>

@@ -434,52 +434,49 @@ $(function(){
     });
     <?php } ?>
 
-		//Mostrar ::SELECCIONE:: en los combobox
-		<?php 
-			if ($this->input->post('proveedor')){
-				$selected_prov =  (int)$this->input->post('proveedor');
-			}else{	$selected_prov = "";
-		?>
-       		$("#proveedor").append('<option value="" selected="selected">:: SELECCIONE ::</option>');
-		<?php 
-			}	
-		?>
+	<?php 
+		if ($this->input->post('proveedor')){
+			$selected_prov =  (int)$this->input->post('proveedor');
+		}else{	$selected_prov = "";
+	?>
+   		$("#proveedor").append('<option value="" selected="selected">:: SELECCIONE ::</option>');
+	<?php 
+		}	
+	?>
 
-		<?php 
-			if ($this->input->post('moneda')){
-				$selected_moneda =  (int)$this->input->post('moneda');
-			}else{	$selected_moneda = "";
-		?>
-       		$("#moneda").append('<option value="" selected="selected">:: SELECCIONE ::</option>');
-		<?php 
-			}	
-		?>
+	<?php 
+		if ($this->input->post('moneda')){
+			$selected_moneda =  (int)$this->input->post('moneda');
+		}else{	$selected_moneda = "";
+	?>
+   		$("#moneda").append('<option value="" selected="selected">:: SELECCIONE ::</option>');
+	<?php 
+		}	
+	?>
 
-		<?php
-			if ($this->input->post('id_agente')){
-				$selected_agente =  (int)$this->input->post('id_agente');
-			}else{	
-				$selected_agente = 2;
-		?>
-       			//$("#agente").append('<option value="" selected="selected">:: SELECCIONE ::</option>');
-		<?php 
-			}	
-		?>
+	<?php
+		if ($this->input->post('id_agente')){
+			$selected_agente =  (int)$this->input->post('id_agente');
+		}else{
+			$selected_agente = 2;
+	?>
+	<?php 
+		}	
+	?>
 
-		<?php
-			if ($this->session->userdata('csigv') == ""){
+	<?php
+		if ($this->session->userdata('csigv') == ""){
+			$selected_csigv = "false";
+	?>
+	<?php
+		}else{	
+			if($this->session->userdata('csigv') == "true"){
+				$selected_csigv = "true";
+			}else if($this->session->userdata('csigv') == "false"){
 				$selected_csigv = "false";
-		?>
-			//$("#csigv").append('<option value="" selected="selected">:: SELECCIONE ::</option>');
-		<?php
-			}else{	
-				if($this->session->userdata('csigv') == "true"){
-					$selected_csigv = "true";
-				}else if($this->session->userdata('csigv') == "false"){
-					$selected_csigv = "false";
-				}
 			}
-		?>
+		}
+	?>
 
 		<?php 
 	      	if ($this->input->post('area')){
@@ -517,15 +514,12 @@ $(function(){
 		$("#agente").change(function() {
 			$("#agente option:selected").each(function() {
 		        agente = $('#agente').val();
-		            $("#prueba").val(agente);
-		      
+		        $("#prueba").val(agente);
 		    });
 		});
 
        	$("#nomproducto").append('<option value="" selected="selected">:: SELECCIONE ::</option>');
-        //Validar campos, sólo numérico
         $("#numcomprobante").validCampoFranz('0123456789-');
-        //$("#porcentaje").validCampoFranz('0123456789.');
         $("#cantidad").validCampoFranz('0123456789.');
         $("#pu").validCampoFranz('0123456789.');
 
@@ -534,7 +528,6 @@ $(function(){
 			if($existe <= 0){
 		?>
 			$("#fecharegistro")=null;
-			//$(".ui-datepicker-trigger").css('padding-left','7px'); // esta linea separa la imagen del calendario del input
 		<?php	
 			}else{
 		?>

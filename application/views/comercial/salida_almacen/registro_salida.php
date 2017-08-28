@@ -1,5 +1,4 @@
 <?php
-	
 	if ($this->input->post('solicitante')){
 		$solicitante = array('name'=>'solicitante','id'=>'solicitante','value'=>$this->input->post('solicitante'), 'style'=>'width:150px', 'onkeypress'=>'onlytext()');
 	}else{
@@ -29,13 +28,11 @@
 			$fecharegistro = array('name'=>'fecharegistro','id'=>'fecharegistro','maxlength'=>'10', 'style'=>'width:150px','readonly'=> 'readonly', 'class'=>'required');
 		}
 	}
-
 	if ($this->input->post('nombre_producto')){
 	    $nombre_producto = array('name'=>'nombre_producto','id'=>'nombre_producto','value'=>$this->input->post('nombre_producto'), 'style'=>'width:285px;font-family: verdana;','placeholder'=>' :: Nombre del Producto ::');
 	}else{
 	    $nombre_producto = array('name'=>'nombre_producto','id'=>'nombre_producto', 'style'=>'width:285px;font-family: verdana;','placeholder'=>' :: Nombre del Producto ::'); 
 	}
-
 	if ($this->input->post('unidadmedida')){
 	    $unidadmedida = array('name'=>'unidadmedida','id'=>'unidadmedida','maxlength'=> '10', 'value' => $this->input->post('unidadmedida'), 'style'=>'width:70px','readonly'=> 'readonly');
 	}else{
@@ -105,12 +102,12 @@ $(function() {
 	          	data: dataString,
 	          	success: function(response){
 	            if(response == 1){
-	              	swal({ title: "Salida Registrada con Éxito!",text: "",type: "success",confirmButtonText: "OK",timer: 2000 });
 	              	$('#solicitante').val('');
                     $('#nombre_producto').val('');
                     $('#stockactual').val('');
                     $('#unidadmedida').val('');
                     $('#cantidad').val('');
+                    swal({ title: "Salida Registrada con Éxito!",text: "",type: "success",confirmButtonText: "OK",timer: 2000 });
 	            }else if(response == "error_stock"){
 	              	$("#modalerror").empty().append('<span style="color:red"><b>!No existe Stock Disponible!</b><br><b>Verificar la Cantidad Solicitada.</b></span>').dialog({
 	                	modal: true,position: 'center',width: 350,height: 145,resizable: false,title: 'Validación',hide: 'blind',show: 'blind',
@@ -152,7 +149,6 @@ $(function() {
 	              	});
 	              	$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");
 	            }else{
-	            	console.log(response);
 	            	$("#modalerror").empty().append('<span style="color:red"><b>!ERROR!</b></span>').dialog({
 	                	modal: true,position: 'center',width: 480,height: 125,resizable: false,title: 'Error de Validación',hide: 'blind',show: 'blind',
 	                	buttons: { Ok: function() {$(".ui-dialog-buttonpane button:contains('Registrar')").button("enable");$( this ).dialog( "close" );}}

@@ -32,11 +32,11 @@
 	    <td><?php echo utf8_decode($data->no_tipo_producto); ?></td>
 	    <td><?php echo utf8_decode($data->no_procedencia); ?></td>
 	    <td><?php echo utf8_decode($data->nom_uni_med); ?></td>
-	    <td><?php echo number_format($data->stock,2,'.',','); ?></td>
+	    <td><?php echo number_format($data->stock_area_sta_anita,2,'.',','); ?></td>
 	    <td><?php echo number_format($data->precio_unitario,2,'.',','); ?></td>
 	</tr>
 	<?php
-		$sumatoria = $sumatoria + ($data->precio_unitario*$data->stock);
+		$sumatoria = $sumatoria + ($data->precio_unitario*$data->stock_area_sta_anita);
 		}
 	?>
 	<tr style="text-align:center;vertical-align: middle;border: 1px solid #005197;font-size: 10px;">

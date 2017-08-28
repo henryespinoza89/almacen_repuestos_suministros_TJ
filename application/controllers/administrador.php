@@ -116,7 +116,7 @@ class Administrador extends CI_Controller {
 	     *
 	     * $this->pdf->Cell(Ancho, Alto,texto,borde,posición,alineación,relleno);
 	     */
-	    /*$this->pdf->Cell(245,9,utf8_decode('LISTA DE PROVEEDORES'),'TBR TBL',0,'C','1');
+	    /*$this->pdf->Cell(245,9,utf8_decode('LISTA DE PROVEEDRES'),'TBR TBL',0,'C','1');
 	    $this->pdf->Ln(9);
 	    */
 	    $existe = count($maquina);

@@ -100,7 +100,7 @@
 	                <td width="156" height="30"><?php echo form_input($fechainicial);?></td>
 	                <td width="81" height="30">Fecha Final:</td>
 	                <td width="168" height="30"><?php echo form_input($fechafinal);?></td>
-                    <td width="195"><input name="submit" type="submit" id="report_registro_salidas" class="report_registro_salidas" value="Generar Reporte" style="background-color: #4B8A08;width: 140px;margin-bottom: 6px;" /></td>
+                    <td width="195"><input name="submit" type="submit" id="report_registro_salidas" class="report_registro_salidas" value="GENERAR REPORTE" style="background-color: #FF5722;width: 140px;margin-bottom: 6px;" /></td>
 	            </tr>
 			</table>
 		</div>

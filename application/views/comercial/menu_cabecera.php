@@ -19,22 +19,22 @@
 	              	}
 	        	}
 	      	});
-
+			
 	      	$("#icon_notification").on('click',function(){
 	      		if(auxiliar == 0){
 	      			$("#view_invoice").show();
 	      			auxiliar = 1;
 	      		}else if(auxiliar == 1){
-	      			$("#view_invoice").hide();
+	      			$("#view_invoice").show();
 	      			auxiliar = 0;
 	      		}
 	      	});
-
+			
 	      	$("#view_invoice").mouseleave(function(){
                 $("#view_invoice").hide();
                 auxiliar = 0;
             });
-
+			
 			$("#error_view_complete").html('!Falta completar el campo Contraseña Actual.!').dialog({
 		        modal: true,position: 'center',width: 400,height: 145,resizable: false, title: 'Error/Campos Vacios',
 		        buttons: { Ok: function(){
@@ -132,7 +132,7 @@
 <body>
 <header>
 	<div id="logo"><a href="<?php echo base_url();?>comercial/gestionproductos"><img src="<?php echo base_url();?>assets/img/logo_tejidos.jpg" height="72" title="Sistema de Almacén"></a></div>
-	<div class="notification" id="notification" style="float: left;margin-top: 38px;margin-left: 620px;">
+	<div class="notification" id="notification" style="float: left;margin-top: 30px;margin-left: 620px;">
 		<i><span class="fa fa-bell" id="icon_notification"></span></i>
 	</div>
 	<div class="view_invoice" id="view_invoice"></div>
@@ -171,7 +171,7 @@
 					<li style="width: 191px;">
 						<a href='<?php echo base_url();?>comercial/gestioningreso'><span>Gestión Ingreso de Facturas</span></a>
 						<ul>
-							<li style="width: 191px;"><a href='<?php echo base_url();?>comercial/gestioncierrealmacen'><span style="padding-left: 6px;">Cierre de Almacén</span></a></li>
+							<!--<li style="width: 191px;"><a href='<?php //echo base_url();?>comercial/gestioncierrealmacen'><span style="padding-left: 6px;">Cierre de Almacén</span></a></li>-->
 							<li style="width: 191px;"><a href='<?php echo base_url();?>comercial/gestion_cierre_saldos_iniciales'><span style="padding-left: 6px;">Cierre de Saldos Iniciales</span></a></li>
 						</ul>
 					</li>

@@ -80,6 +80,24 @@ class Comercial extends CI_Controller {
         }
     }
 
+    public function save_area_encargado(){
+        $result = $this->model_comercial->save_area_encargado_model();
+        if(!$result){
+            echo '!El área ya se encuentra registrada. Verificar!';
+        }else{
+            echo '1';
+        }
+    }
+
+    public function save_agente_aduana(){
+        $result = $this->model_comercial->save_agente_aduana_model();
+        if(!$result){
+            echo '!El agente de aduana ya se encuentra registrado. Verificar!';
+        }else{
+            echo '1';
+        }
+    }
+
     public function update_categoria_producto(){
         $editcatprod = strtoupper($this->security->xss_clean($this->input->post('editcatprod')));
         // Creación del array con los datos del codigo del producto para insertarlo en la BD
@@ -101,6 +119,28 @@ class Comercial extends CI_Controller {
             echo 'ok';
         }
     }
+
+    public function eliminar_area()
+	{
+		$idarea = $this->security->xss_clean($this->input->post('id_area'));
+		$result = $this->model_comercial->eliminar_area_modal($idarea);
+		if(!$result){
+            echo 'dont_delete';
+        }else{
+            echo 'ok';
+        }
+	}
+
+	public function eliminar_agente_aduana()
+	{
+		$id_agente = $this->security->xss_clean($this->input->post('id_agente'));
+		$result = $this->model_comercial->eliminar_agente_aduana_modal($id_agente);
+		if(!$result){
+            echo 'dont_delete';
+        }else{
+            echo 'ok';
+        }
+	}
 
     public function save_tipo_producto(){
         $result = $this->model_comercial->save_tipo_producto();
@@ -140,9 +180,10 @@ class Comercial extends CI_Controller {
 		}else{
 			$data['tipocambio'] = 1;
 		}
+		$data['listaarea']= $this->model_comercial->listarArea();
 		$this->load->view('comercial/menu_script');
 		$this->load->view('comercial/menu_cabecera');
-		$this->load->view('comercial/inventario_almacen');
+		$this->load->view('comercial/inventario_almacen', $data);
 	}
 
 	public function guardar_informacion_productos(){
@@ -341,7 +382,7 @@ class Comercial extends CI_Controller {
 
 			if( $indicador == TRUE && $indicador_area == TRUE ){
 				//if( $indicador == TRUE ){
-				/* Guardo los datos generales de la factura */
+				/* Guardo los datos generales de la factura o verifico que ya existe por medio de una guia de remision para obtener el id_ingreso_producto*/
 				/* Agregamos el registro_ingreso a la bd */
 				$datos = array(
 					"id_comprobante" => $id_comprobante,
@@ -376,7 +417,6 @@ class Comercial extends CI_Controller {
 							$codigo_producto = trim($datos[0]);
 							$cantidad_ingreso = trim($datos[1]);
 							$precio_ingreso = trim($datos[2]);
-
 							$suma_parciales_factura = $suma_parciales_factura + ($cantidad_ingreso * $precio_ingreso);
 						}
 					}else{
@@ -390,7 +430,6 @@ class Comercial extends CI_Controller {
 							$codigo_producto = trim($datos[0]);
 							$cantidad_ingreso = trim($datos[1]);
 							$precio_ingreso = trim($datos[2]);
-							// Obtener los ID de Clientes, Tejidos y Color
 							// ------------------------------------------
 							$this->db->select('id_detalle_producto');
 				            $this->db->where('id_producto',$codigo_producto);
@@ -455,19 +494,28 @@ class Comercial extends CI_Controller {
 								$precio_ingreso = trim($datos[2]);
 								$nombre_area = trim($datos[3]);
 								/* ------------------------------------------ */
-								$this->db->select('id_detalle_producto');
+								$this->db->select('id_detalle_producto,id_pro');
 					            $this->db->where('id_producto',$codigo_producto);
 					            $query = $this->db->get('producto');
 					            foreach($query->result() as $row){
 					                $id_detalle_producto = $row->id_detalle_producto;
+					                $id_pro = $row->id_pro;
 					            }
-					            /* ------------------------------------------ */
+					            // obtener el id_area
+					            $this->db->select('id_area');
+					            $this->db->where('no_area',$nombre_area);
+					            $query = $this->db->get('area');
+					            foreach($query->result() as $row){
+					                $id_area = $row->id_area;
+					            }
+					            //
 								$a_data = array(
 												'unidades'=>$cantidad_ingreso,
 												'id_detalle_producto'=>$id_detalle_producto,
 												'precio'=>$precio_ingreso,
 												'id_ingreso_producto'=>$id_ingreso_producto,
 												'unidades_referencial'=>$cantidad_ingreso,
+												'id_area'=>$id_area,
 												);
 								$id_insert = $this->model_comercial->inserta_factura_masiva($nombre_area,$id_comprobante,$suma_parciales_factura,$a_data,$id_detalle_producto,$cantidad_ingreso,$precio_ingreso,$fecharegistro,$seriecomprobante,$numcomprobante,0,$almacen);
 								if($id_insert == true){
@@ -514,12 +562,20 @@ class Comercial extends CI_Controller {
 								$cantidad_ingreso = trim($datos[1]);
 								$precio_ingreso = trim($datos[2]);
 								$nombre_area = trim($datos[3]);
-								// Obtener los ID de Clientes, Tejidos y Color
-								$this->db->select('id_detalle_producto');
+								// Obtener los ID
+								$this->db->select('id_detalle_producto,id_pro');
 					            $this->db->where('id_producto',$codigo_producto);
 					            $query = $this->db->get('producto');
 					            foreach($query->result() as $row){
 					                $id_detalle_producto = $row->id_detalle_producto;
+					                $id_pro = $row->id_pro;
+					            }
+					            // obtener el id_area
+					            $this->db->select('id_area');
+					            $this->db->where('no_area',$nombre_area);
+					            $query = $this->db->get('area');
+					            foreach($query->result() as $row){
+					                $id_area = $row->id_area;
 					            }
 					            // ------------------------------------------
 								$a_data = array(
@@ -528,6 +584,7 @@ class Comercial extends CI_Controller {
 												'precio'=>$precio_ingreso,
 												'id_ingreso_producto'=>$id_ingreso_producto,
 												'unidades_referencial'=>$cantidad_ingreso,
+												'id_area'=>$id_area,
 												);
 								$id_insert = $this->model_comercial->inserta_factura_masiva($nombre_area,$id_comprobante,$suma_parciales_factura,$a_data,$id_detalle_producto,$cantidad_ingreso,$precio_ingreso,$fecharegistro,$seriecomprobante,$numcomprobante,$total_factura_contabilidad,$almacen);
 								if($id_insert == true){
@@ -1091,6 +1148,25 @@ class Comercial extends CI_Controller {
         print(json_encode($data));
     }
 
+    public function traer_producto_autocomplete_agregar_area() {
+		$termino = strtoupper($this->input->post('q'));
+        $resultado = $this->model_comercial->get_nombre_producto_autocomplete_agregar_area($termino);
+
+        $array = array( "label" => "no se encontraron resultados" );
+
+        if ($resultado != null) {
+            $data = array();
+            foreach ($resultado as $producto) {
+                $array = array(
+                    "label" => $producto['no_producto'],
+                    "nombre_producto" => $producto['no_producto']
+                );
+                array_push($data, $array);
+            }
+        }
+        print(json_encode($data));
+    }
+
     public function traer_producto_autocomplete_consultar_salidas() {
 		$termino = strtoupper($this->input->post('q'));
         $resultado = $this->model_comercial->get_nombre_producto_autocomplete_consultar_salidas($termino);
@@ -1382,20 +1458,27 @@ class Comercial extends CI_Controller {
         }
         $array = array($anio, $mes_siguiente, $dia);
         $fecha_formateada = implode("-", $array);
-		// Procedimiento de validación
-		$this->db->select('id_monto_cierre');
-        $this->db->where('nombre_mes',$nombre_mes);
-        $this->db->where('fecha_auxiliar',$fecha_formateada);
-        $query = $this->db->get('monto_cierre');
-        if(count($query->result()) > 0){
-        	echo 'error_validacion';
+        $fecha_formateada = date("Y-m-d", strtotime($fecha_formateada));
+        // validar que existen saldos iniciales registrados para esa fecha
+        $result_s_i = $this->model_comercial->validar_cierre_duplicado($fecha_formateada);
+        if($result_s_i == 'cierre_duplicado'){
+			// Procedimiento de validación
+			$this->db->select('id_monto_cierre');
+	        $this->db->where('nombre_mes',$nombre_mes);
+	        $this->db->where('fecha_auxiliar',$fecha_formateada);
+	        $query = $this->db->get('monto_cierre');
+	        if(count($query->result()) > 0){
+	        	echo 'error_validacion';
+	        }else{
+	        	$result_monto = $this->model_comercial->cierre_almacen_montos_2016($fecha_formateada,$nombre_mes,$fecha_final); // guarda el monto de cierre del mes en la tabla monto_cierre
+		    	if(!$result_monto){
+			        echo 'error_validacion_monto';
+			    }else{
+			    	echo '1';
+			    }
+	        }
         }else{
-        	$result_monto = $this->model_comercial->cierre_almacen_montos_2016($fecha_formateada,$nombre_mes); // guarda el monto de cierre del mes en la tabla monto_cierre
-	    	if(!$result_monto){
-		        echo 'error_validacion_monto';
-		    }else{
-		    	echo '1';
-		    }
+            echo 'no_existe_saldos_iniciales';
         }
 	}
 	
@@ -1490,9 +1573,9 @@ class Comercial extends CI_Controller {
 
 	public function gestionconsultarRegistros_optionsAdvanced(){
 		$data['registros']= $this->model_comercial->listaRegistros();
-		$data['listaproveedor']= $this->model_comercial->listaProveedor();
+		$data['anios_registros']= $this->model_comercial->lista_anios_registros();
 		$this->load->view('comercial/menu');
-		$this->load->view('comercial/comprobantes/consulta_registros_ingreso_optionsAdvanced', $data);
+	$this->load->view('comercial/comprobantes/consulta_registros_ingreso_optionsAdvanced', $data);
 	}
 
 	public function gestiontraslados(){
@@ -1740,8 +1823,7 @@ class Comercial extends CI_Controller {
 
 	public function gestion_consultar_salida_registros(){
 		$data['salidaproducto']= $this->model_comercial->listaSalidaProducto();
-		$data['listaarea']= $this->model_comercial->listarArea();
-		$data['listamaquina']= $this->model_comercial->listarMaquinas();
+		$data['anios_registros_salidas']= $this->model_comercial->lista_anios_registros_salida();
 		$this->load->view('comercial/menu');
 		$this->load->view('comercial/salida_almacen/consulta_registros_salida', $data);
 	}
@@ -1800,7 +1882,7 @@ class Comercial extends CI_Controller {
 	        // Verificamos que existan resultados
 	        if(!$result){
 	            //Sí no se encotnraron datos.
-	            echo '<span style="color:red"><b>ERROR:</b> Este Tipo de Cambio ya se encuentra registrado en el sistema.</span>';
+	            echo 'La fecha seleccionada ya tiene un tipo de cambio asignado en el sistema. Verificar!';
 	        }else{
 	        	//Registramos la sesion del usuario
 	        	echo '1';
@@ -1822,6 +1904,19 @@ class Comercial extends CI_Controller {
         	echo 'nombre_producto';
         }else if($result =='error_registro'){
         	echo 'error_registro';
+        }else if($result =='nombre_duplicado'){
+        	echo 'nombre_duplicado';
+        }
+	}
+
+	public function registrar_producto_nueva_area()
+	{
+        $result = $this->model_comercial->save_agregar_producto_area();      
+        // verificamos que existan resultados
+    	if($result == 'area_duplicada'){
+         	echo 'area_duplicada';
+        }else if($result =='registro_correcto'){
+        	echo '1';
         }
 	}
 
@@ -2549,12 +2644,6 @@ class Comercial extends CI_Controller {
 		$this->model_comercial->eliminarNombreMaquina($idnombremaquina);
 	}
 
-	public function eliminararea()
-	{
-		$idarea = $this->input->get('eliminar');
-		$this->model_comercial->eliminarArea($idarea);
-	}
-
 	public function eliminarseriemaquina()
 	{
 		$idseriemaquina = $this->input->get('eliminar');
@@ -2843,31 +2932,12 @@ class Comercial extends CI_Controller {
 
 	public function actualizararea()
 	{
-		$this->form_validation->set_rules('editarea', 'Área', 'trim|required|min_length[1]|max_length[20]|xss_clean');
-		$this->form_validation->set_rules('nombre_encargado', 'Responsable', 'trim|required|min_length[1]|max_length[20]|xss_clean');
-		//Mensajes
-		$this->form_validation->set_message('required','ERROR: Falta completar el campo: %s.');
-		$this->form_validation->set_message('min_length','ERROR: El campo %s debe tener 1 dígito como mínimo.');
-		$this->form_validation->set_message('max_length','ERROR: El campo %s debe tener 20 dígitos como máximo.');
-		//Delimitadores de ERROR:
-		$this->form_validation->set_error_delimiters('<span>', '</span><br>');
-
-		if($this->form_validation->run() == FALSE)
-		{
-			echo validation_errors();
-		}
-		else
-		{
-	        $result = $this->model_comercial->actualizaArea();
-	        // Verificamos que existan resultados
-	        if(!$result){
-	            //Sí no se encotnraron datos.
-	            echo '<span style="color:red"><b>ERROR:</b> Esta Área ya se encuentra registrada.</span>';
-	        }else{
-	        	//Registramos la sesion del usuario
-	        	echo '1';
-	        }
-		}
+        $result = $this->model_comercial->actualizaArea();
+        if(!$result){
+            echo 'Esta área ya se encuentra registrada en el sistema. Verificar!';
+        }else{
+        	echo '1';
+        }
 	}
 
 	public function actualizarseriemaquina()
@@ -2959,11 +3029,11 @@ class Comercial extends CI_Controller {
 
 	public function actualizaragente()
 	{
-		$this->form_validation->set_rules('editnombreagente', 'Nombre del Agente Aduanero', 'trim|required|min_length[1]|max_length[30]|xss_clean');
+		$this->form_validation->set_rules('editnombreagente', 'Nombre del Agente Aduanero', 'trim|required|min_length[1]|max_length[50]|xss_clean');
 		//Mensajes
 		$this->form_validation->set_message('required','ERROR: Falta completar el campo: %s.');
 		$this->form_validation->set_message('min_length','ERROR: El campo %s debe tener 1 dígito como mínimo.');
-		$this->form_validation->set_message('max_length','ERROR: El campo %s debe tener 20 dígitos como máximo.');
+		$this->form_validation->set_message('max_length','ERROR: El campo %s debe tener 50 dígitos como máximo.');
 		//Delimitadores de ERROR:
 		$this->form_validation->set_error_delimiters('<span>', '</span><br>');
 
@@ -2974,12 +3044,9 @@ class Comercial extends CI_Controller {
 		else
 		{
 	        $result = $this->model_comercial->actualizaAgente();
-	        // Verificamos que existan resultados
 	        if(!$result){
-	            //Sí no se encotnraron datos.
-	            echo '<span style="color:red"><b>ERROR:</b> Este Agente Aduanero ya se encuentra registrado.</span>';
+	            echo 'Este agente de aduana ya se encuentra registrado. Verificar!';
 	        }else{
-	        	//Registramos la sesion del usuario
 	        	echo '1';
 	        }
 		}
@@ -4384,249 +4451,261 @@ class Comercial extends CI_Controller {
 		$cantidad = $this->security->xss_clean($this->input->post('cantidad'));
 		$id_almacen = $this->security->xss_clean($this->session->userdata('almacen'));
 		// Obtengo los datos del producto
-		$this->db->select('id_detalle_producto');
+		$this->db->select('id_detalle_producto,stock,stock_sta_clara,precio_unitario');
         $this->db->where('no_producto',$nombre_producto);
         $query = $this->db->get('detalle_producto');
         foreach($query->result() as $row){
             $id_detalle_producto = $row->id_detalle_producto;
+            $stock_sta_anita = $row->stock;
+            $stock_sta_clara = $row->stock_sta_clara;
+            $precio_unitario = $row->precio_unitario;
         }
-        // echo $id_detalle_producto;
-        // Obtengo los datos del producto
-		$this->db->select('id_pro');
-        $this->db->where('id_detalle_producto',$id_detalle_producto);
-        $query = $this->db->get('producto');
-        foreach($query->result() as $row){
-            $id_pro = $row->id_pro;
+
+        // validar si tiene movimientos en el kardex
+        $detalle_movimientos_kardex = $this->model_comercial->traer_movimientos_kardex_eliminar($id_detalle_producto);
+        $existe = count($detalle_movimientos_kardex);
+
+        if(($stock_sta_anita == 0 && $stock_sta_clara == 0 && $precio_unitario == NULL) && ($existe == 0)){
+        	echo 'stock_precio_cero';
+        }else{
+			// echo $id_detalle_producto;
+			// Obtengo los datos del producto
+			$this->db->select('id_pro');
+			$this->db->where('id_detalle_producto',$id_detalle_producto);
+			$query = $this->db->get('producto');
+			foreach($query->result() as $row){
+			    $id_pro = $row->id_pro;
+			}
+			// Generar el ciclo
+
+			do{
+				$suma_stock_producto_areas = 0;
+				// Obtener stock del general del producto - de acuerdo al almacen
+				$this->db->select('stock,precio_unitario,stock_sta_clara');
+			    $this->db->where('id_detalle_producto',$id_detalle_producto);
+			    $query = $this->db->get('detalle_producto');
+			    foreach($query->result() as $row){
+			    	$stockactual = $row->stock; // Sta. anita
+			    	$stock_sta_clara = $row->stock_sta_clara; // Sta. clara
+			    	$precio_unitario = $row->precio_unitario;
+			    }
+			    // Obtener la ultima salida del producto de la tabla salida_producto y kardex_producto
+			    // kardex_producto
+			    $this->db->select('id_kardex_producto,cantidad_salida,descripcion,fecha_registro');
+			    $this->db->where('id_detalle_producto',$id_detalle_producto);
+			    $this->db->order_by("id_kardex_producto", "asc");
+			    $query = $this->db->get('kardex_producto');
+			    if(count($query->result()) > 0){
+			    	foreach($query->result() as $row){
+			    		$auxiliar_last_kardex = $row->id_kardex_producto;
+			    		$cantidad_salida_kardex = $row->cantidad_salida;
+			    		$descripcion = $row->descripcion;
+			    		$fecha_registro = $row->fecha_registro;
+			    	}
+			    }
+			    // salida_producto
+			    $this->db->select('id_salida_producto,cantidad_salida,fecha');
+			    $this->db->where('id_detalle_producto',$id_detalle_producto);
+			    $this->db->order_by("id_salida_producto", "asc");
+			    $query = $this->db->get('salida_producto');
+			    if(count($query->result()) > 0){
+			    	foreach($query->result() as $row){
+			    		$auxiliar_last_salida = $row->id_salida_producto;
+			    		$cantidad_salida_table_salida = $row->cantidad_salida;
+			    	}
+			    }else{
+			    	$auxiliar_last_salida = "";
+			    	$cantidad_salida_table_salida = "";
+			    }
+			    // Validar a que almacen pertenece
+			    if($id_almacen == 1){
+			    	// Actualizar stock del producto por area
+			    	$result_update = $this->model_comercial->actualizar_stock_producto_area($id_pro,$area,$id_almacen,$cantidad);
+			    	// Obtener la suma total de stock del producto distribuido en areas ya actualizado
+			    	$this->db->select('stock_area_sta_clara');
+			    	$this->db->where('id_pro',$id_pro);
+			    	$query = $this->db->get('detalle_producto_area');
+			    	foreach($query->result() as $row){
+			    	    $suma_stock_producto_areas = $suma_stock_producto_areas + $row->stock_area_sta_clara;
+			    	}
+			    	// Hasta aca solo se ha actualizado el stock del producto por area
+			    	if($result_update){
+				        // El stock del sistema supera al stock fisico
+				        if($stock_sta_clara == $suma_stock_producto_areas){
+				        	$aux_parametro_cuadre = 1;
+			    			echo '1';
+				        }else if($stock_sta_clara > $suma_stock_producto_areas){
+			        		$unidad_base_salida = $stock_sta_clara - $suma_stock_producto_areas;
+			        		// Realizar la salida con la cantidad necesaria para cuadrar el producto en el almacen
+							// tabla salida_producto
+							$a_data = array('id_area' => $area,
+											'fecha' => date('Y-m-d'),
+											'id_detalle_producto' => $id_detalle_producto,
+											'cantidad_salida' => $unidad_base_salida,
+											'id_almacen' => $id_almacen,
+											'p_u_salida' => $precio_unitario,
+											);
+							$result_insert = $this->model_comercial->saveSalidaProducto($a_data,true);
+							// tabla kardex
+							$new_stock = ($stockactual + $stock_sta_clara) - $unidad_base_salida;
+							$stock_general = $stockactual + $stock_sta_clara;
+							$a_data_kardex = array('fecha_registro' => date('Y-m-d'),
+						        	                'descripcion' => "SALIDA",
+						        	                'id_detalle_producto' => $id_detalle_producto,
+						        	                'stock_anterior' => $stock_general,
+						        	                'precio_unitario_anterior' => $precio_unitario,
+						        	                'cantidad_salida' => $unidad_base_salida,
+						        	                'stock_actual' => $new_stock,
+						        	                'precio_unitario_actual' => $precio_unitario,
+						        	                'num_comprobante' => $result_insert,
+						        	                );
+						    $result_kardex = $this->model_comercial->saveSalidaProductoKardex($a_data_kardex,true);
+				    	    // Actualizar stock de acuerdo al cuadre
+				    	    // Vuelvo a traer el stock porque lineas arriba ya lo actualice
+				    	    $this->db->select('stock_sta_clara');
+				            $this->db->where('id_detalle_producto',$id_detalle_producto);
+				            $query = $this->db->get('detalle_producto');
+				            foreach($query->result() as $row){
+				            	$stock_final = $row->stock_sta_clara;
+				            }
+				            // Descontar stock - el nuevo stock debe ser de acuerdo al valor de cuadre
+				            $this->model_comercial->descontarStock_general($id_detalle_producto,$unidad_base_salida,$stock_final,$id_almacen);
+				    	    // Enviar parametro para terminar bucle
+				    		$aux_parametro_cuadre = 1;
+				    		echo '1';
+			    		}else if($stock_sta_clara < $suma_stock_producto_areas){
+			    			$cantidad_ingreso = $suma_stock_producto_areas - $stock_sta_clara;
+			    			if($cantidad_ingreso > 0){
+			    				$datos = array(
+									"id_detalle_producto" => $id_detalle_producto,
+									"cantidad_ingreso" => $cantidad_ingreso,
+									"fecha_registro" => date('Y-m-d'),
+									"id_almacen" => $id_almacen
+								);
+								$id_ingreso_producto = $this->model_comercial->insert_orden_ingreso($datos);
+								if($id_ingreso_producto == 'error_inesperado'){
+						            echo 'error_inesperado';
+						            $aux_parametro_cuadre = 1;
+								}else{
+									// Agregamos el detalle del comprobante
+									$result = $this->model_comercial->kardex_orden_ingreso($id_ingreso_producto, $id_detalle_producto, $cantidad_ingreso, $id_almacen);
+									if($result == 'registro_correcto'){
+										$aux_parametro_cuadre = 1;
+										echo '1';
+							        }else{
+							        	echo 'error_kardex';
+							        	$aux_parametro_cuadre = 1;
+							        }
+								}
+			    			}else{
+						    	echo 'cantidad_negativa';
+						    	$aux_parametro_cuadre = 1;
+						    }
+			    		}
+					}
+			    }else if($id_almacen == 2){
+			    	// Actualizar stock del producto por area
+			    	// La cantidad ingresada por el usuario se envia directamente al campo de la tabla
+			    	$result_update = $this->model_comercial->actualizar_stock_producto_area($id_pro,$area,$id_almacen,$cantidad);
+			    	// Obtener la suma total de stock del producto distribuido en areas ya actualizado
+			    	$this->db->select('stock_area_sta_anita');
+			    	$this->db->where('id_pro',$id_pro);
+			    	$query = $this->db->get('detalle_producto_area');
+			    	foreach($query->result() as $row){
+			    	    $suma_stock_producto_areas = $suma_stock_producto_areas + $row->stock_area_sta_anita;
+			    	}
+			    	// Hasta aca solo se ha actualizado el stock del producto por area
+					if($result_update){
+						// El stock del sistema supera al stock fisico
+						if($stockactual == $suma_stock_producto_areas){
+				        	$aux_parametro_cuadre = 1;
+			    			echo '1';
+				        }else if($stockactual > $suma_stock_producto_areas){
+			        		$unidad_base_salida = $stockactual - $suma_stock_producto_areas;
+			        		// Realizar la salida con la cantidad necesaria para cuadrar el producto en el almacen
+							// tabla salida_producto
+							$a_data = array('id_area' => $area,
+											'fecha' => date('Y-m-d'),
+											'id_detalle_producto' => $id_detalle_producto,
+											'cantidad_salida' => $unidad_base_salida,
+											'id_almacen' => $id_almacen,
+											'p_u_salida' => $precio_unitario,
+											);
+							$result_insert = $this->model_comercial->saveSalidaProducto($a_data,true);
+							// tabla kardex
+							$new_stock = ($stockactual + $stock_sta_clara) - $unidad_base_salida;
+							$stock_general = $stockactual + $stock_sta_clara;
+							$a_data_kardex = array('fecha_registro' => date('Y-m-d'),
+						        	                'descripcion' => "SALIDA",
+						        	                'id_detalle_producto' => $id_detalle_producto,
+						        	                'stock_anterior' => $stock_general,
+						        	                'precio_unitario_anterior' => $precio_unitario,
+						        	                'cantidad_salida' => $unidad_base_salida,
+						        	                'stock_actual' => $new_stock,
+						        	                'precio_unitario_actual' => $precio_unitario,
+						        	                'num_comprobante' => $result_insert,
+						        	                );
+						    $result_kardex = $this->model_comercial->saveSalidaProductoKardex($a_data_kardex,true);
+						    // Actualizar stock de acuerdo al cuadre
+			    	    	// Vuelvo a traer el stock porque lineas arriba ya lo actualice
+			    	    	$this->db->select('stock');
+				            $this->db->where('id_detalle_producto',$id_detalle_producto);
+				            $query = $this->db->get('detalle_producto');
+				            foreach($query->result() as $row){
+				            	$stock_final = $row->stock;
+				            }
+				            // Descontar stock - el nuevo stock debe ser de acuerdo al valor de cuadre
+				            $this->model_comercial->descontarStock_general($id_detalle_producto,$unidad_base_salida,$stock_final,$id_almacen);
+				    	    // Enviar parametro para terminar bucle
+				    		$aux_parametro_cuadre = 1;
+				    		echo '1';
+						}else if($stockactual < $suma_stock_producto_areas){
+			    			$cantidad_ingreso = $suma_stock_producto_areas - $stockactual;
+			    			if($cantidad_ingreso > 0){
+			    				$datos = array(
+									"id_detalle_producto" => $id_detalle_producto,
+									"cantidad_ingreso" => $cantidad_ingreso,
+									"fecha_registro" => date('Y-m-d'),
+									"id_almacen" => $id_almacen
+								);
+								$id_ingreso_producto = $this->model_comercial->insert_orden_ingreso($datos);
+								if($id_ingreso_producto == 'error_inesperado'){
+						            echo 'error_inesperado';
+						            $aux_parametro_cuadre = 1;
+								}else{
+									// Agregamos el detalle del comprobante
+									$result = $this->model_comercial->kardex_orden_ingreso($id_ingreso_producto, $id_detalle_producto, $cantidad_ingreso, $id_almacen);
+									if($result == 'registro_correcto'){
+										$aux_parametro_cuadre = 1;
+										echo '1';
+							        }else{
+							        	echo 'error_kardex';
+							        	$aux_parametro_cuadre = 1;
+							        }
+								}
+			    			}else{
+						    	echo 'cantidad_negativa';
+						    	$aux_parametro_cuadre = 1;
+						    }
+			    		}
+					}
+			    }
+			}while($aux_parametro_cuadre == 0);
         }
-        // Generar el ciclo
-        
-        do{
-        	$suma_stock_producto_areas = 0;
-        	// Obtener stock del general del producto - de acuerdo al almacen
-        	$this->db->select('stock,precio_unitario,stock_sta_clara');
-	        $this->db->where('id_detalle_producto',$id_detalle_producto);
-	        $query = $this->db->get('detalle_producto');
-	        foreach($query->result() as $row){
-	        	$stockactual = $row->stock; // Sta. anita
-	        	$stock_sta_clara = $row->stock_sta_clara; // Sta. clara
-	        	$precio_unitario = $row->precio_unitario;
-	        }
-	        // Obtener la ultima salida del producto de la tabla salida_producto y kardex_producto
-	        // kardex_producto
-	        $this->db->select('id_kardex_producto,cantidad_salida,descripcion,fecha_registro');
-	        $this->db->where('id_detalle_producto',$id_detalle_producto);
-	        $this->db->order_by("id_kardex_producto", "asc");
-	        $query = $this->db->get('kardex_producto');
-	        if(count($query->result()) > 0){
-	        	foreach($query->result() as $row){
-	        		$auxiliar_last_kardex = $row->id_kardex_producto;
-	        		$cantidad_salida_kardex = $row->cantidad_salida;
-	        		$descripcion = $row->descripcion;
-	        		$fecha_registro = $row->fecha_registro;
-	        	}
-	        }
-	        // salida_producto
-	        $this->db->select('id_salida_producto,cantidad_salida,fecha');
-	        $this->db->where('id_detalle_producto',$id_detalle_producto);
-	        $this->db->order_by("id_salida_producto", "asc");
-	        $query = $this->db->get('salida_producto');
-	        if(count($query->result()) > 0){
-	        	foreach($query->result() as $row){
-	        		$auxiliar_last_salida = $row->id_salida_producto;
-	        		$cantidad_salida_table_salida = $row->cantidad_salida;
-	        	}
-	        }else{
-	        	$auxiliar_last_salida = "";
-	        	$cantidad_salida_table_salida = "";
-	        }
-	        // Validar a que almacen pertenece
-	        if($id_almacen == 1){
-	        	// Actualizar stock del producto por area
-	        	$result_update = $this->model_comercial->actualizar_stock_producto_area($id_pro,$area,$id_almacen,$cantidad);
-	        	// Obtener la suma total de stock del producto distribuido en areas ya actualizado
-	        	$this->db->select('stock_area_sta_clara');
-	        	$this->db->where('id_pro',$id_pro);
-	        	$query = $this->db->get('detalle_producto_area');
-	        	foreach($query->result() as $row){
-	        	    $suma_stock_producto_areas = $suma_stock_producto_areas + $row->stock_area_sta_clara;
-	        	}
-	        	// Hasta aca solo se ha actualizado el stock del producto por area
-	        	if($result_update){
-			        // El stock del sistema supera al stock fisico
-			        if($stock_sta_clara == $suma_stock_producto_areas){
-			        	$aux_parametro_cuadre = 1;
-		    			echo '1';
-			        }else if($stock_sta_clara > $suma_stock_producto_areas){
-		        		$unidad_base_salida = $stock_sta_clara - $suma_stock_producto_areas;
-		        		// Realizar la salida con la cantidad necesaria para cuadrar el producto en el almacen
-						// tabla salida_producto
-						$a_data = array('id_area' => $area,
-										'fecha' => date('Y-m-d'),
-										'id_detalle_producto' => $id_detalle_producto,
-										'cantidad_salida' => $unidad_base_salida,
-										'id_almacen' => $id_almacen,
-										'p_u_salida' => $precio_unitario,
-										);
-						$result_insert = $this->model_comercial->saveSalidaProducto($a_data,true);
-						// tabla kardex
-						$new_stock = ($stockactual + $stock_sta_clara) - $unidad_base_salida;
-						$stock_general = $stockactual + $stock_sta_clara;
-						$a_data_kardex = array('fecha_registro' => date('Y-m-d'),
-					        	                'descripcion' => "SALIDA",
-					        	                'id_detalle_producto' => $id_detalle_producto,
-					        	                'stock_anterior' => $stock_general,
-					        	                'precio_unitario_anterior' => $precio_unitario,
-					        	                'cantidad_salida' => $unidad_base_salida,
-					        	                'stock_actual' => $new_stock,
-					        	                'precio_unitario_actual' => $precio_unitario,
-					        	                'num_comprobante' => $result_insert,
-					        	                );
-					    $result_kardex = $this->model_comercial->saveSalidaProductoKardex($a_data_kardex,true);
-			    	    // Actualizar stock de acuerdo al cuadre
-			    	    // Vuelvo a traer el stock porque lineas arriba ya lo actualice
-			    	    $this->db->select('stock_sta_clara');
-			            $this->db->where('id_detalle_producto',$id_detalle_producto);
-			            $query = $this->db->get('detalle_producto');
-			            foreach($query->result() as $row){
-			            	$stock_final = $row->stock_sta_clara;
-			            }
-			            // Descontar stock - el nuevo stock debe ser de acuerdo al valor de cuadre
-			            $this->model_comercial->descontarStock_general($id_detalle_producto,$unidad_base_salida,$stock_final,$id_almacen);
-			    	    // Enviar parametro para terminar bucle
-			    		$aux_parametro_cuadre = 1;
-			    		echo '1';
-		    		}else if($stock_sta_clara < $suma_stock_producto_areas){
-		    			$cantidad_ingreso = $suma_stock_producto_areas - $stock_sta_clara;
-		    			if($cantidad_ingreso > 0){
-		    				$datos = array(
-								"id_detalle_producto" => $id_detalle_producto,
-								"cantidad_ingreso" => $cantidad_ingreso,
-								"fecha_registro" => date('Y-m-d'),
-								"id_almacen" => $id_almacen
-							);
-							$id_ingreso_producto = $this->model_comercial->insert_orden_ingreso($datos);
-							if($id_ingreso_producto == 'error_inesperado'){
-					            echo 'error_inesperado';
-					            $aux_parametro_cuadre = 1;
-							}else{
-								// Agregamos el detalle del comprobante
-								$result = $this->model_comercial->kardex_orden_ingreso($id_ingreso_producto, $id_detalle_producto, $cantidad_ingreso, $id_almacen);
-								if($result == 'registro_correcto'){
-									$aux_parametro_cuadre = 1;
-									echo '1';
-						        }else{
-						        	echo 'error_kardex';
-						        	$aux_parametro_cuadre = 1;
-						        }
-							}
-		    			}else{
-					    	echo 'cantidad_negativa';
-					    	$aux_parametro_cuadre = 1;
-					    }
-		    		}
-				}
-	        }else if($id_almacen == 2){
-	        	// Actualizar stock del producto por area
-	        	// La cantidad ingresada por el usuario se envia directamente al campo de la tabla
-	        	$result_update = $this->model_comercial->actualizar_stock_producto_area($id_pro,$area,$id_almacen,$cantidad);
-	        	// Obtener la suma total de stock del producto distribuido en areas ya actualizado
-	        	$this->db->select('stock_area_sta_anita');
-	        	$this->db->where('id_pro',$id_pro);
-	        	$query = $this->db->get('detalle_producto_area');
-	        	foreach($query->result() as $row){
-	        	    $suma_stock_producto_areas = $suma_stock_producto_areas + $row->stock_area_sta_anita;
-	        	}
-	        	// Hasta aca solo se ha actualizado el stock del producto por area
-        		if($result_update){
-        			// El stock del sistema supera al stock fisico
-        			if($stockactual == $suma_stock_producto_areas){
-			        	$aux_parametro_cuadre = 1;
-		    			echo '1';
-			        }else if($stockactual > $suma_stock_producto_areas){
-		        		$unidad_base_salida = $stockactual - $suma_stock_producto_areas;
-		        		// Realizar la salida con la cantidad necesaria para cuadrar el producto en el almacen
-						// tabla salida_producto
-						$a_data = array('id_area' => $area,
-										'fecha' => date('Y-m-d'),
-										'id_detalle_producto' => $id_detalle_producto,
-										'cantidad_salida' => $unidad_base_salida,
-										'id_almacen' => $id_almacen,
-										'p_u_salida' => $precio_unitario,
-										);
-						$result_insert = $this->model_comercial->saveSalidaProducto($a_data,true);
-						// tabla kardex
-						$new_stock = ($stockactual + $stock_sta_clara) - $unidad_base_salida;
-						$stock_general = $stockactual + $stock_sta_clara;
-						$a_data_kardex = array('fecha_registro' => date('Y-m-d'),
-					        	                'descripcion' => "SALIDA",
-					        	                'id_detalle_producto' => $id_detalle_producto,
-					        	                'stock_anterior' => $stock_general,
-					        	                'precio_unitario_anterior' => $precio_unitario,
-					        	                'cantidad_salida' => $unidad_base_salida,
-					        	                'stock_actual' => $new_stock,
-					        	                'precio_unitario_actual' => $precio_unitario,
-					        	                'num_comprobante' => $result_insert,
-					        	                );
-					    $result_kardex = $this->model_comercial->saveSalidaProductoKardex($a_data_kardex,true);
-					    // Actualizar stock de acuerdo al cuadre
-		    	    	// Vuelvo a traer el stock porque lineas arriba ya lo actualice
-		    	    	$this->db->select('stock');
-			            $this->db->where('id_detalle_producto',$id_detalle_producto);
-			            $query = $this->db->get('detalle_producto');
-			            foreach($query->result() as $row){
-			            	$stock_final = $row->stock;
-			            }
-			            // Descontar stock - el nuevo stock debe ser de acuerdo al valor de cuadre
-			            $this->model_comercial->descontarStock_general($id_detalle_producto,$unidad_base_salida,$stock_final,$id_almacen);
-			    	    // Enviar parametro para terminar bucle
-			    		$aux_parametro_cuadre = 1;
-			    		echo '1';
-        			}else if($stockactual < $suma_stock_producto_areas){
-		    			$cantidad_ingreso = $suma_stock_producto_areas - $stockactual;
-		    			if($cantidad_ingreso > 0){
-		    				$datos = array(
-								"id_detalle_producto" => $id_detalle_producto,
-								"cantidad_ingreso" => $cantidad_ingreso,
-								"fecha_registro" => date('Y-m-d'),
-								"id_almacen" => $id_almacen
-							);
-							$id_ingreso_producto = $this->model_comercial->insert_orden_ingreso($datos);
-							if($id_ingreso_producto == 'error_inesperado'){
-					            echo 'error_inesperado';
-					            $aux_parametro_cuadre = 1;
-							}else{
-								// Agregamos el detalle del comprobante
-								$result = $this->model_comercial->kardex_orden_ingreso($id_ingreso_producto, $id_detalle_producto, $cantidad_ingreso, $id_almacen);
-								if($result == 'registro_correcto'){
-									$aux_parametro_cuadre = 1;
-									echo '1';
-						        }else{
-						        	echo 'error_kardex';
-						        	$aux_parametro_cuadre = 1;
-						        }
-							}
-		    			}else{
-					    	echo 'cantidad_negativa';
-					    	$aux_parametro_cuadre = 1;
-					    }
-		    		}
-        		}
-	        }
-        }while($aux_parametro_cuadre == 0);
-        
 	}
 
 	function finalizar_salida_before_13()
 	{
 		/* Inicio del proceso - transacción */
 		$this->db->trans_begin();
-
+		$contador_kardex = 0;
 		$aux_bucle_saldos_ini = 0;
 		// VALIDACION DE CAMPOS DE STOCK POR AREAS NO TODOS LOS PRODUCTOS TIENEN ESTA INNFORMACION
         $stock_area_sta_clara = "";
         $stock_area_sta_anita = "";
         $id_detalle_producto_area = "";
-
+        $stock_inicial = "";
+        $aux = 0;
 		$auxiliar = 0;
         $auxiliar_2 = 0;
         $auxiliar_3 = 0;
@@ -4651,7 +4730,6 @@ class Comercial extends CI_Controller {
             $precio_unitario = $row->precio_unitario;
             $stock_actual_sta_clara = $row->stock_sta_clara;
         }
-
         // Seleccion el id de la tabla producto
         $this->db->select('id_pro');
         $this->db->where('id_detalle_producto',$id_detalle_producto);
@@ -4660,7 +4738,6 @@ class Comercial extends CI_Controller {
         foreach($query->result() as $row){
             $id_pro = $row->id_pro;
         }
-
         // Seleccionar el stock de acuerdo al producto y al área
         // Actualización del Stock
         $this->db->select('stock_area_sta_clara,stock_area_sta_anita,id_detalle_producto_area');
@@ -4688,9 +4765,8 @@ class Comercial extends CI_Controller {
 	        }else{
 	        	/* Validar si la salida esta en un periodo que ya cerro */
 	        	$result_cierre = $this->model_comercial->validarRegistroCierre($fecharegistro);
-
-	        	if($result_cierre == 'successfull') // Cuando la salida se realiza en el mes actual todavia no se tiene un cierre de almacen
-	        	{
+	        	if($result_cierre == 'successfull'){ 
+	        		// Cuando la salida se realiza en el mes actual todavia no se tiene un cierre de almacen
 			        // $hora = date('d-m-Y H:i:s'); //Para obtener la hora del sistema
 			        /* Realizar la salida del prodcuto */
 					$a_data = array('id_area' => $id_area,
@@ -4702,8 +4778,7 @@ class Comercial extends CI_Controller {
 									'solicitante' => $solicitante,
 									);
 					$result_insert = $this->model_comercial->saveSalidaProducto($a_data,true);
-					/* Fin del registro de la salida */
-
+					// Fin del registro de la salida
 					// Procedimiento para conocer la factura a la que pertenece la salida
 					// ademas de descontar el stock del producto a las unidades referencial
 					// Ubico las dos ultimas facturas usadas para cargar el stock de ese producto
@@ -4831,686 +4906,95 @@ class Comercial extends CI_Controller {
 					}
 
 					if($result_insert != ""){
-						/* Gestión de kardex */
-					    /* Obtener el ultimo id de registro para la fecha */
-					    $this->db->select('id_kardex_producto');
-					    $this->db->where('fecha_registro <=',$fecharegistro);
-					    $this->db->where('id_detalle_producto',$id_detalle_producto);
-					    $this->db->order_by("fecha_registro", "asc");
-					    $this->db->order_by("id_kardex_producto", "asc");
-					    $query = $this->db->get('kardex_producto');
-					    if(count($query->result()) > 0){
-					    	foreach($query->result() as $row){
-					            /*if($row->id_kardex_producto > $auxiliar){*/
-					                $auxiliar = $row->id_kardex_producto; // devuelve el ultimo id que no necesariamente es el mayor
-					            /*}*/
-					        }
-					        /* Obtener los datos del ultimo registro de la fecha */
-					        $this->db->select('stock_actual,precio_unitario_actual_promedio,precio_unitario_anterior,descripcion,precio_unitario_actual');
-					        $this->db->where('id_kardex_producto',$auxiliar);
-					        $query = $this->db->get('kardex_producto');
-					        foreach($query->result() as $row){
-					            $stock_actual = $row->stock_actual;
-					            $precio_unitario_actual_promedio = $row->precio_unitario_actual_promedio;
-					            $precio_unitario_anterior = $row->precio_unitario_anterior;
-					            $descripcion = $row->descripcion;
-					            $precio_unitario_actual = $row->precio_unitario_actual;
-					        }
-					        /* hacer el calculo del precio unitario y stock en funcion del movimiento */
-					        /* Nuevo precio unitario promedio */
-					        if($descripcion == 'SALIDA'){
-					            $precio_unitario_anterior_especial = $precio_unitario_anterior;
-					        }else if($descripcion == 'ENTRADA' || $descripcion == 'ORDEN INGRESO'){
-					            $precio_unitario_anterior_especial = $precio_unitario_actual_promedio;
-					        }else if($descripcion == 'IMPORTACION'){
-					            $precio_unitario_anterior_especial = 0;
-					        }
-					        $new_stock = $stock_actual - $cantidad;
-
-					        if($new_stock >= 0){
-					        	/* Actualizar el stock general y stock por area del producto */
-						        $this->model_comercial->descontarStock($id_detalle_producto,$cantidad,$stock_actual_sta_clara,$id_almacen, $id_area);
-						        /* Fin code */
-						        /* Actualizar estado del producto validando si tiene stock 0 */
-						        $stock_actual_general = $stock_actual + $stock_actual_sta_clara;
-						        $stock_actualizado = $stock_actual + $stock_actual_sta_clara - $cantidad;
-						        if($stock_actualizado == 0 AND $column_temp == ""){
-						        	$this->model_comercial->actualizarEstado($id_detalle_producto);
-						        }
-						        /* Fin de actualizacion */
-
-					        	/* Realizar el registro en el kardex */
-					        	$a_data_kardex = array('fecha_registro' => $fecharegistro,
-					        	                'descripcion' => "SALIDA",
-					        	                'id_detalle_producto' => $id_detalle_producto,
-					        	                'stock_anterior' => $stock_actual,
-					        	                'precio_unitario_anterior' => $precio_unitario_anterior_especial,
-					        	                'cantidad_salida' => $cantidad,
-					        	                'stock_actual' => $new_stock,
-					        	                'precio_unitario_actual' => $precio_unitario_anterior_especial,
-					        	                'num_comprobante' => $result_insert,
-					        	                );
-					        	$result_kardex = $this->model_comercial->saveSalidaProductoKardex($a_data_kardex,true);
-					        	/* End registro para el kardex */
-					        }else{
-					        	/* Borrar los registros anteriores actualización e insercion de la salida*/
-					        	//$this->model_comercial->descontarStock_regresarstock($id_detalle_producto,$cantidad,$stock_actual_sta_clara,$id_almacen, $id_area);
-					        	$this->model_comercial->eliminar_insert_salida($result_insert);
-					        	$validar_stock = 'no_existe_stock_disponible';
-					        }
-					    }else{
-					    	/* Actualizar el stock del producto */
-					        $this->model_comercial->descontarStock($id_detalle_producto,$cantidad,$stock_actual_sta_clara,$id_almacen, $id_area);
-					        /* Fin code */
-					        /* Actualizar estado del producto validando si tiene stock 0 */
-					        $stock_actual_general = $stock_area_sta_anita + $stock_area_sta_clara;
-					        $stock_actualizado = $stock_area_sta_anita + $stock_area_sta_clara - $cantidad;
-
-					        /*
-					        if($stock_actualizado == 0 AND $column_temp == ""){
-					        	$this->model_comercial->actualizarEstado($id_detalle_producto);
-					        }
-					        /* Fin de actualizacion */
-
-					    	/* Realizar registro para el kardex */
-					    	$a_data_kardex = array('fecha_registro' => $fecharegistro,
-					    						   'descripcion' => "SALIDA",
-					    						   'id_detalle_producto' => $id_detalle_producto,
-					    						   'stock_anterior' => $stock_actual_general,
-					    						   'precio_unitario_anterior' => $precio_unitario,
-					    						   'cantidad_salida' => $cantidad,
-					    						   'stock_actual' => $stock_actualizado,
-					    						   'precio_unitario_actual' => $precio_unitario,
-					    						   'num_comprobante' => $result_insert,
-					    						   );
-					    	$result_kardex = $this->model_comercial->saveSalidaProductoKardex($a_data_kardex,true);
-					    	/* Fin del registro para el kardex */
-					    }
-					    /* Hasta este punto actualiza los datos del ultimo movimiento realizado en la fecha sea una salida o un ingreso */
-
-					    if($validar_stock == 'no_existe_stock_disponible'){
-					    	echo 'no_existe_stock_disponible';
-					    }else{
-			    		    /***************************************************************************************************************/
-			    		    /* Obtener los datos del ultimo movimiento - sea este el ultimo movimiento realizado */
-			    		    /* puede ser el registro del paso anterior */
-			    		    $this->db->select('id_kardex_producto');
-			    		    $this->db->where('fecha_registro',$fecharegistro);
-			    		    $this->db->where('id_detalle_producto',$id_detalle_producto);
-			    		    $this->db->order_by("id_kardex_producto", "asc");
-			    		    $query = $this->db->get('kardex_producto');
-			    		    foreach($query->result() as $row){
-			    		        if($row->id_kardex_producto > $auxiliar_2){
-			    		            $auxiliar_2 = $row->id_kardex_producto;
-			    		        }
-			    		    }
-
-			    		    /* Obtener detalles del ultimo registro de la fecha en el kardex */
-			    		    $this->db->select('stock_actual,precio_unitario_actual_promedio,precio_unitario_anterior,descripcion');
-			    		    $this->db->where('id_kardex_producto',$auxiliar_2);
-			    		    $query = $this->db->get('kardex_producto');
-			    		    foreach($query->result() as $row){
-			    		        $stock_actual_actualizacion_registros = $row->stock_actual;
-			    		        $precio_unitario_actual_promedio_actualizacion_registros = $row->precio_unitario_actual_promedio;
-			    		        $precio_unitario_anterior_actualizacion_registros = $row->precio_unitario_anterior;
-			    		        $descripcion_actualizacion_registros = $row->descripcion;
-			    		        if($descripcion_actualizacion_registros == 'SALIDA'){
-			    		            $precio_unitario_actual_actualizacion_registros = $precio_unitario_anterior_actualizacion_registros;
-			    		        }else if($descripcion_actualizacion_registros == 'ENTRADA' || $descripcion_actualizacion_registros == 'ORDEN INGRESO'){
-			    		            $precio_unitario_actual_actualizacion_registros = $precio_unitario_actual_promedio_actualizacion_registros;
-			    		        }
-			    		    }
-			    		    /***************************************************************************************************************/
-
-			    		    /* Se da paso a verificar si existen salidas posteriores a la fecha, para su actualización */
-			    		    $this->db->select('id_kardex_producto');
-			    		    $this->db->where('fecha_registro >',$fecharegistro);
-			    		    $this->db->where('id_detalle_producto',$id_detalle_producto);
-			    		    $this->db->order_by("fecha_registro", "asc");
-			    		    $this->db->order_by("id_kardex_producto", "asc");
-			    		    $query = $this->db->get('kardex_producto');
-			    		    if(count($query->result()) > 0){
-			    		    	/* Validar si en algun registro existe un stock final negativo */
-			    		    	foreach($query->result() as $row){
-			    		    		$id_kardex_producto = $row->id_kardex_producto; /* ID del movimiento en el kardex */
-			    		    		/* Obtener los datos del movimiento del kardex */
-			    		            $this->db->select('stock_actual,precio_unitario_actual_promedio,precio_unitario_anterior,descripcion,stock_anterior,cantidad_salida,cantidad_ingreso,precio_unitario_actual,id_detalle_producto');
-			    		            $this->db->where('id_kardex_producto',$id_kardex_producto);
-			    		            $query = $this->db->get('kardex_producto');
-			    		            foreach($query->result() as $row){
-			    		                $id_detalle_producto = $row->id_detalle_producto;
-			    		                $stock_actual_act = $row->stock_actual;
-			    		                $precio_unitario_actual_promedio_act = $row->precio_unitario_actual_promedio;
-			    		                $precio_unitario_anterior_act = $row->precio_unitario_anterior;
-			    		                $descripcion_act = $row->descripcion;
-			    		                $stock_anterior_act = $row->stock_anterior;
-			    		                $cantidad_salida_act = $row->cantidad_salida;
-			    		                $cantidad_ingreso_act = $row->cantidad_ingreso;
-			    		                $precio_unitario_actual_act = $row->precio_unitario_actual;
-			    		                if($descripcion_act == 'ENTRADA' || $descripcion_act == 'ORDEN INGRESO'){
-			    		                	if($auxiliar_contador == 0){
-			    		                        /* El stock anterior viene a ser el stock actual del movimiento anterior */
-			    		                        $new_stock_anterior_act_validacion = $stock_actual_actualizacion_registros; // stock_anterior
-			    		                        $new_precio_unitario_anterior_act = $precio_unitario_actual_actualizacion_registros; // precio_unitario_anterior
-			    		                        $auxiliar_contador++;
-			    		                    }
-			    		                    /* validacion */
-			    		                    $stock_actual_final = $new_stock_anterior_act_validacion + $cantidad_ingreso_act;
-			    		                }else if($descripcion_act == 'SALIDA'){
-			    		                	if($auxiliar_contador == 0){
-			    		                        /* El stock anterior viene a ser el stock actual del movimiento anterior */
-			    		                        $new_stock_anterior_act_validacion = $stock_actual_actualizacion_registros; // stock_anterior
-			    		                        $new_precio_unitario_anterior_act = $precio_unitario_actual_actualizacion_registros; // precio_unitario_anterior
-			    		                        $auxiliar_contador++;
-			    		                    }
-			    		                    /* validacion */
-			    		                    $stock_actual_final = $new_stock_anterior_act_validacion - $cantidad_salida_act;
-			    		                }
-			    		                /* validar stock negativo */
-			    		                if($stock_actual_final < 0){
-			    		                	$auxiliar_stock_negatiVo = 'stock_negativo';
-			    		                }
-			    		                /* Dejar variables con el ultimo registro del stock y precio unitario obtenido */
-			    		                $new_stock_anterior_act_validacion = $stock_actual_final;
-			    		            }
-			    		    	}
-
-			    		    	if($auxiliar_stock_negatiVo == 'stock_negativo'){
-			    		    		$this->model_comercial->descontarStock_regresarstock($id_detalle_producto,$cantidad,$stock_actual_sta_clara,$id_almacen, $id_area);
-			    		    		$this->model_comercial->eliminar_insert_kardex($result_kardex);
-			    		    		$this->model_comercial->eliminar_insert_salida($result_insert);
-			    		    		echo 'no_existe_stock_disponible_actualizacion_negativo';
-			    		    	}else{
-			    		    		$id_kardex_producto = "";
-			    		    		$auxiliar_contador = 0;
-			    		    		$this->db->select('id_kardex_producto');
-					    		    $this->db->where('fecha_registro >',$fecharegistro);
-					    		    $this->db->where('id_detalle_producto',$id_detalle_producto);
-					    		    $this->db->order_by("fecha_registro", "asc");
-					    		    $this->db->order_by("id_kardex_producto", "asc");
-					    		    $query_2 = $this->db->get('kardex_producto');
-			    		    		if(count($query_2->result()) > 0){
-				    		    		foreach($query_2->result() as $row_2){
-					    		            $id_kardex_producto = $row_2->id_kardex_producto; /* ID del movimiento en el kardex */
-					    		            /* Obtener los datos del movimiento del kardex */
-					    		            $this->db->select('stock_actual,precio_unitario_actual_promedio,precio_unitario_anterior,descripcion,stock_anterior,cantidad_salida,cantidad_ingreso,precio_unitario_actual,id_detalle_producto');
-					    		            $this->db->where('id_kardex_producto',$id_kardex_producto);
-					    		            $query = $this->db->get('kardex_producto');
-					    		            foreach($query->result() as $row_2){
-					    		                $id_detalle_producto = $row_2->id_detalle_producto;
-					    		                $stock_actual_act = $row_2->stock_actual;
-					    		                $precio_unitario_actual_promedio_act = $row_2->precio_unitario_actual_promedio;
-					    		                $precio_unitario_anterior_act = $row_2->precio_unitario_anterior;
-					    		                $descripcion_act = $row_2->descripcion;
-					    		                $stock_anterior_act = $row_2->stock_anterior;
-					    		                $cantidad_salida_act = $row_2->cantidad_salida;
-					    		                $cantidad_ingreso_act = $row_2->cantidad_ingreso;
-					    		                $precio_unitario_actual_act = $row_2->precio_unitario_actual;
-
-					    		                /* Actualización del registro */
-					    		                if($descripcion_act == 'ENTRADA' || $descripcion_act == 'ORDEN INGRESO'){
-					    		                    if($auxiliar_contador == 0){
-					    		                        /* El stock anterior viene a ser el stock actual del movimiento anterior */
-					    		                        $new_stock_anterior_act = $stock_actual_actualizacion_registros; // stock_anterior
-					    		                        $new_precio_unitario_anterior_act = $precio_unitario_actual_actualizacion_registros; // precio_unitario_anterior
-					    		                        $auxiliar_contador++;
-					    		                    }
-					    		                    /* Actualizar los datos para una entrada */
-					    		                    $stock_actual_final = $new_stock_anterior_act + $cantidad_ingreso_act;
-					    		                    $precio_unitario_actual_promedio_final = (($new_stock_anterior_act*$new_precio_unitario_anterior_act)+($cantidad_ingreso_act*$precio_unitario_actual_act))/($new_stock_anterior_act+$cantidad_ingreso_act);
-					    		                    /* Actualizar BD */
-					    		                    $actualizar = array(
-					    		                        'stock_anterior'=> $new_stock_anterior_act,
-					    		                        'precio_unitario_anterior'=> $new_precio_unitario_anterior_act,
-					    		                        'stock_actual'=> $stock_actual_final,
-					    		                        'precio_unitario_actual_promedio'=> $precio_unitario_actual_promedio_final
-					    		                    );
-					    		                    $this->db->where('id_kardex_producto',$id_kardex_producto);
-					    		                    $this->db->update('kardex_producto', $actualizar);
-					    		                    /* fin de actualizar */
-					    		                    /* Actualizar el precio unitario del producto */
-					    		                    $actualizar_p_u_2 = array(
-					    		                        'precio_unitario'=> $precio_unitario_actual_promedio_final
-					    		                    );
-					    		                    $this->db->where('id_detalle_producto',$id_detalle_producto);
-					    		                    $this->db->update('detalle_producto', $actualizar_p_u_2);
-					    		                }else if($descripcion_act == 'SALIDA'){
-					    		                    if($auxiliar_contador == 0){
-					    		                        /* El stock anterior viene a ser el stock actual del movimiento anterior */
-					    		                        $new_stock_anterior_act = $stock_actual_actualizacion_registros; // stock_anterior
-					    		                        $new_precio_unitario_anterior_act = $precio_unitario_actual_actualizacion_registros; // precio_unitario_anterior
-					    		                        $auxiliar_contador++;
-					    		                    }
-					    		                    /* Actualizar los datos para una salida */
-					    		                    $stock_actual_final = $new_stock_anterior_act - $cantidad_salida_act;
-					    		                    $precio_unitario_actual_final = $new_precio_unitario_anterior_act;
-					    		                    $precio_unitario_anterior_final = $new_precio_unitario_anterior_act;
-				    		                    	/* Actualizar BD */
-				    		                    	$actualizar = array(
-				    		                    	    'stock_anterior'=> $new_stock_anterior_act,
-				    		                    	    'precio_unitario_anterior'=> $precio_unitario_anterior_final,
-				    		                    	    'stock_actual'=> $stock_actual_final,
-				    		                    	    'precio_unitario_actual'=> $precio_unitario_actual_final
-				    		                    	);
-				    		                    	$this->db->where('id_kardex_producto',$id_kardex_producto);
-				    		                    	$this->db->update('kardex_producto', $actualizar);
-				    		                    	/* fin de actualizar */
-					    		                }
-					    		                /* Dejar variables con el ultimo registro del stock y precio unitario obtenido */
-					    		                /* Este paso se realizo en la linea 4277 pero solo sirvio para un recorrido */
-					    		                $new_stock_anterior_act = $stock_actual_final;
-					    		                if($descripcion_act == 'ENTRADA' || $descripcion_act == 'ORDEN INGRESO'){
-					    		                    $new_precio_unitario_anterior_act = $precio_unitario_actual_promedio_final;
-					    		                }else if($descripcion_act == 'SALIDA'){
-					    		                    $new_precio_unitario_anterior_act = $precio_unitario_actual_final;
-					    		                }
-					    		            }
-					    		        }
-					    		    }else{
-					    		    	echo 'error_vacio';
-					    		    }
-			    		    	}
-			    		    }
-			    		    if($auxiliar_stock_negatiVo != 'stock_negativo'){
-	    		    			/* Creo las variables de sesion para un registro más rapido Area y Fecha, se quedará con el ultimo registro realizado*/
-	    		    			$datasession_area_fecha_salida = array(
-	    		    				'id_area' => $this->security->xss_clean($this->input->post('id_area')),
-	    		    				'fecharegistro' => strtoupper($this->security->xss_clean($this->input->post('fecharegistro'))),
-	    		    			);
-	    		    			$this->session->set_userdata($datasession_area_fecha_salida);
-
-	    		    			// ENVIAR PARAMETRO
-	    		    	        echo '1';
-	    		    	    }
-					    }
-					}
-	        	}else{ // La salida corresponde a un periodo donde ya se realizo el cierre de almacen
+		    		    $elementos_f = explode("-", $fecharegistro);
+                        $anio = $elementos_f[0];
+                        $mes = 1;
+                        $dia = 1;
+                        $array = array($anio, $mes, $dia);
+                        $fecha_final_anio = implode("-", $array);
+                        $fecha_final_anio = date("Y-m-d", strtotime($fecha_final_anio));
+                        do{
+                            // de acuerdo a la fecha obtener el saldo inicial del mes
+                            $elementos_f = explode("-", $fecharegistro);
+                            $anio = $elementos_f[0];
+                            $mes = $elementos_f[1] - $aux;
+                            $dia = 1;
+                            $array = array($anio, $mes, $dia);
+                            $fecha_formateada = implode("-", $array);
+                            $fecha_formateada = date("Y-m-d", strtotime($fecha_formateada));
+                            // consultar en bd por el saldo inicial del producto en dicha fecha
+                            $this->db->select('stock_inicial');
+                            $this->db->where('fecha_cierre',$fecha_formateada);
+                            $this->db->where('id_pro',$id_pro);
+                            $query = $this->db->get('saldos_iniciales');
+                            if(count($query->result()) > 0){
+                                foreach($query->result() as $row){
+                                    $stock_inicial = $row->stock_inicial;
+                                }
+                            }
+                            $aux++;
+                        }while($stock_inicial == "" && $fecha_formateada != $fecha_final_anio);
+                        // si el stock_inicial es vacio no tiene registros en dos meses anteriores entonces es un producto nuevo
+                        if($stock_inicial == ""){ // codigo para productos nuevos
+                            $stock_inicial = 0;
+                        }
+                        // consultar por los movimientos del producto en el mes para acumularlo en la variable stock_inicial
+                        $result_kardex = $this->model_comercial->traer_movimientos_kardex($id_detalle_producto,$fecha_formateada,$fecharegistro);
+                        $existe = count($result_kardex);
+                        if($existe > 0){
+                            foreach ($result_kardex as $data) {
+                                if($data->descripcion == "ENTRADA" || $data->descripcion == "IMPORTACION" || $data->descripcion == "ORDEN INGRESO"){
+                                    if($contador_kardex == 0){
+                                        $stock_saldo_final = $stock_inicial + $data->cantidad_ingreso;
+                                        $contador_kardex++;
+                                    }else{
+                                        $stock_saldo_final = $stock_saldo_final + $data->cantidad_ingreso;
+                                    }
+                                }else if($data->descripcion == "SALIDA"){
+                                    if($contador_kardex == 0){
+                                        $stock_saldo_final = $stock_inicial - $data->cantidad_salida;
+                                        $contador_kardex++;
+                                    }else{
+                                        $stock_saldo_final = $stock_saldo_final - $data->cantidad_salida;
+                                    }
+                                }
+                            }
+                        }else{
+                            $stock_saldo_final = $stock_inicial;
+                        }
+                        // validacion del stock final para realizar la salida y descuento del producto
+                        $stock_saldo_final = $stock_saldo_final - $cantidad;
+                        if($stock_saldo_final >= 0 ){
+                            // descuento el stock
+                            $this->model_comercial->descontarStock($id_detalle_producto,$cantidad,$stock_actual_sta_anita,$id_almacen, $id_area);
+                            // registro en el kardex
+                            $a_data_kardex = array('fecha_registro' => $fecharegistro,
+                                                    'descripcion' => "SALIDA",
+                                                    'id_detalle_producto' => $id_detalle_producto,
+                                                    'cantidad_salida' => $cantidad,
+                                                    'num_comprobante' => $result_insert,
+                                                    );
+                            $result_kardex = $this->model_comercial->saveSalidaProductoKardex($a_data_kardex,true);
+                        }else{
+                            $validar_stock = 'no_existe_stock_disponible';
+                        }
+                        // Hasta este punto actualiza los datos del ultimo movimiento realizado en la fecha sea una salida o un ingreso
+                        if($validar_stock == 'no_existe_stock_disponible'){
+                            echo 'no_existe_stock_disponible';
+                        }else{
+                            // Creo las variables de sesion para un registro más rapido Area y Fecha, se quedará con el ultimo registro realizado
+                            $datasession_area_fecha_salida = array(
+                                'id_area' => $this->security->xss_clean($this->input->post('id_area')),
+                                'fecharegistro' => strtoupper($this->security->xss_clean($this->input->post('fecharegistro'))),
+                            );
+                            $this->session->set_userdata($datasession_area_fecha_salida);
+                            // Enviar parametro
+                            echo '1';
+                        }
+				    }
+	        	}else{
+	        		// La salida corresponde a un periodo donde ya se realizo el cierre de almacen
 	        		echo 'error_cierre';
-	        		// Lo comento porque necesito realizar registros para periodos anteriores por lo que tengo que actualizar los datos de cierre
-			        // Realizar la salida del prodcuto
-			        /*
-					$a_data = array('id_area' => $id_area,
-									'fecha' => $fecharegistro,
-									'id_detalle_producto' => $id_detalle_producto,
-									'cantidad_salida' => $cantidad,
-									'id_almacen' => $id_almacen,
-									'p_u_salida' => $precio_unitario,
-									'solicitante' => $solicitante,
-									);
-					$result_insert = $this->model_comercial->saveSalidaProducto($a_data,true);
-					*/
-					// Fin del registro de la salida
-					/*
-					if($result_insert != ""){
-						// Gestión de kardex
-					    // Obtener el ultimo id de registro para la fecha
-					    $this->db->select('id_kardex_producto');
-					    $this->db->where('fecha_registro <=',$fecharegistro);
-					    $this->db->where('id_detalle_producto',$id_detalle_producto);
-					    $this->db->order_by("fecha_registro", "asc");
-					    $this->db->order_by("id_kardex_producto", "asc");
-					    $query = $this->db->get('kardex_producto');
-					    if(count($query->result()) > 0){
-					    	foreach($query->result() as $row){
-					            $auxiliar = $row->id_kardex_producto; // devuelve el ultimo id que no necesariamente es el mayor
-					        }
-					        // Obtener los datos del ultimo registro de la fecha
-					        $this->db->select('stock_actual,precio_unitario_actual_promedio,precio_unitario_anterior,descripcion,precio_unitario_actual');
-					        $this->db->where('id_kardex_producto',$auxiliar);
-					        $query = $this->db->get('kardex_producto');
-					        foreach($query->result() as $row){
-					            $stock_actual = $row->stock_actual;
-					            $precio_unitario_actual_promedio = $row->precio_unitario_actual_promedio;
-					            $precio_unitario_anterior = $row->precio_unitario_anterior;
-					            $descripcion = $row->descripcion;
-					            $precio_unitario_actual = $row->precio_unitario_actual;
-					        }
-					        // hacer el calculo del precio unitario y stock en funcion del movimiento
-					        // Nuevo precio unitario promedio
-					        if($descripcion == 'SALIDA'){
-					            //$new_precio_unitario_especial = $precio_unitario_actual;
-					            $precio_unitario_anterior_especial = $precio_unitario_anterior;
-					        }else if($descripcion == 'ENTRADA'){
-					            //$new_precio_unitario_especial = (($stock_actual*$precio_unitario_actual_promedio)+($item['qty']*$precio_unitario_soles))/($stock_actual+$item['qty']);
-					            $precio_unitario_anterior_especial = $precio_unitario_actual_promedio;
-					        }
-					        $new_stock = $stock_actual - $cantidad;
-
-					        if($new_stock >= 0){
-					        	// Actualizar el stock general y stock por area del producto
-						        $this->model_comercial->descontarStock($id_detalle_producto,$cantidad,$stock_actual_sta_clara,$id_almacen, $id_area);
-						        // Fin code
-						        // Actualizar estado del producto validando si tiene stock 0
-						        $stock_actual_general = $stock_actual + $stock_actual_sta_clara;
-						        $stock_actualizado = $stock_actual + $stock_actual_sta_clara - $cantidad;
-						        if($stock_actualizado == 0 AND $column_temp == ""){
-						        	$this->model_comercial->actualizarEstado($id_detalle_producto);
-						        }
-						        // Fin de actualizacion
-
-					        	// Realizar el registro en el kardex
-					        	$a_data_kardex = array('fecha_registro' => $fecharegistro,
-					        	                'descripcion' => "SALIDA",
-					        	                'id_detalle_producto' => $id_detalle_producto,
-					        	                'stock_anterior' => $stock_actual,
-					        	                'precio_unitario_anterior' => $precio_unitario_anterior_especial,
-					        	                'cantidad_salida' => $cantidad,
-					        	                'stock_actual' => $new_stock,
-					        	                //'precio_unitario_actual_promedio' => $new_precio_unitario_especial,
-					        	                'precio_unitario_actual' => $precio_unitario_anterior_especial,
-					        	                'num_comprobante' => $result_insert,
-					        	                );
-					        	$result_kardex = $this->model_comercial->saveSalidaProductoKardex($a_data_kardex,true);
-					        	// End registro para el kardex
-					        }else{
-					        	// Borrar los registros anteriores actualización e insercion de la salid
-					        	//$this->model_comercial->descontarStock_regresarstock($id_detalle_producto,$cantidad,$stock_actual_sta_clara,$id_almacen, $id_area);
-					        	$this->model_comercial->eliminar_insert_salida($result_insert);
-					        	$validar_stock = 'no_existe_stock_disponible';
-					        }
-					    }else{
-					    	// Actualizar el stock del producto
-					        $this->model_comercial->descontarStock($id_detalle_producto,$cantidad,$stock_actual_sta_clara,$id_almacen, $id_area);
-					        // Fin code
-					        // Actualizar estado del producto validando si tiene stock 0
-					        $stock_actual_general = $stock_area_sta_anita + $stock_area_sta_clara;
-					        $stock_actualizado = $stock_area_sta_anita + $stock_area_sta_clara - $cantidad;
-
-					    	// Realizar registro para el kardex
-					    	$a_data_kardex = array('fecha_registro' => $fecharegistro,
-					    						   'descripcion' => "SALIDA",
-					    						   'id_detalle_producto' => $id_detalle_producto,
-					    						   'stock_anterior' => $stock_actual_general,
-					    						   'precio_unitario_anterior' => $precio_unitario,
-					    						   'cantidad_salida' => $cantidad,
-					    						   'stock_actual' => $stock_actualizado,
-					    						   'precio_unitario_actual' => $precio_unitario,
-					    						   'num_comprobante' => $result_insert,
-					    						   );
-					    	$result_kardex = $this->model_comercial->saveSalidaProductoKardex($a_data_kardex,true);
-					    	// Fin del registro para el kardex
-					    }
-					    // Hasta este punto actualiza los datos del ultimo movimiento realizado en la fecha sea una salida o un ingreso
-					    if($validar_stock == 'no_existe_stock_disponible'){
-					    	echo 'no_existe_stock_disponible';
-					    }else{
-			    		    // Obtener los datos del ultimo movimiento - sea este el ultimo movimiento realizado
-			    		    // puede ser el registro del paso anterior
-			    		    $this->db->select('id_kardex_producto');
-			    		    $this->db->where('fecha_registro',$fecharegistro);
-			    		    $this->db->where('id_detalle_producto',$id_detalle_producto);
-			    		    $this->db->order_by("id_kardex_producto", "asc");
-			    		    $query = $this->db->get('kardex_producto');
-			    		    foreach($query->result() as $row){
-			    		        if($row->id_kardex_producto > $auxiliar_2){
-			    		            $auxiliar_2 = $row->id_kardex_producto;
-			    		        }
-			    		    }
-
-			    		    // Obtener detalles del ultimo registro de la fecha en el kardex
-			    		    $this->db->select('stock_actual,precio_unitario_actual_promedio,precio_unitario_anterior,descripcion');
-			    		    $this->db->where('id_kardex_producto',$auxiliar_2);
-			    		    $query = $this->db->get('kardex_producto');
-			    		    foreach($query->result() as $row){
-			    		        $stock_actual_actualizacion_registros = $row->stock_actual;
-			    		        $precio_unitario_actual_promedio_actualizacion_registros = $row->precio_unitario_actual_promedio;
-			    		        $precio_unitario_anterior_actualizacion_registros = $row->precio_unitario_anterior;
-			    		        $descripcion_actualizacion_registros = $row->descripcion;
-			    		        if($descripcion_actualizacion_registros == 'SALIDA'){
-			    		            $precio_unitario_actual_actualizacion_registros = $precio_unitario_anterior_actualizacion_registros;
-			    		        }else if($descripcion_actualizacion_registros == 'ENTRADA'){
-			    		            $precio_unitario_actual_actualizacion_registros = $precio_unitario_actual_promedio_actualizacion_registros;
-			    		        }
-			    		    }
-
-			    		    // Se da paso a verificar si existen salidas posteriores a la fecha, para su actualización
-			    		    $this->db->select('id_kardex_producto');
-			    		    $this->db->where('fecha_registro >',$fecharegistro);
-			    		    $this->db->where('id_detalle_producto',$id_detalle_producto);
-			    		    $this->db->order_by("fecha_registro", "asc");
-			    		    $this->db->order_by("id_kardex_producto", "asc");
-			    		    $query = $this->db->get('kardex_producto');
-			    		    if(count($query->result()) > 0){
-			    		    	// Validar si en algun registro existe un stock final negativo
-			    		    	foreach($query->result() as $row){
-			    		    		$Id_kardex_producto = $row->id_kardex_producto; // ID del movimiento en el kardex
-			    		    		// Obtener los datos del movimiento del kardex
-			    		            $this->db->select('stock_actual,precio_unitario_actual_promedio,precio_unitario_anterior,descripcion,stock_anterior,cantidad_salida,cantidad_ingreso,precio_unitario_actual,id_detalle_producto');
-			    		            $this->db->where('id_kardex_producto',$id_kardex_producto);
-			    		            $query = $this->db->get('kardex_producto');
-			    		            foreach($query->result() as $row){
-			    		                $id_detalle_producto = $row->id_detalle_producto;
-			    		                $stock_actual_act = $row->stock_actual;
-			    		                $precio_unitario_actual_promedio_act = $row->precio_unitario_actual_promedio;
-			    		                $precio_unitario_anterior_act = $row->precio_unitario_anterior;
-			    		                $descripcion_act = $row->descripcion;
-			    		                $stock_anterior_act = $row->stock_anterior;
-			    		                $cantidad_salida_act = $row->cantidad_salida;
-			    		                $cantidad_ingreso_act = $row->cantidad_ingreso;
-			    		                $precio_unitario_actual_act = $row->precio_unitario_actual;
-			    		                if($descripcion_act == 'ENTRADA'){
-			    		                	if($auxiliar_contador == 0){
-			    		                        // El stock anterior viene a ser el stock actual del movimiento anterior
-			    		                        $new_stock_anterior_act_validacion = $stock_actual_actualizacion_registros; // stock_anterior
-			    		                        $new_precio_unitario_anterior_act = $precio_unitario_actual_actualizacion_registros; // precio_unitario_anterior
-			    		                        $auxiliar_contador++;
-			    		                    }
-			    		                    // validacion
-			    		                    $stock_actual_final = $new_stock_anterior_act_validacion + $cantidad_ingreso_act;
-			    		                }else if($descripcion_act == 'SALIDA'){
-			    		                	if($auxiliar_contador == 0){
-			    		                        // El stock anterior viene a ser el stock actual del movimiento anterior
-			    		                        $new_stock_anterior_act_validacion = $stock_actual_actualizacion_registros; // stock_anterior
-			    		                        $new_precio_unitario_anterior_act = $precio_unitario_actual_actualizacion_registros; // precio_unitario_anterior
-			    		                        $auxiliar_contador++;
-			    		                    }
-			    		                    // validacion
-			    		                    $stock_actual_final = $new_stock_anterior_act_validacion - $cantidad_salida_act;
-			    		                }
-			    		                // validar stock negativo 
-			    		                if($stock_actual_final < 0){
-			    		                	$auxiliar_stock_negatiVo = 'stock_negativo';
-			    		                }
-			    		                // Dejar variables con el ultimo registro del stock y precio unitario obtenido 
-			    		                $new_stock_anterior_act_validacion = $stock_actual_final;
-			    		            }
-			    		    	}
-
-			    		    	if($auxiliar_stock_negatiVo == 'stock_negativo'){
-			    		    		$this->model_comercial->descontarStock_regresarstock($id_detalle_producto,$cantidad,$stock_actual_sta_clara,$id_almacen, $id_area);
-			    		    		$this->model_comercial->eliminar_insert_kardex($result_kardex);
-			    		    		$this->model_comercial->eliminar_insert_salida($result_insert);
-			    		    		echo 'no_existe_stock_disponible_actualizacion_negativo';
-			    		    	}else{
-			    		    		$id_kardex_producto = "";
-			    		    		$auxiliar_contador = 0;
-			    		    		$this->db->select('id_kardex_producto');
-					    		    $this->db->where('fecha_registro >',$fecharegistro);
-					    		    $this->db->where('id_detalle_producto',$id_detalle_producto);
-					    		    $this->db->order_by("fecha_registro", "asc");
-					    		    $this->db->order_by("id_kardex_producto", "asc");
-					    		    $query_2 = $this->db->get('kardex_producto');
-			    		    		if(count($query_2->result()) > 0){
-				    		    		foreach($query_2->result() as $row_2){
-					    		            $id_kardex_producto = $row_2->id_kardex_producto; // ID del movimiento en el kardex 
-					    		            // Obtener los datos del movimiento del kardex 
-					    		            $this->db->select('stock_actual,precio_unitario_actual_promedio,precio_unitario_anterior,descripcion,stock_anterior,cantidad_salida,cantidad_ingreso,precio_unitario_actual,id_detalle_producto');
-					    		            $this->db->where('id_kardex_producto',$id_kardex_producto);
-					    		            $query = $this->db->get('kardex_producto');
-					    		            foreach($query->result() as $row_2){
-					    		                $id_detalle_producto = $row_2->id_detalle_producto;
-					    		                $stock_actual_act = $row_2->stock_actual;
-					    		                $precio_unitario_actual_promedio_act = $row_2->precio_unitario_actual_promedio;
-					    		                $precio_unitario_anterior_act = $row_2->precio_unitario_anterior;
-					    		                $descripcion_act = $row_2->descripcion;
-					    		                $stock_anterior_act = $row_2->stock_anterior;
-					    		                $cantidad_salida_act = $row_2->cantidad_salida;
-					    		                $cantidad_ingreso_act = $row_2->cantidad_ingreso;
-					    		                $precio_unitario_actual_act = $row_2->precio_unitario_actual;
-
-					    		                // Actualización del registro 
-					    		                if($descripcion_act == 'ENTRADA'){
-					    		                    if($auxiliar_contador == 0){
-					    		                        // El stock anterior viene a ser el stock actual del movimiento anterior 
-					    		                        $new_stock_anterior_act = $stock_actual_actualizacion_registros; // stock_anterior
-					    		                        $new_precio_unitario_anterior_act = $precio_unitario_actual_actualizacion_registros; // precio_unitario_anterior
-					    		                        $auxiliar_contador++;
-					    		                    }
-					    		                    // Actualizar los datos para una entrada 
-					    		                    $stock_actual_final = $new_stock_anterior_act + $cantidad_ingreso_act;
-					    		                    $precio_unitario_actual_promedio_final = (($new_stock_anterior_act*$new_precio_unitario_anterior_act)+($cantidad_ingreso_act*$precio_unitario_actual_act))/($new_stock_anterior_act+$cantidad_ingreso_act);
-					    		                    // Actualizar BD 
-					    		                    $actualizar = array(
-					    		                        'stock_anterior'=> $new_stock_anterior_act,
-					    		                        'precio_unitario_anterior'=> $new_precio_unitario_anterior_act,
-					    		                        'stock_actual'=> $stock_actual_final,
-					    		                        'precio_unitario_actual_promedio'=> $precio_unitario_actual_promedio_final
-					    		                    );
-					    		                    $this->db->where('id_kardex_producto',$id_kardex_producto);
-					    		                    $this->db->update('kardex_producto', $actualizar);
-					    		                    // fin de actualizar 
-					    		                    // Actualizar el precio unitario del producto 
-					    		                    $actualizar_p_u_2 = array(
-					    		                        'precio_unitario'=> $precio_unitario_actual_promedio_final
-					    		                    );
-					    		                    $this->db->where('id_detalle_producto',$id_detalle_producto);
-					    		                    $this->db->update('detalle_producto', $actualizar_p_u_2);
-					    		                }else if($descripcion_act == 'SALIDA'){
-					    		                    if($auxiliar_contador == 0){
-					    		                        // El stock anterior viene a ser el stock actual del movimiento anterior 
-					    		                        $new_stock_anterior_act = $stock_actual_actualizacion_registros; // stock_anterior
-					    		                        $new_precio_unitario_anterior_act = $precio_unitario_actual_actualizacion_registros; // precio_unitario_anterior
-					    		                        $auxiliar_contador++;
-					    		                    }
-					    		                    // Actualizar los datos para una salida 
-					    		                    $stock_actual_final = $new_stock_anterior_act - $cantidad_salida_act;
-					    		                    $precio_unitario_actual_final = $new_precio_unitario_anterior_act;
-					    		                    $precio_unitario_anterior_final = $new_precio_unitario_anterior_act;
-				    		                    	// Actualizar BD 
-				    		                    	$actualizar = array(
-				    		                    	    'stock_anterior'=> $new_stock_anterior_act,
-				    		                    	    'precio_unitario_anterior'=> $precio_unitario_anterior_final,
-				    		                    	    'stock_actual'=> $stock_actual_final,
-				    		                    	    'precio_unitario_actual'=> $precio_unitario_actual_final
-				    		                    	);
-				    		                    	$this->db->where('id_kardex_producto',$id_kardex_producto);
-				    		                    	$this->db->update('kardex_producto', $actualizar);
-				    		                    	// fin de actualizar 
-					    		                }
-					    		                // Dejar variables con el ultimo registro del stock y precio unitario obtenido 
-					    		                // Este paso se realizo en la linea 4277 pero solo sirvio para un recorrido 
-					    		                $new_stock_anterior_act = $stock_actual_final;
-					    		                if($descripcion_act == 'ENTRADA'){
-					    		                    $new_precio_unitario_anterior_act = $precio_unitario_actual_promedio_final;
-					    		                }else if($descripcion_act == 'SALIDA'){
-					    		                    $new_precio_unitario_anterior_act = $precio_unitario_actual_final;
-					    		                }
-					    		            }
-					    		        }
-					    		    }else{
-					    		    	echo 'error_vacio';
-					    		    }
-			    		    	}
-			    		    }
-			    		    if($auxiliar_stock_negatiVo != 'stock_negativo'){
-	    		    			// Creo las variables de sesion para un registro más rapido Area y Fecha, se quedará con el ultimo registro realizado
-	    		    			$datasession_area_fecha_salida = array(
-	    		    				'id_area' => $this->security->xss_clean($this->input->post('id_area')),
-	    		    				'fecharegistro' => strtoupper($this->security->xss_clean($this->input->post('fecharegistro'))),
-	    		    			);
-	    		    			$this->session->set_userdata($datasession_area_fecha_salida);
-	    		    			//echo '1';
-	    		    	    }
-					    }
-					}
-					*/
-					// Cuadrar los montos de cierre para salidas cuya fecha ya tiene un cierre
-	    		    // Formateando la Fecha
-	    		    /*
-					$elementos = explode("-", $fecharegistro);
-					$anio = $elementos[0];
-					$mes = $elementos[1];
-					$dia = $elementos[2];
-					if($mes == 12){
-					    $anio = $anio + 1;
-					    $mes_siguiente = 1;
-					    $dia = 1;
-					}else if($mes <= 11 ){
-					    $mes_siguiente = $mes + 1;
-					    $dia = 1;
-					}
-					$array = array($anio, $mes_siguiente, $dia);
-					$fecha_formateada = implode("-", $array);
-	    		    do{
-	    		    	// Esta fecha me va a servir para ubicar el cierre del producto del mes posterior para su actualizacion
-		                // Realizar la actualización del monto de cierre del producto en funcion de la fecha de registro de la factura
-		                $this->db->select('id_saldos_iniciales,stock_inicial,stock_inicial_sta_clara,precio_uni_inicial');
-		                $this->db->where('id_pro',$id_pro);
-		                $this->db->where('fecha_cierre',$fecha_formateada);
-		                $query = $this->db->get('saldos_iniciales');
-		                if($query->num_rows()>0){
-		                    foreach($query->result() as $row){
-		                        $id_saldos_iniciales = $row->id_saldos_iniciales;
-		                        $stock_inicial = $row->stock_inicial;
-		                        $stock_inicial_sta_clara = $row->stock_inicial_sta_clara;
-		                        $precio_uni_inicial = $row->precio_uni_inicial;
-		                    }
-		                    // Actualizar unidades de cierre solo en las unidades del almacen de sta anita
-		                    $stock_actualizado_cierre = $stock_inicial - $cantidad;
-		                    $actualizar = array(
-		                        'stock_inicial'=> $stock_actualizado_cierre
-		                    );
-		                    $this->db->where('id_saldos_iniciales',$id_saldos_iniciales);
-		                    $this->db->update('saldos_iniciales', $actualizar);
-		                    // Actualizar monto final de cierre del mes
-		                    $stock_general_cierre_anterior = $stock_inicial + $stock_inicial_sta_clara;
-		                    $stock_general_cierre = ($stock_inicial-$cantidad) + $stock_inicial_sta_clara;
-		                    $monto_parcial_producto_anterior = $precio_uni_inicial * $stock_general_cierre_anterior;
-                    		$monto_parcial_producto_nuevo = $precio_uni_inicial * $stock_general_cierre;
-                    		// Seleccionar el monto de cierre
-		                    $this->db->select('fecha_cierre,monto_cierre_sta_anita,monto_cierre_sta_clara,fecha_auxiliar');
-		                    $this->db->where('fecha_auxiliar',$fecha_formateada);
-		                    $query = $this->db->get('monto_cierre');
-		                    if($query->num_rows()>0){
-		                        foreach($query->result() as $row){
-		                            $fecha_cierre = $row->fecha_cierre;
-		                            $monto_cierre_sta_anita = $row->monto_cierre_sta_anita;
-		                            $monto_cierre_sta_clara = $row->monto_cierre_sta_clara;
-		                            $fecha_auxiliar = $row->fecha_auxiliar;
-		                        }
-		                        $monto_cierre_sta_anita = $monto_cierre_sta_anita - $monto_parcial_producto_anterior;
-                            	$monto_cierre_sta_anita = $monto_cierre_sta_anita + $monto_parcial_producto_nuevo;
-                            	// Nuevo monto de cierre general
-                            	$monto_general_actualizado = $monto_cierre_sta_anita + $monto_cierre_sta_clara;
-                            	$actualizar = array(
-	                                'monto_cierre'=> $monto_general_actualizado,
-	                                'monto_cierre_sta_anita'=> $monto_cierre_sta_anita
-	                            );
-	                            $this->db->where('fecha_auxiliar',$fecha_formateada);
-	                            $this->db->update('monto_cierre',$actualizar);
-
-	                            // Aumentar la fecha para la siguiente busqueda de cierre // Ya se tiene la fecha con el formato correcto
-			                    $elementos_act = explode("-", $fecha_formateada);
-			                    $anio = $elementos_act[0];
-			                    $mes = $elementos_act[1];
-			                    $dia = $elementos_act[2];
-			                    if($mes == 12){
-			                        $anio = $anio + 1;
-			                        $mes_siguiente = 01;
-			                        $dia = 1;
-			                    }else if($mes <= 11 ){
-			                        $mes_siguiente = $mes + 1;
-			                        $dia = 1;
-			                    }
-			                    $array = array($anio, $mes_siguiente, $dia);
-			                    $fecha_formateada = implode("-", $array);
-			                }
-		                }else{
-		                    $aux_bucle_saldos_ini = 1;
-		                }
-	    		    }while($aux_bucle_saldos_ini == 0);
-	    		    echo '1';
-	    		    */
 	        	}
 	        }
         }else if($id_almacen == 2){
@@ -5519,9 +5003,7 @@ class Comercial extends CI_Controller {
 	        }else{
 	        	/* Validar si la salida esta en un periodo que ya cerro */
 	        	$result_cierre = $this->model_comercial->validarRegistroCierre($fecharegistro);
-
-	        	if($result_cierre == 'successfull')
-	        	{
+	        	if($result_cierre == 'successfull'){
 					//$hora = date('d-m-Y H:i:s'); //Para obtener la hora del sistema
 			        /* Realizar la salida del prodcuto */
 					$a_data = array('id_area' => $id_area,
@@ -5662,825 +5144,98 @@ class Comercial extends CI_Controller {
 					}
 
 					if($result_insert != ""){
-						/* Gestión de kardex */
-					    /* Obtener el ultimo id de registro para la fecha */
-					    $this->db->select('id_kardex_producto');
-					    $this->db->where('fecha_registro <=',$fecharegistro);
-					    $this->db->where('id_detalle_producto',$id_detalle_producto);
-					    $this->db->order_by("fecha_registro", "asc");
-					    $this->db->order_by("id_kardex_producto", "asc");
-					    $query = $this->db->get('kardex_producto');
-					    if(count($query->result()) > 0){
-							foreach($query->result() as $row){
-					            /*if($row->id_kardex_producto > $auxiliar){*/
-					                $auxiliar = $row->id_kardex_producto; // devuelve el ultimo id que no necesariamente es el mayor
-					            /*}*/
-					        }
-					        /* Obtener los datos del ultimo registro de la fecha */
-					        $this->db->select('stock_actual,precio_unitario_actual_promedio,precio_unitario_anterior,descripcion,precio_unitario_actual');
-					        $this->db->where('id_kardex_producto',$auxiliar);
-					        $query = $this->db->get('kardex_producto');
-					        foreach($query->result() as $row){
-					            $stock_actual = $row->stock_actual;
-					            $precio_unitario_actual_promedio = $row->precio_unitario_actual_promedio;
-					            $precio_unitario_anterior = $row->precio_unitario_anterior;
-					            $descripcion = $row->descripcion;
-					            $precio_unitario_actual = $row->precio_unitario_actual;
-					        }
-					        // hacer el calculo del precio unitario y stock en funcion del movimiento
-					        // Nuevo precio unitario promedio
-					        if($descripcion == 'SALIDA'){
-					            $precio_unitario_anterior_especial = $precio_unitario_anterior;
-					        }else if($descripcion == 'ENTRADA' || $descripcion == 'ORDEN INGRESO'){
-					            $precio_unitario_anterior_especial = $precio_unitario_actual_promedio;
-					        }else if($descripcion == 'IMPORTACION'){
-					            $precio_unitario_anterior_especial = 0;
-					        }
-					        $new_stock = $stock_actual - $cantidad;
-
-					        if($new_stock >= 0){
-					        	// Actualizar el stock del producto
-						        $this->model_comercial->descontarStock($id_detalle_producto,$cantidad,$stock_actual_sta_anita,$id_almacen, $id_area);
-						        // Fin code
-						        // Actualizar estado del producto validando si tiene stock 0
-						        $stock_actual_general = $stock_actual + $stock_actual_sta_anita;
-						        $stock_actualizado = $stock_actual + $stock_actual_sta_anita - $cantidad;
-						        if($stock_actualizado == 0 AND $column_temp == ""){
-						        	$this->model_comercial->actualizarEstado($id_detalle_producto);
-						        }
-						        // Fin de actualizacion
-
-					        	// Realizar el registro en el kardex
-					        	$a_data_kardex = array('fecha_registro' => $fecharegistro,
-					        	                'descripcion' => "SALIDA",
-					        	                'id_detalle_producto' => $id_detalle_producto,
-					        	                'stock_anterior' => $stock_actual,
-					        	                'precio_unitario_anterior' => $precio_unitario_anterior_especial,
-					        	                'cantidad_salida' => $cantidad,
-					        	                'stock_actual' => $new_stock,
-					        	                'precio_unitario_actual' => $precio_unitario_anterior_especial,
-					        	                'num_comprobante' => $result_insert,
-					        	                );
-					        	$result_kardex = $this->model_comercial->saveSalidaProductoKardex($a_data_kardex,true);
-					        	// End registro para el kardex
-					        }else{
-					        	// Borrar los registros anteriores actualización e insercion de la salida
-					        	// $this->model_comercial->descontarStock_regresarstock($id_detalle_producto,$cantidad,$stock_actual_sta_anita,$id_almacen, $id_area);
-					        	$this->model_comercial->eliminar_insert_salida($result_insert);
-					        	$validar_stock = 'no_existe_stock_disponible';
-					        }
-					    }else{
-					    	// Actualizar el stock del producto
-					        $this->model_comercial->descontarStock($id_detalle_producto,$cantidad,$stock_actual_sta_anita,$id_almacen, $id_area);
-					        // Fin code
-					        /* Actualizar estado del producto validando si tiene stock 0 */
-					        $stock_actual_general = $stock_area_sta_anita + $stock_area_sta_clara;
-					        $stock_actualizado = $stock_area_sta_anita + $stock_area_sta_clara - $cantidad;
-					        // Decido comentar estas lineas de codigo por que no es necesario cambiar el estado del producto a un estado
-					        // inactivo cuando el stock del producto llega a 0
-					        /*
-					        if($stock_actualizado == 0 AND $column_temp == ""){
-					        	$this->model_comercial->actualizarEstado($id_detalle_producto);
-					        }
-					        */
-					        /* Fin de actualizacion */
-					        /* Realizar registro para el kardex */
-					    	$a_data_kardex = array('fecha_registro' => $fecharegistro,
-					    						   'descripcion' => "SALIDA",
-					    						   'id_detalle_producto' => $id_detalle_producto,
-					    						   'stock_anterior' => $stock_actual_general,
-					    						   'precio_unitario_anterior' => $precio_unitario,
-					    						   'cantidad_salida' => $cantidad,
-					    						   'stock_actual' => $stock_actualizado,
-					    						   'precio_unitario_actual' => $precio_unitario,
-					    						   'num_comprobante' => $result_insert,
-					    						   );
-					    	$result_kardex = $this->model_comercial->saveSalidaProductoKardex($a_data_kardex,true);
-					    	/* Fin del registro para el kardex */
-					    }
-					    /* Hasta este punto actualiza los datos del ultimo movimiento realizado en la fecha sea una salida o un ingreso */
-					    if($validar_stock == 'no_existe_stock_disponible'){
-					    	echo 'no_existe_stock_disponible';
-					    }else{
-			    		    /***************************************************************************************************************/
-			    		    /* Obtener los datos del ultimo movimiento - sea este el ultimo movimiento realizado */
-			    		    /* puede ser el registro del paso anterior */
-			    		    $this->db->select('id_kardex_producto');
-			    		    $this->db->where('fecha_registro',$fecharegistro);
-			    		    $this->db->where('id_detalle_producto',$id_detalle_producto);
-			    		    $query = $this->db->get('kardex_producto');
-			    		    foreach($query->result() as $row){
-			    		        if($row->id_kardex_producto > $auxiliar_2){
-			    		            $auxiliar_2 = $row->id_kardex_producto;
-			    		        }
-			    		    }
-
-			    		    /* Obtener detalles del ultimo registro de la fecha en el kardex */
-			    		    $this->db->select('stock_actual,precio_unitario_actual_promedio,precio_unitario_anterior,descripcion');
-			    		    $this->db->where('id_kardex_producto',$auxiliar_2);
-			    		    $query = $this->db->get('kardex_producto');
-			    		    foreach($query->result() as $row){
-			    		        $stock_actual_actualizacion_registros = $row->stock_actual;
-			    		        $precio_unitario_actual_promedio_actualizacion_registros = $row->precio_unitario_actual_promedio;
-			    		        $precio_unitario_anterior_actualizacion_registros = $row->precio_unitario_anterior;
-			    		        $descripcion_actualizacion_registros = $row->descripcion;
-			    		        if($descripcion_actualizacion_registros == 'SALIDA'){
-			    		            $precio_unitario_actual_actualizacion_registros = $precio_unitario_anterior_actualizacion_registros;
-			    		        }else if($descripcion_actualizacion_registros == 'ENTRADA'){
-			    		            $precio_unitario_actual_actualizacion_registros = $precio_unitario_actual_promedio_actualizacion_registros;
-			    		        }
-			    		    }
-			    		    /***************************************************************************************************************/
-
-			    		    /* Se da paso a verificar si existen salidas posteriores a la fecha, para su actualización */
-			    		    $this->db->select('id_kardex_producto');
-			    		    $this->db->where('fecha_registro >',$fecharegistro);
-			    		    $this->db->where('id_detalle_producto',$id_detalle_producto);
-			    		    $this->db->order_by("fecha_registro", "asc");
-			    		    $this->db->order_by("id_kardex_producto", "asc");
-			    		    $query = $this->db->get('kardex_producto');
-			    		    if(count($query->result()) > 0){
-			    		    	/* Validar si en algun registro existe un stock final negativo */
-			    		    	foreach($query->result() as $row){
-			    		    		$id_kardex_producto = $row->id_kardex_producto; /* ID del movimiento en el kardex */
-			    		    		/* Obtener los datos del movimiento del kardex */
-			    		            $this->db->select('stock_actual,precio_unitario_actual_promedio,precio_unitario_anterior,descripcion,stock_anterior,cantidad_salida,cantidad_ingreso,precio_unitario_actual,id_detalle_producto');
-			    		            $this->db->where('id_kardex_producto',$id_kardex_producto);
-			    		            $query = $this->db->get('kardex_producto');
-			    		            foreach($query->result() as $row){
-			    		                $id_detalle_producto = $row->id_detalle_producto;
-			    		                $stock_actual_act = $row->stock_actual;
-			    		                $precio_unitario_actual_promedio_act = $row->precio_unitario_actual_promedio;
-			    		                $precio_unitario_anterior_act = $row->precio_unitario_anterior;
-			    		                $descripcion_act = $row->descripcion;
-			    		                $stock_anterior_act = $row->stock_anterior;
-			    		                $cantidad_salida_act = $row->cantidad_salida;
-			    		                $cantidad_ingreso_act = $row->cantidad_ingreso;
-			    		                $precio_unitario_actual_act = $row->precio_unitario_actual;
-			    		                if($descripcion_act == 'ENTRADA'){
-			    		                	if($auxiliar_contador == 0){
-			    		                        /* El stock anterior viene a ser el stock actual del movimiento anterior */
-			    		                        $new_stock_anterior_act_validacion = $stock_actual_actualizacion_registros; // stock_anterior
-			    		                        $new_precio_unitario_anterior_act = $precio_unitario_actual_actualizacion_registros; // precio_unitario_anterior
-			    		                        $auxiliar_contador++;
-			    		                    }
-			    		                    /* validacion */
-			    		                    $stock_actual_final = $new_stock_anterior_act_validacion + $cantidad_ingreso_act;
-			    		                }else if($descripcion_act == 'SALIDA'){
-			    		                	if($auxiliar_contador == 0){
-			    		                        /* El stock anterior viene a ser el stock actual del movimiento anterior */
-			    		                        $new_stock_anterior_act_validacion = $stock_actual_actualizacion_registros; // stock_anterior
-			    		                        $new_precio_unitario_anterior_act = $precio_unitario_actual_actualizacion_registros; // precio_unitario_anterior
-			    		                        $auxiliar_contador++;
-			    		                    }
-			    		                    /* validacion */
-			    		                    $stock_actual_final = $new_stock_anterior_act_validacion - $cantidad_salida_act;
-			    		                }
-			    		                /* validar stock negativo */
-			    		                if($stock_actual_final < 0){
-			    		                	$auxiliar_stock_negatiVo = 'stock_negativo';
-			    		                }
-			    		                /* Dejar variables con el ultimo registro del stock y precio unitario obtenido */
-			    		                $new_stock_anterior_act_validacion = $stock_actual_final;
-			    		            }
-			    		    	}
-
-			    		    	if($auxiliar_stock_negatiVo == 'stock_negativo'){
-			    		    		$this->model_comercial->descontarStock_regresarstock($id_detalle_producto,$cantidad,$stock_actual_sta_anita,$id_almacen, $id_area);
-			    		    		$this->model_comercial->eliminar_insert_kardex($result_kardex);
-			    		    		$this->model_comercial->eliminar_insert_salida($result_insert);
-			    		    		echo 'no_existe_stock_disponible_actualizacion_negativo';
-			    		    	}else{
-			    		    		$id_kardex_producto = "";
-			    		    		$auxiliar_contador = 0;
-			    		    		$this->db->select('id_kardex_producto');
-					    		    $this->db->where('fecha_registro >',$fecharegistro);
-					    		    $this->db->where('id_detalle_producto',$id_detalle_producto);
-					    		    $this->db->order_by("fecha_registro", "asc");
-					    		    $this->db->order_by("id_kardex_producto", "asc");
-					    		    $query_2 = $this->db->get('kardex_producto');
-					    		    if(count($query_2->result()) > 0){
-				    		    		foreach($query_2->result() as $row_2){
-					    		            $id_kardex_producto = $row_2->id_kardex_producto; /* ID del movimiento en el kardex */
-					    		            /* Obtener los datos del movimiento del kardex */
-					    		            $this->db->select('stock_actual,precio_unitario_actual_promedio,precio_unitario_anterior,descripcion,stock_anterior,cantidad_salida,cantidad_ingreso,precio_unitario_actual,id_detalle_producto');
-					    		            $this->db->where('id_kardex_producto',$id_kardex_producto);
-					    		            $query = $this->db->get('kardex_producto');
-					    		            foreach($query->result() as $row_2){
-					    		                $id_detalle_producto = $row_2->id_detalle_producto;
-					    		                $stock_actual_act = $row_2->stock_actual;
-					    		                $precio_unitario_actual_promedio_act = $row_2->precio_unitario_actual_promedio;
-					    		                $precio_unitario_anterior_act = $row_2->precio_unitario_anterior;
-					    		                $descripcion_act = $row_2->descripcion;
-					    		                $stock_anterior_act = $row_2->stock_anterior;
-					    		                $cantidad_salida_act = $row_2->cantidad_salida;
-					    		                $cantidad_ingreso_act = $row_2->cantidad_ingreso;
-					    		                $precio_unitario_actual_act = $row_2->precio_unitario_actual;
-
-					    		                /* Actualización del registro */
-					    		                if($descripcion_act == 'ENTRADA'){
-					    		                    if($auxiliar_contador == 0){
-					    		                        /* El stock anterior viene a ser el stock actual del movimiento anterior */
-					    		                        $new_stock_anterior_act = $stock_actual_actualizacion_registros; // stock_anterior
-					    		                        $new_precio_unitario_anterior_act = $precio_unitario_actual_actualizacion_registros; // precio_unitario_anterior
-					    		                        $auxiliar_contador++;
-					    		                    }
-					    		                    /* Actualizar los datos para una entrada */
-					    		                    $stock_actual_final = $new_stock_anterior_act + $cantidad_ingreso_act;
-					    		                    $precio_unitario_actual_promedio_final = (($new_stock_anterior_act*$new_precio_unitario_anterior_act)+($cantidad_ingreso_act*$precio_unitario_actual_act))/($new_stock_anterior_act+$cantidad_ingreso_act);
-					    		                    /* Actualizar BD */
-					    		                    $actualizar = array(
-					    		                        'stock_anterior'=> $new_stock_anterior_act,
-					    		                        'precio_unitario_anterior'=> $new_precio_unitario_anterior_act,
-					    		                        'stock_actual'=> $stock_actual_final,
-					    		                        'precio_unitario_actual_promedio'=> $precio_unitario_actual_promedio_final
-					    		                    );
-					    		                    $this->db->where('id_kardex_producto',$id_kardex_producto);
-					    		                    $this->db->update('kardex_producto', $actualizar);
-					    		                    /* fin de actualizar */
-					    		                    /* Actualizar el precio unitario del producto */
-					    		                    $actualizar_p_u_2 = array(
-					    		                        'precio_unitario'=> $precio_unitario_actual_promedio_final
-					    		                    );
-					    		                    $this->db->where('id_detalle_producto',$id_detalle_producto);
-					    		                    $this->db->update('detalle_producto', $actualizar_p_u_2);
-					    		                }else if($descripcion_act == 'SALIDA'){
-					    		                    if($auxiliar_contador == 0){
-					    		                        /* El stock anterior viene a ser el stock actual del movimiento anterior */
-					    		                        $new_stock_anterior_act = $stock_actual_actualizacion_registros; // stock_anterior
-					    		                        $new_precio_unitario_anterior_act = $precio_unitario_actual_actualizacion_registros; // precio_unitario_anterior
-					    		                        $auxiliar_contador++;
-					    		                    }
-					    		                    /* Actualizar los datos para una salida */
-					    		                    $stock_actual_final = $new_stock_anterior_act - $cantidad_salida_act;
-					    		                    $precio_unitario_actual_final = $new_precio_unitario_anterior_act;
-					    		                    $precio_unitario_anterior_final = $new_precio_unitario_anterior_act;
-				    		                    	/* Actualizar BD */
-				    		                    	$actualizar = array(
-				    		                    	    'stock_anterior'=> $new_stock_anterior_act,
-				    		                    	    'precio_unitario_anterior'=> $precio_unitario_anterior_final,
-				    		                    	    'stock_actual'=> $stock_actual_final,
-				    		                    	    'precio_unitario_actual'=> $precio_unitario_actual_final
-				    		                    	);
-				    		                    	$this->db->where('id_kardex_producto',$id_kardex_producto);
-				    		                    	$this->db->update('kardex_producto', $actualizar);
-				    		                    	/* fin de actualizar */
-					    		                }
-					    		                /* Dejar variables con el ultimo registro del stock y precio unitario obtenido */
-					    		                /* Este paso se realizo en la linea 4277 pero solo sirvio para un recorrido */
-					    		                $new_stock_anterior_act = $stock_actual_final;
-					    		                if($descripcion_act == 'ENTRADA'){
-					    		                    $new_precio_unitario_anterior_act = $precio_unitario_actual_promedio_final;
-					    		                }else if($descripcion_act == 'SALIDA'){
-					    		                    $new_precio_unitario_anterior_act = $precio_unitario_actual_final;
-					    		                }
-					    		            }
-					    		        }
-					    		    }else{
-					    		    	echo 'error_vacio';
-					    		    }
-					    		}
-			    		    }
-			    		    if($auxiliar_stock_negatiVo != 'stock_negativo'){
-	    		    			/* Creo las variables de sesion para un registro más rapido Area y Fecha, se quedará con el ultimo registro realizado*/
-	    		    			$datasession_area_fecha_salida = array(
-	    		    				'id_area' => $this->security->xss_clean($this->input->post('id_area')),
-	    		    				'fecharegistro' => strtoupper($this->security->xss_clean($this->input->post('fecharegistro'))),
-	    		    			);
-	    		    			$this->session->set_userdata($datasession_area_fecha_salida);
-
-	    		    			// ENVIAR PARAMETRO
-	    		    	        echo '1';
-	    		    	    }
-	    		    	}
+						$elementos_f = explode("-", $fecharegistro);
+                        $anio = $elementos_f[0];
+                        $mes = 1;
+                        $dia = 1;
+                        $array = array($anio, $mes, $dia);
+                        $fecha_final_anio = implode("-", $array);
+                        $fecha_final_anio = date("Y-m-d", strtotime($fecha_final_anio));
+                        do{
+                            // de acuerdo a la fecha obtener el saldo inicial del mes
+                            $elementos_f = explode("-", $fecharegistro);
+                            $anio = $elementos_f[0];
+                            $mes = $elementos_f[1] - $aux;
+                            $dia = 1;
+                            $array = array($anio, $mes, $dia);
+                            $fecha_formateada = implode("-", $array);
+                            $fecha_formateada = date("Y-m-d", strtotime($fecha_formateada));
+                            // consultar en bd por el saldo inicial del producto en dicha fecha
+                            $this->db->select('stock_inicial');
+                            $this->db->where('fecha_cierre',$fecha_formateada);
+                            $this->db->where('id_pro',$id_pro);
+                            $query = $this->db->get('saldos_iniciales');
+                            if(count($query->result()) > 0){
+                                foreach($query->result() as $row){
+                                    $stock_inicial = $row->stock_inicial;
+                                }
+                            }
+                            $aux++;
+                        }while($stock_inicial == "" && $fecha_formateada != $fecha_final_anio);
+                        // si el stock_inicial es vacio no tiene registros en dos meses anteriores entonces es un producto nuevo
+                        if($stock_inicial == ""){ // codigo para productos nuevos
+                            $stock_inicial = 0;
+                        }
+                        // consultar por los movimientos del producto en el mes para acumularlo en la variable stock_inicial
+                        $result_kardex = $this->model_comercial->traer_movimientos_kardex($id_detalle_producto,$fecha_formateada,$fecharegistro);
+                        $existe = count($result_kardex);
+                        if($existe > 0){
+                            foreach ($result_kardex as $data) {
+                                if($data->descripcion == "ENTRADA" || $data->descripcion == "IMPORTACION" || $data->descripcion == "ORDEN INGRESO"){
+                                    if($contador_kardex == 0){
+                                        $stock_saldo_final = $stock_inicial + $data->cantidad_ingreso;
+                                        $contador_kardex++;
+                                    }else{
+                                        $stock_saldo_final = $stock_saldo_final + $data->cantidad_ingreso;
+                                    }
+                                }else if($data->descripcion == "SALIDA"){
+                                    if($contador_kardex == 0){
+                                        $stock_saldo_final = $stock_inicial - $data->cantidad_salida;
+                                        $contador_kardex++;
+                                    }else{
+                                        $stock_saldo_final = $stock_saldo_final - $data->cantidad_salida;
+                                    }
+                                }
+                            }
+                        }else{
+                            $stock_saldo_final = $stock_inicial;
+                        }
+                        // validacion del stock final para realizar la salida y descuento del producto
+                        $stock_saldo_final = $stock_saldo_final - $cantidad;
+                        if($stock_saldo_final >= 0 ){
+                            // descuento el stock
+                            $this->model_comercial->descontarStock($id_detalle_producto,$cantidad,$stock_actual_sta_anita,$id_almacen, $id_area);
+                            // registro en el kardex
+                            $a_data_kardex = array('fecha_registro' => $fecharegistro,
+                                                    'descripcion' => "SALIDA",
+                                                    'id_detalle_producto' => $id_detalle_producto,
+                                                    'cantidad_salida' => $cantidad,
+                                                    'num_comprobante' => $result_insert,
+                                                    );
+                            $result_kardex = $this->model_comercial->saveSalidaProductoKardex($a_data_kardex,true);
+                        }else{
+                            $validar_stock = 'no_existe_stock_disponible';
+                        }
+                        // Hasta este punto actualiza los datos del ultimo movimiento realizado en la fecha sea una salida o un ingreso
+                        if($validar_stock == 'no_existe_stock_disponible'){
+                            echo 'no_existe_stock_disponible';
+                        }else{                            
+                            // Creo las variables de sesion para un registro más rapido Area y Fecha, se quedará con el ultimo registro realizado
+                            $datasession_area_fecha_salida = array(
+                                'id_area' => $this->security->xss_clean($this->input->post('id_area')),
+                                'fecharegistro' => strtoupper($this->security->xss_clean($this->input->post('fecharegistro'))),
+                            );
+                            $this->session->set_userdata($datasession_area_fecha_salida);
+                            // Enviar parametro
+                            echo '1';
+                        }
 	    		    }
 	    		}else{
-	        		// Comentamos esta linea para cuadrar el cierre ya que necesitamos quitar realizar más salidas
 	        		echo 'error_cierre';
-	        		// Se deja comentado esta informacion para un desarrollo posterior
-	        		// Inicio de transacciones
-					//$hora = date('d-m-Y H:i:s'); //Para obtener la hora del sistema
-			        /* Realizar la salida del prodcuto */
-			        /*
-					$a_data = array('id_area' => $id_area,
-									'fecha' => $fecharegistro,
-									'id_detalle_producto' => $id_detalle_producto,
-									'cantidad_salida' => $cantidad,
-									'id_almacen' => $id_almacen,
-									'p_u_salida' => $precio_unitario,
-									'solicitante' => $solicitante,
-									);
-					$result_insert = $this->model_comercial->saveSalidaProducto($a_data,true);
-					*/
-					/* Fin del registro de la salida */
-					// Procedimiento para conocer la factura a la que pertenece la salida
-					// ademas de descontar el stock del producto a las unidades referencial
-					// Ubico las dos ultimas facturas usadas para cargar el stock de ese producto
-					/*
-					$contador_facturas = 0;
-					$variable_u = FALSE;
-		    		$variable_p = FALSE;
-					$invoice = $this->model_comercial->get_info_facturas_report($id_detalle_producto);
-					if(count($invoice) > 0){
-						$contador_facturas = count($invoice);
-						if($contador_facturas == 2){
-							foreach ($invoice as $row) {
-								// Almacenar toda la informacion en variables distintas
-								// Obtener las unidades referenciales de ese producto en esa factura
-								$id_ingreso_producto = $row->id_ingreso_producto;
-								if($variable_u == FALSE){
-									// Con el ID de la factura unico el stock referencial del producto
-									$this->db->select('unidades_referencial');
-							        $this->db->where('id_detalle_producto',$id_detalle_producto);
-							        $this->db->where('id_ingreso_producto',$id_ingreso_producto);
-							        $query = $this->db->get('detalle_ingreso_producto');
-							        foreach($query->result() as $row){
-							            $unidades_referencial_u = $row->unidades_referencial;
-							        }
-							        $id_factura_u = $id_ingreso_producto;
-							        $variable_u = TRUE;
-								}else if($variable_p == FALSE && $variable_u == TRUE){
-									$this->db->select('unidades_referencial');
-							        $this->db->where('id_detalle_producto',$id_detalle_producto);
-							        $this->db->where('id_ingreso_producto',$id_ingreso_producto);
-							        $query = $this->db->get('detalle_ingreso_producto');
-							        foreach($query->result() as $row){
-							            $unidades_referencial_p = $row->unidades_referencial;
-							        }
-							        $id_factura_p = $id_ingreso_producto;
-							        $variable_p = TRUE;
-								}
-							}
-							// Verifico si la cantidad del stock referencial de la segunda factura tiene stock
-							// suficiente para generar la salida
-							if( $unidades_referencial_p >= $cantidad ){
-								// La salida se efectuo con stock de esta factura
-								// Guardar el id de la factura en el registro que se realizo lineas arriba
-								// $id_factura_final = $id_factura_p;
-								// Actualizar el stock de las unidades de referencia
-								$unidades_actualizadas = $unidades_referencial_p - $cantidad;
-								$actualizar = array('unidades_referencial'=> $unidades_actualizadas);
-								$this->db->where('id_detalle_producto',$id_detalle_producto);
-						        $this->db->where('id_ingreso_producto',$id_factura_p);
-								$this->db->update('detalle_ingreso_producto', $actualizar);
-								// Guardar la relacion de la salida con la factura
-								$registro_data = array(
-								    'id_salida_producto'=> $result_insert,
-								    'id_ingreso_producto'=> $id_factura_p,
-								    'cantidad_utilizada'=> $cantidad
-								);
-								$this->db->insert('adm_facturas_asociadas', $registro_data);
-							}else if( $unidades_referencial_p < $cantidad && $unidades_referencial_p != 0){
-								// Utilizamos las unidades referenciales para completar la salida
-								$unidades_restantes = $cantidad - $unidades_referencial_p;
-								// Actualizamos la penultima factura
-								$actualizar_p = array('unidades_referencial'=> 0);
-								$this->db->where('id_detalle_producto',$id_detalle_producto);
-						        $this->db->where('id_ingreso_producto',$id_factura_p);
-								$this->db->update('detalle_ingreso_producto', $actualizar_p);
-								// Guardar la relacion de la salida con la factura
-								$registro_data_p = array(
-								    'id_salida_producto'=> $result_insert,
-								    'id_ingreso_producto'=> $id_factura_p,
-								    'cantidad_utilizada'=> $unidades_referencial_p
-								);
-								$this->db->insert('adm_facturas_asociadas', $registro_data_p);
-								// Actualizamos la ultima factura
-								$unidades_actualizadas = $unidades_referencial_u - $unidades_restantes;
-								$actualizar_u = array('unidades_referencial'=> $unidades_actualizadas);
-								$this->db->where('id_detalle_producto',$id_detalle_producto);
-						        $this->db->where('id_ingreso_producto',$id_factura_u);
-								$this->db->update('detalle_ingreso_producto', $actualizar_u);
-								// Guardar la relacion de la salida con la factura
-								$registro_data_u = array(
-								    'id_salida_producto'=> $result_insert,
-								    'id_ingreso_producto'=> $id_factura_u,
-								    'cantidad_utilizada'=> $unidades_restantes
-								);
-								$this->db->insert('adm_facturas_asociadas', $registro_data_u);
-							}else if($unidades_referencial_p == 0){
-								// Actualizamos la ultima factura
-								$unidades_actualizadas = $unidades_referencial_u - $cantidad;
-								$actualizar_u = array('unidades_referencial'=> $unidades_actualizadas);
-								$this->db->where('id_detalle_producto',$id_detalle_producto);
-						        $this->db->where('id_ingreso_producto',$id_factura_u);
-								$this->db->update('detalle_ingreso_producto', $actualizar_u);
-								// Guardar la relacion de la salida con la factura
-								$registro_data_u = array(
-								    'id_salida_producto'=> $result_insert,
-								    'id_ingreso_producto'=> $id_factura_u,
-								    'cantidad_utilizada'=> $cantidad
-								);
-								$this->db->insert('adm_facturas_asociadas', $registro_data_u);
-							}
-						}else if($contador_facturas == 1){
-							foreach ($invoice as $row) {
-								$id_ingreso_producto = $row->id_ingreso_producto;
-								// Seleccionar unidades referencial
-								$this->db->select('unidades_referencial');
-						        $this->db->where('id_detalle_producto',$id_detalle_producto);
-						        $this->db->where('id_ingreso_producto',$id_ingreso_producto);
-						        $query = $this->db->get('detalle_ingreso_producto');
-						        foreach($query->result() as $row){
-						            $unidades_referencial_u = $row->unidades_referencial;
-						        }
-						        $unidades_actualizadas = $unidades_referencial_u - $cantidad;
-						        $actualizar_u = array('unidades_referencial'=> $unidades_actualizadas);
-								$this->db->where('id_detalle_producto',$id_detalle_producto);
-						        $this->db->where('id_ingreso_producto',$id_ingreso_producto);
-								$this->db->update('detalle_ingreso_producto', $actualizar_u);
-								// Guardar la relacion de la salida con la factura
-								$registro_data_u = array(
-								    'id_salida_producto'=> $result_insert,
-								    'id_ingreso_producto'=> $id_ingreso_producto,
-								    'cantidad_utilizada'=> $cantidad
-								);
-								$this->db->insert('adm_facturas_asociadas', $registro_data_u);
-							}
-						}
-					}
-					*/
-					/*
-					if($result_insert != ""){
-						// Gestión de kardex
-					    // Obtener el ultimo id de registro para la fecha
-					    $this->db->select('id_kardex_producto');
-					    $this->db->where('fecha_registro <=',$fecharegistro);
-					    $this->db->where('id_detalle_producto',$id_detalle_producto);
-					    $this->db->order_by("fecha_registro", "asc");
-					    $this->db->order_by("id_kardex_producto", "asc");
-					    $query = $this->db->get('kardex_producto');
-					    if(count($query->result()) > 0){
-							foreach($query->result() as $row){
-					            $auxiliar = $row->id_kardex_producto; // devuelve el ultimo id que no necesariamente es el mayor
-					        }
-					        // Obtener los datos del ultimo registro de la fecha
-					        $this->db->select('stock_actual,precio_unitario_actual_promedio,precio_unitario_anterior,descripcion,precio_unitario_actual');
-					        $this->db->where('id_kardex_producto',$auxiliar);
-					        $query = $this->db->get('kardex_producto');
-					        foreach($query->result() as $row){
-					            $stock_actual = $row->stock_actual;
-					            $precio_unitario_actual_promedio = $row->precio_unitario_actual_promedio;
-					            $precio_unitario_anterior = $row->precio_unitario_anterior;
-					            $descripcion = $row->descripcion;
-					            $precio_unitario_actual = $row->precio_unitario_actual;
-					        }
-					        // hacer el calculo del precio unitario y stock en funcion del movimiento
-					        // Nuevo precio unitario promedio
-					        if($descripcion == 'SALIDA'){
-					            //$new_precio_unitario_especial = $precio_unitario_actual;
-					            $precio_unitario_anterior_especial = $precio_unitario_anterior;
-					        }else if($descripcion == 'ENTRADA'){
-					            //$new_precio_unitario_especial = (($stock_actual*$precio_unitario_actual_promedio)+($item['qty']*$precio_unitario_soles))/($stock_actual+$item['qty']);
-					            $precio_unitario_anterior_especial = $precio_unitario_actual_promedio;
-					        }
-					        $new_stock = $stock_actual - $cantidad;
-
-					        if($new_stock >= 0){
-					        	// Actualizar el stock del producto
-						        $this->model_comercial->descontarStock($id_detalle_producto,$cantidad,$stock_actual_sta_anita,$id_almacen, $id_area);
-						        // Fin code
-						        // Actualizar estado del producto validando si tiene stock 0
-						        $stock_actual_general = $stock_actual + $stock_actual_sta_anita;
-						        $stock_actualizado = $stock_actual + $stock_actual_sta_anita - $cantidad;
-						        if($stock_actualizado == 0 AND $column_temp == ""){
-						        	$this->model_comercial->actualizarEstado($id_detalle_producto);
-						        }
-						        // Fin de actualizacion
-
-					        	// Realizar el registro en el kardex
-					        	$a_data_kardex = array('fecha_registro' => $fecharegistro,
-					        	                'descripcion' => "SALIDA",
-					        	                'id_detalle_producto' => $id_detalle_producto,
-					        	                'stock_anterior' => $stock_actual,
-					        	                'precio_unitario_anterior' => $precio_unitario_anterior_especial,
-					        	                'cantidad_salida' => $cantidad,
-					        	                'stock_actual' => $new_stock,
-					        	                //'precio_unitario_actual_promedio' => $new_precio_unitario_especial,
-					        	                'precio_unitario_actual' => $precio_unitario_anterior_especial,
-					        	                'num_comprobante' => $result_insert,
-					        	                );
-					        	$result_kardex = $this->model_comercial->saveSalidaProductoKardex($a_data_kardex,true);
-					        	// End registro para el kardex
-					        }else{
-					        	// Borrar los registros anteriores actualización e insercion de la salida
-					        	// $this->model_comercial->descontarStock_regresarstock($id_detalle_producto,$cantidad,$stock_actual_sta_anita,$id_almacen, $id_area);
-					        	$this->model_comercial->eliminar_insert_salida($result_insert);
-					        	$validar_stock = 'no_existe_stock_disponible';
-					        }
-					    }else{
-					    	// Actualizar el stock del producto
-					        $this->model_comercial->descontarStock($id_detalle_producto,$cantidad,$stock_actual_sta_anita,$id_almacen, $id_area);
-					        // Fin code
-					        // Actualizar estado del producto validando si tiene stock 0
-					        $stock_actual_general = $stock_area_sta_anita + $stock_area_sta_clara;
-					        $stock_actualizado = $stock_area_sta_anita + $stock_area_sta_clara - $cantidad;
-					        // Decido comentar estas lineas de codigo por que no es necesario cambiar el estado del producto a un estado
-					        // inactivo cuando el stock del producto llega a 0
-					        // Fin de actualizacion
-					        // Realizar registro para el kardex
-					    	$a_data_kardex = array('fecha_registro' => $fecharegistro,
-					    						   'descripcion' => "SALIDA",
-					    						   'id_detalle_producto' => $id_detalle_producto,
-					    						   'stock_anterior' => $stock_actual_general,
-					    						   'precio_unitario_anterior' => $precio_unitario,
-					    						   'cantidad_salida' => $cantidad,
-					    						   'stock_actual' => $stock_actualizado,
-					    						   'precio_unitario_actual' => $precio_unitario,
-					    						   'num_comprobante' => $result_insert,
-					    						   );
-					    	$result_kardex = $this->model_comercial->saveSalidaProductoKardex($a_data_kardex,true);
-					    	// Fin del registro para el kardex
-					    }
-					    // Hasta este punto actualiza los datos del ultimo movimiento realizado en la fecha sea una salida o un ingreso
-					    if($validar_stock == 'no_existe_stock_disponible'){
-					    	echo 'no_existe_stock_disponible';
-					    }else{
-			    		    // Obtener los datos del ultimo movimiento - sea este el ultimo movimiento realizado
-			    		    // puede ser el registro del paso anterior
-			    		    $this->db->select('id_kardex_producto');
-			    		    $this->db->where('fecha_registro',$fecharegistro);
-			    		    $this->db->where('id_detalle_producto',$id_detalle_producto);
-			    		    $query = $this->db->get('kardex_producto');
-			    		    foreach($query->result() as $row){
-			    		        if($row->id_kardex_producto > $auxiliar_2){
-			    		            $auxiliar_2 = $row->id_kardex_producto;
-			    		        }
-			    		    }
-
-			    		    // Obtener detalles del ultimo registro de la fecha en el kardex
-			    		    $this->db->select('stock_actual,precio_unitario_actual_promedio,precio_unitario_anterior,descripcion');
-			    		    $this->db->where('id_kardex_producto',$auxiliar_2);
-			    		    $query = $this->db->get('kardex_producto');
-			    		    foreach($query->result() as $row){
-			    		        $stock_actual_actualizacion_registros = $row->stock_actual;
-			    		        $precio_unitario_actual_promedio_actualizacion_registros = $row->precio_unitario_actual_promedio;
-			    		        $precio_unitario_anterior_actualizacion_registros = $row->precio_unitario_anterior;
-			    		        $descripcion_actualizacion_registros = $row->descripcion;
-			    		        if($descripcion_actualizacion_registros == 'SALIDA'){
-			    		            $precio_unitario_actual_actualizacion_registros = $precio_unitario_anterior_actualizacion_registros;
-			    		        }else if($descripcion_actualizacion_registros == 'ENTRADA'){
-			    		            $precio_unitario_actual_actualizacion_registros = $precio_unitario_actual_promedio_actualizacion_registros;
-			    		        }
-			    		    }
-
-			    		    // Se da paso a verificar si existen salidas posteriores a la fecha, para su actualización
-			    		    $this->db->select('id_kardex_producto');
-			    		    $this->db->where('fecha_registro >',$fecharegistro);
-			    		    $this->db->where('id_detalle_producto',$id_detalle_producto);
-			    		    $this->db->order_by("fecha_registro", "asc");
-			    		    $this->db->order_by("id_kardex_producto", "asc");
-			    		    $query = $this->db->get('kardex_producto');
-			    		    if(count($query->result()) > 0){
-			    		    	// Validar si en algun registro existe un stock final negativo
-			    		    	foreach($query->result() as $row){
-			    		    		$id_kardex_producto = $row->id_kardex_producto; // ID del movimiento en el kardex
-			    		    		// Obtener los datos del movimiento del kardex
-			    		            $this->db->select('stock_actual,precio_unitario_actual_promedio,precio_unitario_anterior,descripcion,stock_anterior,cantidad_salida,cantidad_ingreso,precio_unitario_actual,id_detalle_producto');
-			    		            $this->db->where('id_kardex_producto',$id_kardex_producto);
-			    		            $query = $this->db->get('kardex_producto');
-			    		            foreach($query->result() as $row){
-			    		                $id_detalle_producto = $row->id_detalle_producto;
-			    		                $stock_actual_act = $row->stock_actual;
-			    		                $precio_unitario_actual_promedio_act = $row->precio_unitario_actual_promedio;
-			    		                $precio_unitario_anterior_act = $row->precio_unitario_anterior;
-			    		                $descripcion_act = $row->descripcion;
-			    		                $stock_anterior_act = $row->stock_anterior;
-			    		                $cantidad_salida_act = $row->cantidad_salida;
-			    		                $cantidad_ingreso_act = $row->cantidad_ingreso;
-			    		                $precio_unitario_actual_act = $row->precio_unitario_actual;
-			    		                if($descripcion_act == 'ENTRADA'){
-			    		                	if($auxiliar_contador == 0){
-			    		                        // El stock anterior viene a ser el stock actual del movimiento anterior
-			    		                        $new_stock_anterior_act_validacion = $stock_actual_actualizacion_registros; // stock_anterior
-			    		                        $new_precio_unitario_anterior_act = $precio_unitario_actual_actualizacion_registros; // precio_unitario_anterior
-			    		                        $auxiliar_contador++;
-			    		                    }
-			    		                    // validacion
-			    		                    $stock_actual_final = $new_stock_anterior_act_validacion + $cantidad_ingreso_act;
-			    		                }else if($descripcion_act == 'SALIDA'){
-			    		                	if($auxiliar_contador == 0){
-			    		                        // El stock anterior viene a ser el stock actual del movimiento anterior
-			    		                        $new_stock_anterior_act_validacion = $stock_actual_actualizacion_registros; // stock_anterior
-			    		                        $new_precio_unitario_anterior_act = $precio_unitario_actual_actualizacion_registros; // precio_unitario_anterior
-			    		                        $auxiliar_contador++;
-			    		                    }
-			    		                    // validacion
-			    		                    $stock_actual_final = $new_stock_anterior_act_validacion - $cantidad_salida_act;
-			    		                }
-			    		                // validar stock negativo
-			    		                if($stock_actual_final < 0){
-			    		                	$auxiliar_stock_negatiVo = 'stock_negativo';
-			    		                }
-			    		                // Dejar variables con el ultimo registro del stock y precio unitario obtenido
-			    		                $new_stock_anterior_act_validacion = $stock_actual_final;
-			    		            }
-			    		    	}
-
-			    		    	if($auxiliar_stock_negatiVo == 'stock_negativo'){
-			    		    		$this->model_comercial->descontarStock_regresarstock($id_detalle_producto,$cantidad,$stock_actual_sta_anita,$id_almacen, $id_area);
-			    		    		$this->model_comercial->eliminar_insert_kardex($result_kardex);
-			    		    		$this->model_comercial->eliminar_insert_salida($result_insert);
-			    		    		echo 'no_existe_stock_disponible_actualizacion_negativo';
-			    		    	}else{
-			    		    		$id_kardex_producto = "";
-			    		    		$auxiliar_contador = 0;
-			    		    		$this->db->select('id_kardex_producto');
-					    		    $this->db->where('fecha_registro >',$fecharegistro);
-					    		    $this->db->where('id_detalle_producto',$id_detalle_producto);
-					    		    $this->db->order_by("fecha_registro", "asc");
-					    		    $this->db->order_by("id_kardex_producto", "asc");
-					    		    $query_2 = $this->db->get('kardex_producto');
-					    		    if(count($query_2->result()) > 0){
-				    		    		foreach($query_2->result() as $row_2){
-					    		            $id_kardex_producto = $row_2->id_kardex_producto; // ID del movimiento en el kardex
-					    		            // Obtener los datos del movimiento del kardex
-					    		            $this->db->select('stock_actual,precio_unitario_actual_promedio,precio_unitario_anterior,descripcion,stock_anterior,cantidad_salida,cantidad_ingreso,precio_unitario_actual,id_detalle_producto');
-					    		            $this->db->where('id_kardex_producto',$id_kardex_producto);
-					    		            $query = $this->db->get('kardex_producto');
-					    		            foreach($query->result() as $row_2){
-					    		                $id_detalle_producto = $row_2->id_detalle_producto;
-					    		                $stock_actual_act = $row_2->stock_actual;
-					    		                $precio_unitario_actual_promedio_act = $row_2->precio_unitario_actual_promedio;
-					    		                $precio_unitario_anterior_act = $row_2->precio_unitario_anterior;
-					    		                $descripcion_act = $row_2->descripcion;
-					    		                $stock_anterior_act = $row_2->stock_anterior;
-					    		                $cantidad_salida_act = $row_2->cantidad_salida;
-					    		                $cantidad_ingreso_act = $row_2->cantidad_ingreso;
-					    		                $precio_unitario_actual_act = $row_2->precio_unitario_actual;
-
-					    		                // Actualización del registro
-					    		                if($descripcion_act == 'ENTRADA'){
-					    		                    if($auxiliar_contador == 0){
-					    		                        // El stock anterior viene a ser el stock actual del movimiento anterior
-					    		                        $new_stock_anterior_act = $stock_actual_actualizacion_registros; // stock_anterior
-					    		                        $new_precio_unitario_anterior_act = $precio_unitario_actual_actualizacion_registros; // precio_unitario_anterior
-					    		                        $auxiliar_contador++;
-					    		                    }
-					    		                    // Actualizar los datos para una entrada
-					    		                    $stock_actual_final = $new_stock_anterior_act + $cantidad_ingreso_act;
-					    		                    $precio_unitario_actual_promedio_final = (($new_stock_anterior_act*$new_precio_unitario_anterior_act)+($cantidad_ingreso_act*$precio_unitario_actual_act))/($new_stock_anterior_act+$cantidad_ingreso_act);
-					    		                    // Actualizar BD
-					    		                    $actualizar = array(
-					    		                        'stock_anterior'=> $new_stock_anterior_act,
-					    		                        'precio_unitario_anterior'=> $new_precio_unitario_anterior_act,
-					    		                        'stock_actual'=> $stock_actual_final,
-					    		                        'precio_unitario_actual_promedio'=> $precio_unitario_actual_promedio_final
-					    		                    );
-					    		                    $this->db->where('id_kardex_producto',$id_kardex_producto);
-					    		                    $this->db->update('kardex_producto', $actualizar);
-					    		                    // fin de actualizar
-					    		                    // Actualizar el precio unitario del producto
-					    		                    $actualizar_p_u_2 = array(
-					    		                        'precio_unitario'=> $precio_unitario_actual_promedio_final
-					    		                    );
-					    		                    $this->db->where('id_detalle_producto',$id_detalle_producto);
-					    		                    $this->db->update('detalle_producto', $actualizar_p_u_2);
-					    		                }else if($descripcion_act == 'SALIDA'){
-					    		                    if($auxiliar_contador == 0){
-					    		                        // El stock anterior viene a ser el stock actual del movimiento anterior
-					    		                        $new_stock_anterior_act = $stock_actual_actualizacion_registros; // stock_anterior
-					    		                        $new_precio_unitario_anterior_act = $precio_unitario_actual_actualizacion_registros; // precio_unitario_anterior
-					    		                        $auxiliar_contador++;
-					    		                    }
-					    		                    // Actualizar los datos para una salida
-					    		                    $stock_actual_final = $new_stock_anterior_act - $cantidad_salida_act;
-					    		                    $precio_unitario_actual_final = $new_precio_unitario_anterior_act;
-					    		                    $precio_unitario_anterior_final = $new_precio_unitario_anterior_act;
-				    		                    	// Actualizar BD
-				    		                    	$actualizar = array(
-				    		                    	    'stock_anterior'=> $new_stock_anterior_act,
-				    		                    	    'precio_unitario_anterior'=> $precio_unitario_anterior_final,
-				    		                    	    'stock_actual'=> $stock_actual_final,
-				    		                    	    'precio_unitario_actual'=> $precio_unitario_actual_final
-				    		                    	);
-				    		                    	$this->db->where('id_kardex_producto',$id_kardex_producto);
-				    		                    	$this->db->update('kardex_producto', $actualizar);
-				    		                    	// fin de actualizar
-					    		                }
-					    		                // Dejar variables con el ultimo registro del stock y precio unitario obtenido
-					    		                // Este paso se realizo en la linea 4277 pero solo sirvio para un recorrido
-					    		                $new_stock_anterior_act = $stock_actual_final;
-					    		                if($descripcion_act == 'ENTRADA'){
-					    		                    $new_precio_unitario_anterior_act = $precio_unitario_actual_promedio_final;
-					    		                }else if($descripcion_act == 'SALIDA'){
-					    		                    $new_precio_unitario_anterior_act = $precio_unitario_actual_final;
-					    		                }
-					    		            }
-					    		        }
-					    		    }else{
-					    		    	echo 'error_vacio';
-					    		    }
-					    		}
-			    		    }
-			    		    if($auxiliar_stock_negatiVo != 'stock_negativo'){
-	    		    			// Creo las variables de sesion para un registro más rapido Area y Fecha, se quedará con el ultimo registro realizado
-	    		    			$datasession_area_fecha_salida = array(
-	    		    				'id_area' => $this->security->xss_clean($this->input->post('id_area')),
-	    		    				'fecharegistro' => strtoupper($this->security->xss_clean($this->input->post('fecharegistro'))),
-	    		    			);
-	    		    			$this->session->set_userdata($datasession_area_fecha_salida);
-
-	    		    			// ENVIAR PARAMETRO
-	    		    			// Se cambia el lugar del envio de este parametro ya que se debe actualizar los datos de cierre
-	    		    	        // echo '1';
-	    		    	    }
-	    		    	}
-	    		    }
-	    		    */
-	    		    // Cuadrar los montos de cierre para salidas cuya fecha ya tiene un cierre
-	    		    // Formateando la Fecha
-	    		    /*
-		            $elementos = explode("-", $fecharegistro);
-		            $anio = $elementos[0];
-		            $mes = $elementos[1];
-		            $dia = $elementos[2];
-		            if($mes == 12){
-		                $anio = $anio + 1;
-		                $mes_siguiente = 1;
-		                $dia = 1;
-		            }else if($mes <= 11 ){
-		                $mes_siguiente = $mes + 1;
-		                $dia = 1;
-		            }
-		            $array = array($anio, $mes_siguiente, $dia);
-		            $fecha_formateada = implode("-", $array);
-
-	    		    do{
-	    		    	// Esta fecha me va a servir para ubicar el cierre del producto del mes posterior para su actualizacion
-		                // Realizar la actualización del monto de cierre del producto en funcion de la fecha de registro de la factura
-		                $this->db->select('id_saldos_iniciales,stock_inicial,stock_inicial_sta_clara,precio_uni_inicial');
-		                $this->db->where('id_pro',$id_pro);
-		                $this->db->where('fecha_cierre',$fecha_formateada);
-		                $query = $this->db->get('saldos_iniciales');
-		                if($query->num_rows()>0){
-		                    foreach($query->result() as $row){
-		                        $id_saldos_iniciales = $row->id_saldos_iniciales;
-		                        $stock_inicial = $row->stock_inicial;
-		                        $stock_inicial_sta_clara = $row->stock_inicial_sta_clara;
-		                        $precio_uni_inicial = $row->precio_uni_inicial;
-		                    }
-		                    // Actualizar unidades de cierre solo en las unidades del almacen de sta anita
-		                    $stock_actualizado_cierre = $stock_inicial - $cantidad;
-		                    $actualizar = array(
-		                        'stock_inicial'=> $stock_actualizado_cierre
-		                    );
-		                    $this->db->where('id_saldos_iniciales',$id_saldos_iniciales);
-		                    $this->db->update('saldos_iniciales', $actualizar);
-		                    // Actualizar monto final de cierre del mes
-		                    $stock_general_cierre_anterior = $stock_inicial + $stock_inicial_sta_clara;
-		                    $stock_general_cierre = ($stock_inicial-$cantidad) + $stock_inicial_sta_clara;
-		                    $monto_parcial_producto_anterior = $precio_uni_inicial * $stock_general_cierre_anterior;
-                    		$monto_parcial_producto_nuevo = $precio_uni_inicial * $stock_general_cierre;
-                    		// Seleccionar el monto de cierre
-		                    $this->db->select('fecha_cierre,monto_cierre_sta_anita,monto_cierre_sta_clara,fecha_auxiliar');
-		                    $this->db->where('fecha_auxiliar',$fecha_formateada);
-		                    $query = $this->db->get('monto_cierre');
-		                    if($query->num_rows()>0){
-		                        foreach($query->result() as $row){
-		                            $fecha_cierre = $row->fecha_cierre;
-		                            $monto_cierre_sta_anita = $row->monto_cierre_sta_anita;
-		                            $monto_cierre_sta_clara = $row->monto_cierre_sta_clara;
-		                            $fecha_auxiliar = $row->fecha_auxiliar;
-		                        }
-		                        $monto_cierre_sta_anita = $monto_cierre_sta_anita - $monto_parcial_producto_anterior;
-                            	$monto_cierre_sta_anita = $monto_cierre_sta_anita + $monto_parcial_producto_nuevo;
-                            	// Nuevo monto de cierre general
-                            	$monto_general_actualizado = $monto_cierre_sta_anita + $monto_cierre_sta_clara;
-                            	$actualizar = array(
-	                                'monto_cierre'=> $monto_general_actualizado,
-	                                'monto_cierre_sta_anita'=> $monto_cierre_sta_anita
-	                            );
-	                            $this->db->where('fecha_auxiliar',$fecha_formateada);
-	                            $this->db->update('monto_cierre',$actualizar);
-
-	                            // Aumentar la fecha para la siguiente busqueda de cierre // Ya se tiene la fecha con el formato correcto
-			                    $elementos_act = explode("-", $fecha_formateada);
-			                    $anio = $elementos_act[0];
-			                    $mes = $elementos_act[1];
-			                    $dia = $elementos_act[2];
-			                    if($mes == 12){
-			                        $anio = $anio + 1;
-			                        $mes_siguiente = 01;
-			                        $dia = 1;
-			                    }else if($mes <= 11 ){
-			                        $mes_siguiente = $mes + 1;
-			                        $dia = 1;
-			                    }
-			                    $array = array($anio, $mes_siguiente, $dia);
-			                    $fecha_formateada = implode("-", $array);
-			                }
-		                }else{
-		                    $aux_bucle_saldos_ini = 1;
-		                }
-	    		    }while($aux_bucle_saldos_ini == 0);
-	    		    echo '1';
-	    		    */
 	        	}
 	       	}
 	    }
-      
-        /* Fin del proceso - transacción */
+        // Fin del proceso - transacción
 		$this->db->trans_complete();
 	}
 
@@ -8242,7 +6997,7 @@ class Comercial extends CI_Controller {
         	}
 		}
 	}
-
+	/*
 	public function eliminarregistroingreso()
 	{
 		$almacen = $this->security->xss_clean($this->session->userdata('almacen'));
@@ -8254,6 +7009,811 @@ class Comercial extends CI_Controller {
         	echo '1';
         }
 	}
+	*/
+	public function eliminarregistroingreso()
+    {   
+        $this->db->trans_begin();
+        $contador_kardex_v = 0;
+        $contador_kardex = 0;
+        $aux = 0;
+        $almacen = $this->security->xss_clean($this->session->userdata('almacen'));
+        $id_registro_ingreso = $this->security->xss_clean($this->input->post('id_ingreso_producto'));
+        // validar que la factura a eliminar no corresponde a una fecha en la que ya se realizo un cierre
+        $result_fecha_factura = $this->model_comercial->get_fecha_factura_eliminar($id_registro_ingreso);
+        foreach ($result_fecha_factura as $row_fecha){
+            $fecha_registro = $row_fecha->fecha;
+            // formato de fecha para la comparacion
+            $elementos = explode("-", $fecha_registro);
+            $anio = $elementos[0];
+            $mes = $elementos[1];
+            $dia = $elementos[2];
+            // Validar si el mes es diciembre 12 : sino sale fuera de rango
+            if($mes == 12){
+                $anio = $anio + 1;
+                $mes_siguiente = 1;
+                $dia = 1;
+            }else if($mes <= 11 ){
+                $mes_siguiente = $mes + 1;
+                $dia = 1;
+            }
+            $array = array($anio, $mes_siguiente, $dia);
+            $fecha_formateada = implode("-", $array);
+            // consulta si la factura corresponde a un periodo que ya cerro
+            $elementos = explode("-", date('Y-m-d'));
+	        $anio = $elementos[0];
+	        $mes = $elementos[1];
+	        $dia = $elementos[2];
+	        // personalizar
+	        $anio = $anio;
+	        $mes = 1;
+	        $dia = 1;
+	        // fecha inicial
+	        $array = array($anio, $mes, $dia);
+	        $fecha_inicial = implode("-", $array);
+	        $fecha_inicial = date("Y-m-d", strtotime($fecha_inicial));
+	        // var_dump($fecha_inicial);
+	        // validacion
+            $this->db->select('id_saldos_iniciales');
+            $this->db->where('fecha_cierre',$fecha_formateada);
+            $query = $this->db->get('saldos_iniciales');
+            if($query->num_rows() > 0){
+                echo 'periodo_cerrado';
+            }else{
+                // Proceso de validacion de resultados
+                // Eliminar el kardex de cada producto asociado a la factura e ir actualizando el stock y su precio unitario
+                $result_mov_kardex_v = $this->model_comercial->get_kardex_producto_eliminar($id_registro_ingreso); // trae los productos asociados a la factura
+                foreach ($result_mov_kardex_v as $row_mov_v){
+                    // iniciar valores
+                    $stock_saldo_final = 0;
+                    $precio_unitario_saldo_final = 0;
+                    // obtener valores de la consulta
+                    $id_detalle_producto = $row_mov_v->id_detalle_producto;
+                    //$id_detalle_producto = 7455;
+                    $fecha_registro = $row_mov_v->fecha;
+                    $nro_comprobante = $row_mov_v->nro_comprobante;
+                    $id_area = $row_mov_v->id_area;
+                    $id_pro = $row_mov_v->id_pro;
+                    // $id_pro = 7382;
+                    $unidades_entrada = $row_mov_v->unidades;
+                    // obtener los saldos iniciales para iniciar con el recorrido
+                    $saldos_iniciales = $this->model_comercial->traer_saldos_iniciales($fecha_inicial,$id_pro);
+                    if( count($saldos_iniciales) > 0 ){
+                    	foreach ($saldos_iniciales as $result) {
+                    		$total_saldos_iniciales = $result->stock_inicial + $result->stock_inicial_sta_clara;
+                    		$stock_inicial_kardex = $total_saldos_iniciales;
+                    		$precio_unitario_inicial_kardex = $result->precio_uni_inicial;
+                    	}
+                    }else{
+                    	$stock_inicial_kardex = 0;
+                		$precio_unitario_inicial_kardex = 0;
+                    }
+                    // var_dump('saldos '.$stock_inicial_kardex.' '.$precio_unitario_inicial_kardex);
+                    // actualizacion del stock y precio unitario del podructo en funcion del kardex
+                    $detalle_movimientos_kardex_v = $this->model_comercial->traer_movimientos_kardex_eliminar($id_detalle_producto);
+                    $existe_v = count($detalle_movimientos_kardex_v);
+                    if($existe_v > 0){
+                        foreach ($detalle_movimientos_kardex_v as $data_v) {
+                            $numero_comprobante_kardex_v = $data_v->num_comprobante;
+                            $fecha_registro_kardex_v = $data_v->fecha_registro;
+                            // Obtener del id de ingreso de producto, por medio del numero del comprobante de la tabla ingreso_producto
+
+
+                            // var_dump("ENTRADA ".$data_v->descripcion." ");
+                            if($nro_comprobante != $numero_comprobante_kardex_v){ // OJO !! revisar que al momento de eliminar no se intente eliminar una factura duplicada 
+                            	//porque no estar contando como entrada ninguna de las dos factura y saldra negativo, ahora ultimo estoy agregando la fecha como tipo de filtro pero solo servira
+                            	// cuando sea duplicado pero con fechas diferentes, AQUI SE TIENE QUE APLICAR UN FILTRO DIFERENTE PARA IDENTIFICAR QUE NO SEAN IGUALES
+                            	// PUEDE SER POR EL ID DEL REGISTRO
+                                if($data_v->descripcion == "ENTRADA" || $data_v->descripcion == "IMPORTACION"){
+                                    if($contador_kardex_v == 0){
+                                    	// var_dump("SI ".$stock_inicial_kardex." ");
+                                        $stock_saldo_final = $stock_inicial_kardex + $data_v->cantidad_ingreso;
+                            			$precio_unitario_saldo_final = (($data_v->cantidad_ingreso*$data_v->precio_unitario_actual) + ($precio_unitario_inicial_kardex * $stock_inicial_kardex))/($data_v->cantidad_ingreso + $stock_inicial_kardex);
+                                        $contador_kardex_v++;
+                                        // var_dump("ENTRADA ".$data_v->cantidad_ingreso." ");
+                                        // if( $id_detalle_producto == 3971 ){
+                                        	// var_dump("SI ".$stock_inicial_kardex." ");
+                                        	// var_dump("ENTRADA ".$data_v->cantidad_ingreso." ");
+                                        	// var_dump("SALDO FINAL ".$stock_saldo_final." <br>");
+                                        // }
+                                    }else{
+                                    	// var_dump("ENTRADA ".$data_v->cantidad_ingreso." ");
+                                        $stock_antes_actualizar = $stock_saldo_final;
+                                        $stock_saldo_final = $stock_saldo_final + $data_v->cantidad_ingreso;
+                                        $precio_unitario_saldo_final = (($data_v->cantidad_ingreso*$data_v->precio_unitario_actual) + ($precio_unitario_saldo_final * $stock_antes_actualizar))/($data_v->cantidad_ingreso + $stock_antes_actualizar);
+                                        // if( $id_detalle_producto == 3971 ){
+                                        	// var_dump("ENTRADA ".$data_v->cantidad_ingreso." ");
+                                        	// var_dump("SALDO FINAL ".$stock_saldo_final." <br>");
+                                        // }
+                                    }
+                                }else if($data_v->descripcion == "SALIDA"){
+                                	if($contador_kardex_v == 0){
+                                		// var_dump("SALIDA ".$data_v->cantidad_salida." ");
+                                		$stock_saldo_final = $stock_inicial_kardex - $data_v->cantidad_salida;
+                            			$precio_unitario_saldo_final = $precio_unitario_inicial_kardex;
+                            			$contador_kardex++;
+                            			// if( $id_detalle_producto == 3971 ){
+                            				// var_dump("SI ".$stock_inicial_kardex." ");
+                                        	// var_dump("SALIDA ".$data_v->cantidad_salida." ");
+                                        	// var_dump("SALDO FINAL ".$stock_saldo_final." <br>");
+                            			// }
+                                	}else{
+                                		// var_dump("SALIDA ".$data_v->cantidad_salida." ");
+	                                    $stock_saldo_final = $stock_saldo_final - $data_v->cantidad_salida;
+	                                    $precio_unitario_saldo_final = $precio_unitario_saldo_final;
+	                                    // if( $id_detalle_producto == 3971 ){
+                                        	// var_dump("SALIDA ".$data_v->cantidad_salida." ");
+                                        	// var_dump("SALDO FINAL ".$stock_saldo_final." <br>");
+                            			// }
+                                	}
+                                }else if($data_v->descripcion == "ORDEN INGRESO"){
+                                    if($contador_kardex_v == 0){
+                                    	$stock_saldo_final = $stock_inicial_kardex + $data_v->cantidad_ingreso;
+			                            $precio_unitario_saldo_final = (($data_v->cantidad_ingreso*$data_v->precio_unitario_actual) + ($precio_unitario_inicial_kardex * $stock_inicial_kardex))/($data_v->cantidad_ingreso + $stock_inicial_kardex);
+			                            $contador_kardex++;
+                                    }else{
+	                                    $stock_saldo_final = $stock_saldo_final + $data_v->cantidad_ingreso;
+	                                    $precio_unitario_saldo_final = $precio_unitario_saldo_final;
+                                    }
+                                }
+                            }
+                        }
+                    }else{
+                        $stock_saldo_final = 0;
+                        $precio_unitario_saldo_final = 0;
+                    }
+
+                    if($stock_saldo_final < 0 || $precio_unitario_saldo_final < 0){
+                        // echo 'valores_negativos_producto '.$stock_saldo_final." ".$precio_unitario_saldo_final." ";
+                        var_dump($id_detalle_producto." ".$stock_saldo_final." ".$precio_unitario_saldo_final." \n");
+                        $aux++;
+                    }
+                    //die();
+                }
+
+                if($aux == 0){
+                    // Eliminar el kardex de cada producto asociado a la factura e ir actualizando el stock y su precio unitario
+                    $result_mov_kardex = $this->model_comercial->get_kardex_producto_eliminar($id_registro_ingreso); // trae los productos asociados a la factura
+                    foreach ($result_mov_kardex as $row_mov){
+                        // iniciar valores
+                        $stock_saldo_final = 0;
+                        $precio_unitario_saldo_final = 0;
+                        // obtener valores de la consulta
+                        $id_detalle_producto = $row_mov->id_detalle_producto;
+                        $fecha_registro = $row_mov->fecha;
+                        $nro_comprobante = $row_mov->nro_comprobante;
+                        $id_area = $row_mov->id_area;
+                        $id_pro = $row_mov->id_pro;
+                        $unidades = $row_mov->unidades;
+                        // eliminacion del kardex del producto
+                        $sql = "DELETE FROM kardex_producto WHERE id_detalle_producto = " . $id_detalle_producto . " AND DATE(fecha_registro) = '" .$fecha_registro."' AND num_comprobante = '" .$nro_comprobante."'";
+                        $query = $this->db->query($sql);
+                        // obtener los saldos iniciales para iniciar con el recorrido
+	                    $saldos_iniciales = $this->model_comercial->traer_saldos_iniciales($fecha_inicial,$id_pro);
+	                    if( count($saldos_iniciales) > 0 ){
+	                    	foreach ($saldos_iniciales as $result) {
+	                    		$total_saldos_iniciales = $result->stock_inicial + $result->stock_inicial_sta_clara;
+	                    		$stock_inicial_kardex = $total_saldos_iniciales;
+	                    		$precio_unitario_inicial_kardex = $result->precio_uni_inicial;
+	                    	}
+	                    }else{
+	                    	$stock_inicial_kardex = 0;
+	                		$precio_unitario_inicial_kardex = 0;
+	                    }
+                        // actualizacion del stock y precio unitario del podructo en funcion del kardex // para lo cual necesitamos obtener el ultimo registro en el kardex de ese producto
+                        $detalle_movimientos_kardex = $this->model_comercial->traer_movimientos_kardex_eliminar($id_detalle_producto);
+                        $existe = count($detalle_movimientos_kardex);
+                        if($existe > 0){
+                            foreach ($detalle_movimientos_kardex as $data) {
+                                if($data->descripcion == "ENTRADA" || $data->descripcion == "IMPORTACION"){
+                                    if($contador_kardex == 0){
+                                        $stock_saldo_final = $stock_inicial_kardex + $data->cantidad_ingreso;
+                                        $precio_unitario_saldo_final = (($data->cantidad_ingreso*$data->precio_unitario_actual) + ($precio_unitario_inicial_kardex * $stock_inicial_kardex))/($data->cantidad_ingreso + $stock_inicial_kardex);
+                                        $contador_kardex++;
+                                    }else{
+                                        $stock_antes_actualizar = $stock_saldo_final;
+                                        $stock_saldo_final = $stock_saldo_final + $data->cantidad_ingreso;
+                                        $precio_unitario_saldo_final = (($data->cantidad_ingreso*$data->precio_unitario_actual) + ($precio_unitario_saldo_final * $stock_antes_actualizar))/($data->cantidad_ingreso + $stock_antes_actualizar);
+                                    }
+                                }else if($data->descripcion == "SALIDA"){
+                                    if($contador_kardex == 0){
+                                    	$stock_saldo_final = $stock_inicial_kardex - $data->cantidad_salida;
+										$precio_unitario_saldo_final = $precio_unitario_inicial_kardex;
+										$contador_kardex++;
+                                    }else{
+	                                    $stock_saldo_final = $stock_saldo_final - $data->cantidad_salida;
+	                                    $precio_unitario_saldo_final = $precio_unitario_saldo_final;
+                                    }
+                                }else if($data->descripcion == "ORDEN INGRESO"){
+                                    if($contador_kardex == 0){
+                                    	$stock_saldo_final = $stock_inicial_kardex + $data->cantidad_ingreso;
+                                        $precio_unitario_saldo_final = (($data->cantidad_ingreso*$data->precio_unitario_actual) + ($precio_unitario_inicial_kardex * $stock_inicial_kardex))/($data->cantidad_ingreso + $stock_inicial_kardex);
+                                        $contador_kardex++;
+                                    }else{
+	                                    $stock_saldo_final = $stock_saldo_final + $data->cantidad_ingreso;
+	                                    $precio_unitario_saldo_final = $precio_unitario_saldo_final;
+                                    }
+                                }
+                            }
+                        }else{
+                            $stock_saldo_final = 0;
+                            $precio_unitario_saldo_final = 0;
+                        }
+
+                        // obtener el stock del producto de acuerdo al almacen para descontar // STOCK GENERAL
+                        $this->db->select('stock,stock_sta_clara');
+				        $this->db->where('id_detalle_producto',$id_detalle_producto);
+				        $query = $this->db->get('detalle_producto');
+					    if(count($query->result()) > 0){
+					        foreach($query->result() as $row){
+					            $stock_sta_anita = $row->stock;
+					            $stock_sta_clara = $row->stock_sta_clara;
+					        }
+					        if($almacen == 1){
+					        	$actualizar_p_u_2 = array(
+		                            'precio_unitario'=> $precio_unitario_saldo_final,
+		                            'stock_sta_clara' => $stock_saldo_final - $stock_sta_anita
+		                        );
+		                        $this->db->where('id_detalle_producto',$id_detalle_producto);
+		                        $this->db->update('detalle_producto', $actualizar_p_u_2);
+					        }else if($almacen == 2){
+					        	$actualizar_p_u_2 = array(
+		                            'precio_unitario'=> $precio_unitario_saldo_final,
+		                            'stock' => $stock_saldo_final - $stock_sta_clara
+		                        );
+		                        $this->db->where('id_detalle_producto',$id_detalle_producto);
+		                        $this->db->update('detalle_producto', $actualizar_p_u_2);
+					        }
+					    }
+
+					    // REGRESAR EL STOCK POR AREA DE LOS PRODUCTOS
+					    $this->db->select('stock_area_sta_anita,stock_area_sta_clara');
+				        $this->db->where('id_area',$id_area);
+				        $this->db->where('id_pro',$id_pro);
+				        $query = $this->db->get('detalle_producto_area');
+				        if(count($query->result()) > 0){
+				        	foreach($query->result() as $row){
+					            $stock_area_sta_anita = $row->stock_area_sta_anita;
+					            $stock_area_sta_clara = $row->stock_area_sta_clara;
+					        }
+					        if($almacen == 1){
+					        	$actualizar_p_u_area = array(
+		                            'stock_area_sta_clara' => $stock_area_sta_clara - $unidades
+		                        );
+		                        $this->db->where('id_area',$id_area);
+				        		$this->db->where('id_pro',$id_pro);
+		                        $this->db->update('detalle_producto_area', $actualizar_p_u_area);
+					        }else if($almacen == 2){
+					        	$actualizar_p_u_area = array(
+		                            'stock_area_sta_anita' => $stock_area_sta_anita - $unidades
+		                        );
+		                        $this->db->where('id_area',$id_area);
+				        		$this->db->where('id_pro',$id_pro);
+		                        $this->db->update('detalle_producto_area', $actualizar_p_u_area);
+					        }
+
+				        }
+
+                    }
+                    // ELIMINAR REGISTROS
+                    $sql = "DELETE FROM adm_facturas_asociadas WHERE id_ingreso_producto = " . $id_registro_ingreso . "";
+                    $query = $this->db->query($sql);
+
+                    $sql = "DELETE FROM detalle_ingreso_producto WHERE id_ingreso_producto = " . $id_registro_ingreso . "";
+                    $query = $this->db->query($sql);
+
+                    $sql = "DELETE FROM ingreso_producto WHERE id_ingreso_producto = " . $id_registro_ingreso . "";
+                    $query = $this->db->query($sql);
+
+                    echo 'eliminacion_correcta';
+                    $this->db->trans_complete();
+                }else{
+                    echo 'valores_negativos_producto';
+                }
+            }
+        }
+    }
+
+    public function al_exportar_kardex_producto_excel_v2(){
+        $data = $this->security->xss_clean($this->uri->segment(3));
+        $data = json_decode($data, true);
+        $id_detalle_producto = $data[0];
+        $f_inicial = $data[1];
+        $f_final = $data[2];
+
+        (array)$arr = str_split($f_final, 4);
+        $anio = $arr[0];
+
+        // Formato para la fecha inicial
+        $elementos = explode("-", $f_inicial);
+        $anio = $elementos[0];
+        $mes = $elementos[1];
+        $dia = $elementos[2];
+        $array = array($dia, $mes, $anio);
+        $f_inicial = implode("-", $array);
+        // Fin
+
+        $this->load->library('pHPExcel');
+        /* variables de PHPExcel */
+        $objPHPExcel = new PHPExcel();
+        $nombre_archivo = "phpExcel";
+
+        /* propiedades de la celda */
+        $objPHPExcel->getDefaultStyle()->getFont()->setName('Arial Narrow');
+        $objPHPExcel->getDefaultStyle()->getFont()->setSize(10);
+        $objPHPExcel->getActiveSheet()->getRowDimension('1')->setRowHeight(10);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(10);
+        $objPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(10);
+
+        /* Here your first sheet */
+        $sheet = $objPHPExcel->getActiveSheet();
+
+        /* Traer informacion de la BD */
+        $nombre_productos_salidas = $this->model_comercial->traer_nombres_kardex_producto($id_detalle_producto);
+        /* Recorro con todos los nombres seleccionados que tienen una salida/ingreso en el kardex */
+        /*  */
+        $i = 0;
+        foreach ($nombre_productos_salidas as $reg) {
+            $nombre_producto = $reg->no_producto;
+            $id_unidad_medida = $reg->id_unidad_medida;
+            $id_detalle_producto = $reg->id_detalle_producto;
+            $id_pro = $reg->id_pro;
+
+            // Add new sheet
+            $objWorkSheet = $objPHPExcel->createSheet($i); //Setting index when creating
+            $objPHPExcel->setActiveSheetIndex($i)->mergeCells('A1:D1');
+            $objPHPExcel->setActiveSheetIndex($i)->mergeCells('A12:D12');
+            $objPHPExcel->setActiveSheetIndex($i)->mergeCells('E12:G12');
+            $objPHPExcel->setActiveSheetIndex($i)->mergeCells('H12:J12');
+            $objPHPExcel->setActiveSheetIndex($i)->mergeCells('K12:M12');
+
+            /* Style - Bordes */
+            $borders = array(
+                'borders' => array(
+                    'allborders' => array(
+                        'style' => PHPExcel_Style_Border::BORDER_THIN,
+                        'color' => array('argb' => 'FF000000'),
+                    )
+                ),
+            );
+
+            $style = array(
+                'alignment' => array(
+                    'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
+                )
+            );
+
+            $style_2 = array(
+                'alignment' => array(
+                    'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_RIGHT,
+                )
+            );
+
+            $styleArray = array(
+                'font' => array(
+                    'bold' => true
+                )
+            );
+
+            $objPHPExcel->getActiveSheet()->getStyle('A12:D12')->applyFromArray($borders);
+            $objPHPExcel->getActiveSheet()->getStyle('E12:G12')->applyFromArray($borders);
+            $objPHPExcel->getActiveSheet()->getStyle('H12:J12')->applyFromArray($borders);
+            $objPHPExcel->getActiveSheet()->getStyle('K12:M12')->applyFromArray($borders);
+            $objPHPExcel->getActiveSheet()->getStyle('A13:M13')->applyFromArray($borders);
+
+            $objPHPExcel->getActiveSheet()->getStyle('A12:D12')->applyFromArray($style);
+            $objPHPExcel->getActiveSheet()->getStyle('E12:G12')->applyFromArray($style);
+            $objPHPExcel->getActiveSheet()->getStyle('H12:J12')->applyFromArray($style);
+            $objPHPExcel->getActiveSheet()->getStyle('K12:M12')->applyFromArray($style);
+            $objPHPExcel->getActiveSheet()->getStyle('A13:M13')->applyFromArray($style);
+
+            $objPHPExcel->getActiveSheet()->getStyle('A12:D12')->applyFromArray($styleArray);
+            $objPHPExcel->getActiveSheet()->getStyle('E12:G12')->applyFromArray($styleArray);
+            $objPHPExcel->getActiveSheet()->getStyle('H12:J12')->applyFromArray($styleArray);
+            $objPHPExcel->getActiveSheet()->getStyle('K12:M12')->applyFromArray($styleArray);
+            $objPHPExcel->getActiveSheet()->getStyle('A13:M13')->applyFromArray($styleArray);
+
+            $objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(15);
+            $objPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(15);
+            $objPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth(15);
+            $objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth(15);
+            $objPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth(15);
+            $objPHPExcel->getActiveSheet()->getColumnDimension('F')->setWidth(15);
+            $objPHPExcel->getActiveSheet()->getColumnDimension('G')->setWidth(15);
+            $objPHPExcel->getActiveSheet()->getColumnDimension('H')->setWidth(15);
+            $objPHPExcel->getActiveSheet()->getColumnDimension('I')->setWidth(15);
+            $objPHPExcel->getActiveSheet()->getColumnDimension('J')->setWidth(15);
+            $objPHPExcel->getActiveSheet()->getColumnDimension('K')->setWidth(15);
+            $objPHPExcel->getActiveSheet()->getColumnDimension('L')->setWidth(15);
+            $objPHPExcel->getActiveSheet()->getColumnDimension('M')->setWidth(15);
+
+            $objPHPExcel->getActiveSheet()->getStyle('A1:D10')->applyFromArray($styleArray);
+            $objPHPExcel->getActiveSheet()->getStyle('F1:F10')->applyFromArray($styleArray);
+            //Write cells
+            $objWorkSheet->setCellValue('A1', 'INVENTARIO PERMANENTE VALORIZADO')
+                         ->setCellValue('A2', 'PERIODO: '.$anio)
+                         ->setCellValue('A3', 'RUC: 20101717098')
+                         ->setCellValue('A4', 'TEJIDOS JORGITO SRL')
+                         ->setCellValue('A5', 'CALLE LOS TELARES No 103-105 URB. VULCANO-ATE')
+                         ->setCellValue('A6', 'CÓDIGO: PRD'.$id_pro)
+                         ->setCellValue('A7', 'TIPO: 03')
+                         ->setCellValue('A8', 'DESCRIPCIÓN: '.$nombre_producto)
+                         ->setCellValue('A9', 'UNIDAD DE MEDIDA: '.$id_unidad_medida)
+                         ->setCellValue('A10', 'MÉTODO DE EVALUACIÓN: COSTO PROMEDIO');
+            $objWorkSheet->setCellValue('F1', 'FT: FACTURA')
+                         ->setCellValue('F2', 'GR: GUÍA DE REMISIÓN')
+                         ->setCellValue('F3', 'BV: BOLETA DE VENTA')
+                         ->setCellValue('F4', 'NC: NOTA DE CRÉDITO')
+                         ->setCellValue('F5', 'ND: NOTA DE DÉBITO')
+                         ->setCellValue('F6', 'OS: ORDEN DE SALIDA')
+                         ->setCellValue('F7', 'OI: ORDEN DE INGRESO')
+                         ->setCellValue('F8', 'CU: COSTO UNITARIO (NUEVOS SOLES)')
+                         ->setCellValue('F9', 'CT: COSTO TOTAL (NUEVOS SOLES)')
+                         ->setCellValue('F10', 'SI: SALDO INICIAL');
+            $objWorkSheet->setCellValue('A12', 'DOCUMENTO DE MOVIMIENTO')
+                         ->setCellValue('E12', 'ENTRADAS')
+                         ->setCellValue('H12', 'SALIDAS')
+                         ->setCellValue('K12', 'SALDO FINAL');
+            $objWorkSheet->setCellValue('A13', 'FECHA')
+                         ->setCellValue('B13', 'TIPO')
+                         ->setCellValue('C13', 'SERIE')
+                         ->setCellValue('D13', 'NÚMERO')
+                         ->setCellValue('E13', 'CANTIDAD')
+                         ->setCellValue('F13', 'CU')
+                         ->setCellValue('G13', 'CT')
+                         ->setCellValue('H13', 'CANTIDAD')
+                         ->setCellValue('I13', 'CU')
+                         ->setCellValue('J13', 'CT')
+                         ->setCellValue('K13', 'CANTIDAD')
+                         ->setCellValue('L13', 'CU')
+                         ->setCellValue('M13', 'CT');
+
+            /* Formato para la fila 14 */
+            $objPHPExcel->getActiveSheet()->getStyle('A14')->applyFromArray($borders);
+            $objPHPExcel->getActiveSheet()->getStyle('B14')->applyFromArray($borders);
+            $objPHPExcel->getActiveSheet()->getStyle('C14')->applyFromArray($borders);
+            $objPHPExcel->getActiveSheet()->getStyle('D14')->applyFromArray($borders);
+            $objPHPExcel->getActiveSheet()->getStyle('A14')->applyFromArray($style);
+            $objPHPExcel->getActiveSheet()->getStyle('B14')->applyFromArray($style);
+            $objPHPExcel->getActiveSheet()->getStyle('C14')->applyFromArray($style);
+            $objPHPExcel->getActiveSheet()->getStyle('D14')->applyFromArray($style);
+            $objPHPExcel->getActiveSheet()->getStyle('E14')->applyFromArray($borders);
+            $objPHPExcel->getActiveSheet()->getStyle('F14')->applyFromArray($borders);
+            $objPHPExcel->getActiveSheet()->getStyle('G14')->applyFromArray($borders);
+            $objPHPExcel->getActiveSheet()->getStyle('H14')->applyFromArray($borders);
+            $objPHPExcel->getActiveSheet()->getStyle('I14')->applyFromArray($borders);
+            $objPHPExcel->getActiveSheet()->getStyle('J14')->applyFromArray($borders);
+            $objPHPExcel->getActiveSheet()->getStyle('K14')->applyFromArray($borders);
+            $objPHPExcel->getActiveSheet()->getStyle('L14')->applyFromArray($borders);
+            $objPHPExcel->getActiveSheet()->getStyle('M14')->applyFromArray($borders);
+
+            /* Traer saldos iniciales de la BD */
+            $saldos_iniciales = $this->model_comercial->traer_saldos_iniciales($f_inicial,$id_pro);
+
+            /* varianles para las sumatorias */
+            $sumatoria_cantidad_entradas = 0;
+            $sumatoria_parciales_entradas = 0;
+
+            $sumatoria_cantidad_salidas = 0;
+            $sumatoria_parciales_salidas = 0;
+
+            $sumatoria_cantidad_saldos = 0;
+            $sumatoria_parciales_saldos = 0;
+
+            $objPHPExcel->getActiveSheet()->getStyle('E14')->applyFromArray($style_2);
+            $objPHPExcel->getActiveSheet()->getStyle('F14')->applyFromArray($style_2);
+            $objPHPExcel->getActiveSheet()->getStyle('G14')->applyFromArray($style_2);
+            $objPHPExcel->getActiveSheet()->getStyle('H14')->applyFromArray($style_2);
+            $objPHPExcel->getActiveSheet()->getStyle('I14')->applyFromArray($style_2);
+            $objPHPExcel->getActiveSheet()->getStyle('J14')->applyFromArray($style_2);
+            $objPHPExcel->getActiveSheet()->getStyle('K14')->applyFromArray($style_2);
+            $objPHPExcel->getActiveSheet()->getStyle('L14')->applyFromArray($style_2);
+            $objPHPExcel->getActiveSheet()->getStyle('M14')->applyFromArray($style_2);
+
+            $objPHPExcel->getActiveSheet()->getStyle('E14')->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+            $objPHPExcel->getActiveSheet()->getStyle('F14')->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+            $objPHPExcel->getActiveSheet()->getStyle('G14')->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+            $objPHPExcel->getActiveSheet()->getStyle('H14')->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+            $objPHPExcel->getActiveSheet()->getStyle('I14')->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+            $objPHPExcel->getActiveSheet()->getStyle('J14')->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+            $objPHPExcel->getActiveSheet()->getStyle('K14')->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+            $objPHPExcel->getActiveSheet()->getStyle('L14')->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+            $objPHPExcel->getActiveSheet()->getStyle('M14')->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+
+            if( count($saldos_iniciales) > 0 ){
+                foreach ($saldos_iniciales as $result) {
+                    $total_saldos_iniciales = $result->stock_inicial + $result->stock_inicial_sta_clara;
+                    /* Formato de Fecha */
+                    $elementos = explode("-", $result->fecha_cierre);
+                    $anio = $elementos[0];
+                    $mes = $elementos[1];
+                    $dia = $elementos[2];
+                    $array = array($dia, $mes, $anio);
+                    $fecha_formateada = implode("-", $array);
+                    /* Fin */
+                    $objWorkSheet->setCellValue('A14', $fecha_formateada)
+                                 ->setCellValue('B14', " ")
+                                 ->setCellValue('C14', "SI")
+                                 ->setCellValue('D14', " ")
+                                 ->setCellValue('E14', $total_saldos_iniciales)
+                                 ->setCellValue('F14', $result->precio_uni_inicial)
+                                 ->setCellValue('G14', $total_saldos_iniciales*$result->precio_uni_inicial)
+                                 ->setCellValueExplicit('H14', "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+                                 ->setCellValue('I14', $result->precio_uni_inicial)
+                                 ->setCellValueExplicit('J14', "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+                                 ->setCellValue('K14', $total_saldos_iniciales)
+                                 ->setCellValue('L14', $result->precio_uni_inicial)
+                                 ->setCellValue('M14', $total_saldos_iniciales*$result->precio_uni_inicial);
+                    /* ENTRADAS */
+                    $sumatoria_cantidad_entradas = $sumatoria_cantidad_entradas + $total_saldos_iniciales;
+                    $sumatoria_parciales_entradas = $sumatoria_parciales_entradas + ($total_saldos_iniciales * $result->precio_uni_inicial);
+                    /* SALDOS */
+                    $sumatoria_cantidad_saldos = $sumatoria_cantidad_saldos + $total_saldos_iniciales;
+                    $sumatoria_parciales_saldos = $sumatoria_parciales_saldos + ($total_saldos_iniciales * $result->precio_uni_inicial);
+                    // Nuevo - Dejar el saldo inicial para los registros posteriores
+                    $stock_inicial_kardex = $total_saldos_iniciales;
+                    $precio_unitario_inicial_kardex = $result->precio_uni_inicial;
+
+                }
+            }else{
+                $objWorkSheet->setCellValueExplicit('A14', $f_inicial)
+                             ->setCellValueExplicit('B14', " ")
+                             ->setCellValueExplicit('C14', "SI")
+                             ->setCellValueExplicit('D14', " ")
+                             ->setCellValueExplicit('E14', "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+                             ->setCellValueExplicit('F14', "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+                             ->setCellValueExplicit('G14', "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+                             ->setCellValueExplicit('H14', "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+                             ->setCellValueExplicit('I14', "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+                             ->setCellValueExplicit('J14', "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+                             ->setCellValueExplicit('K14', "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+                             ->setCellValueExplicit('L14', "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+                             ->setCellValueExplicit('M14', "0.00",PHPExcel_Cell_DataType::TYPE_STRING);
+                // Nuevo - Dejar el saldo inicial para los registros posteriores
+                $stock_inicial_kardex = 0;
+                $precio_unitario_inicial_kardex = 0;
+            }
+
+            // Recorrido del detalle del kardex general por producto
+            $detalle_movimientos_kardex = $this->model_comercial->traer_movimientos_kardex($id_detalle_producto,$f_inicial,$f_final);
+            $existe = count($detalle_movimientos_kardex);
+            $y = 0;
+            $contador_kardex = 0;
+            if($existe > 0){
+                foreach ($detalle_movimientos_kardex as $data) {
+                    $p = 15;
+                    $p = $p + $y;
+                    /* Centrar contenido */
+                    $objPHPExcel->getActiveSheet()->getStyle('A'.$p)->applyFromArray($borders);
+                    $objPHPExcel->getActiveSheet()->getStyle('B'.$p)->applyFromArray($borders);
+                    $objPHPExcel->getActiveSheet()->getStyle('C'.$p)->applyFromArray($borders);
+                    $objPHPExcel->getActiveSheet()->getStyle('D'.$p)->applyFromArray($borders);
+                    $objPHPExcel->getActiveSheet()->getStyle('A'.$p)->applyFromArray($style);
+                    $objPHPExcel->getActiveSheet()->getStyle('B'.$p)->applyFromArray($style);
+                    $objPHPExcel->getActiveSheet()->getStyle('C'.$p)->applyFromArray($style);
+                    $objPHPExcel->getActiveSheet()->getStyle('D'.$p)->applyFromArray($style);
+                    $objPHPExcel->getActiveSheet()->getStyle('E'.$p)->applyFromArray($borders);
+                    $objPHPExcel->getActiveSheet()->getStyle('F'.$p)->applyFromArray($borders);
+                    $objPHPExcel->getActiveSheet()->getStyle('G'.$p)->applyFromArray($borders);
+
+                    $objPHPExcel->getActiveSheet()->getStyle('E'.$p)->applyFromArray($style_2);
+                    $objPHPExcel->getActiveSheet()->getStyle('F'.$p)->applyFromArray($style_2);
+                    $objPHPExcel->getActiveSheet()->getStyle('G'.$p)->applyFromArray($style_2);
+                    $objPHPExcel->getActiveSheet()->getStyle('H'.$p)->applyFromArray($style_2);
+                    $objPHPExcel->getActiveSheet()->getStyle('I'.$p)->applyFromArray($style_2);
+                    $objPHPExcel->getActiveSheet()->getStyle('J'.$p)->applyFromArray($style_2);
+                    $objPHPExcel->getActiveSheet()->getStyle('K'.$p)->applyFromArray($style_2);
+                    $objPHPExcel->getActiveSheet()->getStyle('L'.$p)->applyFromArray($style_2);
+                    $objPHPExcel->getActiveSheet()->getStyle('M'.$p)->applyFromArray($style_2);
+
+                    $objPHPExcel->getActiveSheet()->getStyle('H'.$p)->applyFromArray($borders);
+                    $objPHPExcel->getActiveSheet()->getStyle('I'.$p)->applyFromArray($borders);
+                    $objPHPExcel->getActiveSheet()->getStyle('J'.$p)->applyFromArray($borders);
+                    $objPHPExcel->getActiveSheet()->getStyle('K'.$p)->applyFromArray($borders);
+                    $objPHPExcel->getActiveSheet()->getStyle('L'.$p)->applyFromArray($borders);
+                    $objPHPExcel->getActiveSheet()->getStyle('M'.$p)->applyFromArray($borders);
+                    /* formato de variables */
+                    $objPHPExcel->getActiveSheet()->getStyle('E'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                    $objPHPExcel->getActiveSheet()->getStyle('F'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                    $objPHPExcel->getActiveSheet()->getStyle('G'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                    $objPHPExcel->getActiveSheet()->getStyle('H'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                    $objPHPExcel->getActiveSheet()->getStyle('I'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                    $objPHPExcel->getActiveSheet()->getStyle('J'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                    $objPHPExcel->getActiveSheet()->getStyle('K'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                    $objPHPExcel->getActiveSheet()->getStyle('L'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                    $objPHPExcel->getActiveSheet()->getStyle('M'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+
+                    /* Traer ID de salida del producto */
+                    if($data->descripcion == "SALIDA"){
+                        $fecha_salida = $data->fecha_registro;
+                        $detalle_producto = $data->id_detalle_producto;
+                        $cantidad_salida = $data->cantidad_salida;
+                    }
+
+                    /* Formato de Fecha */
+                    $elementos = explode("-", $data->fecha_registro);
+                    $anio = $elementos[0];
+                    $mes = $elementos[1];
+                    $dia = $elementos[2];
+                    $array = array($dia, $mes, $anio);
+                    $fecha_formateada_2 = implode("-", $array);
+                    /* fin de formato */
+
+                    if($data->descripcion == "ENTRADA"){
+                        if($contador_kardex == 0){
+                            $stock_saldo_final = $stock_inicial_kardex + $data->cantidad_ingreso;
+                            $precio_unitario_saldo_final = (($data->cantidad_ingreso*$data->precio_unitario_actual) + ($precio_unitario_inicial_kardex * $stock_inicial_kardex))/($data->cantidad_ingreso + $stock_inicial_kardex);
+                            $contador_kardex++;
+                        }else{
+                            $stock_antes_actualizar = $stock_saldo_final;
+                            $stock_saldo_final = $stock_saldo_final + $data->cantidad_ingreso;
+                            $precio_unitario_saldo_final = (($data->cantidad_ingreso*$data->precio_unitario_actual) + ($precio_unitario_saldo_final * $stock_antes_actualizar))/($data->cantidad_ingreso + $stock_antes_actualizar);
+                        }
+                        $objWorkSheet->setCellValue('A'.$p, $fecha_formateada_2)
+                                     ->setCellValue('B'.$p, "FT")
+                                     ->setCellValueExplicit('C'.$p, str_pad($data->serie_comprobante, 3, 0, STR_PAD_LEFT),PHPExcel_Cell_DataType::TYPE_STRING)
+                                     ->setCellValueExplicit('D'.$p, str_pad($data->num_comprobante, 8, 0, STR_PAD_LEFT),PHPExcel_Cell_DataType::TYPE_STRING)
+                                     ->setCellValue('E'.$p, $data->cantidad_ingreso)
+                                     ->setCellValue('F'.$p, $data->precio_unitario_actual)
+                                     ->setCellValue('G'.$p, $data->cantidad_ingreso * $data->precio_unitario_actual)
+                                     ->setCellValueExplicit('H'.$p, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+                                     ->setCellValue('I'.$p, $data->precio_unitario_actual)
+                                     ->setCellValueExplicit('J'.$p, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+                                     ->setCellValue('K'.$p, $stock_saldo_final)
+                                     ->setCellValue('L'.$p, $precio_unitario_saldo_final)
+                                     ->setCellValue('M'.$p, $stock_saldo_final*$precio_unitario_saldo_final);
+                    }else if($data->descripcion == "SALIDA"){
+                        if($contador_kardex == 0){
+                            $stock_saldo_final = $stock_inicial_kardex - $data->cantidad_salida;
+                            $precio_unitario_saldo_final = $precio_unitario_inicial_kardex;
+                            $contador_kardex++;
+                        }else{
+                            $stock_saldo_final = $stock_saldo_final - $data->cantidad_salida;
+                            $precio_unitario_saldo_final = $precio_unitario_saldo_final;
+                        }
+                        $objWorkSheet->setCellValue('A'.$p, $fecha_formateada_2)
+                                     ->setCellValue('B'.$p, "OS")
+                                     ->setCellValue('C'.$p, "NIG")
+                                     ->setCellValueExplicit('D'.$p, str_pad($data->id_kardex_producto, 8, 0, STR_PAD_LEFT),PHPExcel_Cell_DataType::TYPE_STRING)
+                                     ->setCellValueExplicit('E'.$p, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+                                     ->setCellValueExplicit('F'.$p, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+                                     ->setCellValueExplicit('G'.$p, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+                                     ->setCellValue('H'.$p, $data->cantidad_salida)
+                                     ->setCellValue('I'.$p, $precio_unitario_saldo_final)
+                                     ->setCellValue('J'.$p, $data->cantidad_salida*$precio_unitario_saldo_final)
+                                     ->setCellValue('K'.$p, $stock_saldo_final)
+                                     ->setCellValue('L'.$p, $precio_unitario_saldo_final)
+                                     ->setCellValue('M'.$p, $stock_saldo_final*$precio_unitario_saldo_final);
+                    }else if($data->descripcion == "IMPORTACION"){
+                        if($contador_kardex == 0){
+                            $stock_saldo_final = $stock_inicial_kardex + $data->cantidad_ingreso;
+                            $precio_unitario_saldo_final = (($data->cantidad_ingreso*$data->precio_unitario_actual) + ($precio_unitario_inicial_kardex * $stock_inicial_kardex))/($data->cantidad_ingreso + $stock_inicial_kardex);
+                            $contador_kardex++;
+                        }else{
+                            $stock_antes_actualizar = $stock_saldo_final;
+                            $stock_saldo_final = $stock_saldo_final + $data->cantidad_ingreso;
+                            $precio_unitario_saldo_final = (($data->cantidad_ingreso*$data->precio_unitario_actual) + ($precio_unitario_saldo_final * $stock_antes_actualizar))/($data->cantidad_ingreso + $stock_antes_actualizar);
+                        }
+                        $objWorkSheet->setCellValue('A'.$p, $fecha_formateada_2)
+                                     ->setCellValue('B'.$p, "IMPORTACION")
+                                     ->setCellValueExplicit('C'.$p, str_pad($data->serie_comprobante, 3, 0, STR_PAD_LEFT),PHPExcel_Cell_DataType::TYPE_STRING)
+                                     ->setCellValueExplicit('D'.$p, str_pad($data->num_comprobante, 8, 0, STR_PAD_LEFT),PHPExcel_Cell_DataType::TYPE_STRING)
+                                     ->setCellValue('E'.$p, $data->cantidad_ingreso)
+                                     ->setCellValue('F'.$p, $data->precio_unitario_actual)
+                                     ->setCellValue('G'.$p, $data->cantidad_ingreso * $data->precio_unitario_actual)
+                                     ->setCellValueExplicit('H'.$p, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+                                     ->setCellValue('I'.$p, $data->precio_unitario_actual)
+                                     ->setCellValueExplicit('J'.$p, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+                                     ->setCellValue('K'.$p, $stock_saldo_final)
+                                     ->setCellValue('L'.$p, $precio_unitario_saldo_final)
+                                     ->setCellValue('M'.$p, $stock_saldo_final*$precio_unitario_saldo_final);
+                    }else if($data->descripcion == "ORDEN INGRESO"){
+                        if($contador_kardex == 0){
+                            $stock_saldo_final = $stock_inicial_kardex + $data->cantidad_ingreso;
+                            $precio_unitario_saldo_final = (($data->cantidad_ingreso*$data->precio_unitario_actual) + ($precio_unitario_inicial_kardex * $stock_inicial_kardex))/($data->cantidad_ingreso + $stock_inicial_kardex);
+                            $contador_kardex++;
+                        }else{
+                            $stock_saldo_final = $stock_saldo_final + $data->cantidad_ingreso;
+                            $precio_unitario_saldo_final = $precio_unitario_saldo_final;
+                        }
+                        $objWorkSheet->setCellValue('A'.$p, $fecha_formateada_2)
+                                     ->setCellValue('B'.$p, "OI")
+                                     ->setCellValueExplicit('C'.$p, str_pad($data->serie_comprobante, 3, 0, STR_PAD_LEFT),PHPExcel_Cell_DataType::TYPE_STRING)
+                                     ->setCellValueExplicit('D'.$p, str_pad($data->num_comprobante, 8, 0, STR_PAD_LEFT),PHPExcel_Cell_DataType::TYPE_STRING)
+                                     ->setCellValue('E'.$p, $data->cantidad_ingreso)
+                                     ->setCellValue('F'.$p, $data->precio_unitario_actual)
+                                     ->setCellValue('G'.$p, $data->cantidad_ingreso * $data->precio_unitario_actual)
+                                     ->setCellValueExplicit('H'.$p, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+                                     ->setCellValue('I'.$p, $data->precio_unitario_actual)
+                                     ->setCellValueExplicit('J'.$p, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
+                                     ->setCellValue('K'.$p, $stock_saldo_final)
+                                     ->setCellValue('L'.$p, $precio_unitario_saldo_final)
+                                     ->setCellValue('M'.$p, $stock_saldo_final*$precio_unitario_saldo_final);
+                    }
+                    /* ENTRADAS Y ORDEN DE INGRESO*/
+                    $sumatoria_cantidad_entradas = $sumatoria_cantidad_entradas + $data->cantidad_ingreso;
+                    $sumatoria_parciales_entradas = $sumatoria_parciales_entradas + ($data->cantidad_ingreso * $data->precio_unitario_actual);
+                    /* SALIDAS */
+                    $sumatoria_cantidad_salidas = $sumatoria_cantidad_salidas + $data->cantidad_salida;
+                    $sumatoria_parciales_salidas = $sumatoria_parciales_salidas + ($data->cantidad_salida * $precio_unitario_saldo_final);
+                    /* SALDOS */
+                    $sumatoria_cantidad_saldos = $sumatoria_cantidad_saldos + $stock_saldo_final;
+                    // Sumatoria de saldos parciales caso general
+                    $sumatoria_parciales_saldos = $sumatoria_parciales_saldos + ($stock_saldo_final * $precio_unitario_saldo_final);
+                    /*
+                    if($data->descripcion == "SALIDA"){
+                        $sumatoria_parciales_saldos = $sumatoria_parciales_saldos + ($stock_saldo_final * $precio_unitario_saldo_final);
+                    }else if($data->descripcion == "ENTRADA"){
+                        $sumatoria_parciales_saldos = $sumatoria_parciales_saldos + ($stock_saldo_final * $precio_unitario_saldo_final);
+                    }else if($data->descripcion == "ORDEN INGRESO"){
+                        $sumatoria_parciales_saldos = $sumatoria_parciales_saldos + ($stock_saldo_final * $precio_unitario_saldo_final);
+                    }
+                    */
+                    $y = $y + 1;
+                }
+            }
+
+            $p = 15 + $y;
+            $objWorkSheet->setCellValue('A'.$p, "")
+                         ->setCellValue('B'.$p, "")
+                         ->setCellValue('C'.$p, "")
+                         ->setCellValue('D'.$p, "TOTALES")
+                         ->setCellValue('E'.$p, $sumatoria_cantidad_entradas)
+                         ->setCellValue('F'.$p, "")
+                         ->setCellValue('G'.$p, $sumatoria_parciales_entradas)
+                         ->setCellValue('H'.$p, $sumatoria_cantidad_salidas)
+                         ->setCellValue('I'.$p, "")
+                         ->setCellValue('J'.$p, $sumatoria_parciales_salidas)
+                         ->setCellValue('K'.$p, $sumatoria_cantidad_saldos)
+                         ->setCellValue('L'.$p, "")
+                         ->setCellValue('M'.$p, $sumatoria_parciales_saldos);
+
+            /* Centrar contenido */
+            $objPHPExcel->getActiveSheet()->getStyle('D'.$p)->applyFromArray($borders);
+            $objPHPExcel->getActiveSheet()->getStyle('D'.$p)->applyFromArray($style);
+            $objPHPExcel->getActiveSheet()->getStyle('E'.$p)->applyFromArray($borders);
+            $objPHPExcel->getActiveSheet()->getStyle('F'.$p)->applyFromArray($borders);
+            $objPHPExcel->getActiveSheet()->getStyle('G'.$p)->applyFromArray($borders);
+            $objPHPExcel->getActiveSheet()->getStyle('H'.$p)->applyFromArray($borders);
+            $objPHPExcel->getActiveSheet()->getStyle('I'.$p)->applyFromArray($borders);
+            $objPHPExcel->getActiveSheet()->getStyle('J'.$p)->applyFromArray($borders);
+            $objPHPExcel->getActiveSheet()->getStyle('K'.$p)->applyFromArray($borders);
+            $objPHPExcel->getActiveSheet()->getStyle('L'.$p)->applyFromArray($borders);
+            $objPHPExcel->getActiveSheet()->getStyle('M'.$p)->applyFromArray($borders);
+
+            /* Dar formato numericos a las celdas */
+            $objPHPExcel->getActiveSheet()->getStyle('E'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+            $objPHPExcel->getActiveSheet()->getStyle('G'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+            $objPHPExcel->getActiveSheet()->getStyle('H'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+            $objPHPExcel->getActiveSheet()->getStyle('J'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+            $objPHPExcel->getActiveSheet()->getStyle('K'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+            $objPHPExcel->getActiveSheet()->getStyle('M'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+
+            /* Alinear el valor de la celda a la derecha */
+            $objPHPExcel->getActiveSheet()->getStyle('E'.$p)->applyFromArray($style_2);
+            $objPHPExcel->getActiveSheet()->getStyle('F'.$p)->applyFromArray($style_2);
+            $objPHPExcel->getActiveSheet()->getStyle('G'.$p)->applyFromArray($style_2);
+            $objPHPExcel->getActiveSheet()->getStyle('H'.$p)->applyFromArray($style_2);
+            $objPHPExcel->getActiveSheet()->getStyle('I'.$p)->applyFromArray($style_2);
+            $objPHPExcel->getActiveSheet()->getStyle('J'.$p)->applyFromArray($style_2);
+            $objPHPExcel->getActiveSheet()->getStyle('K'.$p)->applyFromArray($style_2);
+            $objPHPExcel->getActiveSheet()->getStyle('L'.$p)->applyFromArray($style_2);
+            $objPHPExcel->getActiveSheet()->getStyle('M'.$p)->applyFromArray($style_2);
+
+            /* Rename sheet */
+            $objWorkSheet->setTitle("$nombre_producto");
+            $i++;
+        }
+
+        $objPHPExcel->setActiveSheetIndex(0);
+
+        /* datos de la salida del excel */
+        header("Content-type: application/vnd.ms-excel");
+        header("Content-Disposition: attachment; filename=$nombre_producto.xls");
+        header("Cache-Control: max-age=0");
+        $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+        $objWriter->save('php://output');
+        exit;
+    }
 
 	public function eliminarsalidaproducto()
 	{
@@ -8392,30 +7952,45 @@ class Comercial extends CI_Controller {
 		echo '1';
 	}
 
+	/*
 	public function actualizar_saldos_iniciales_controller_version_6(){
 		$almacen = $this->security->xss_clean($this->session->userdata('almacen'));
 		$fecha_inicial = $this->security->xss_clean($this->input->post("fecha_inicial"));
 		$fecha_final = $this->security->xss_clean($this->input->post("fecha_final"));
+		$stock_saldo_final = 0;
+        $precio_unitario_saldo_final = 0;
+        $stock_saldo_final_2 = 0;
+        $precio_unitario_saldo_final_2 = 0;
+        // fecha inicial del año usado para consulta
+        $fecha_inicio_anio = date("Y-m-d");
+        $elementos_anio = explode("-", $fecha_inicio_anio);
+        $dia = $elementos_anio[2];
+        $mes = 1;
+        $anio = 1;
+        $array = array($anio, $mes, $dia);
+        $fecha_inicio_anio = implode("-", $array);
+        $fecha_inicio_anio = date("Y-m-d", strtotime($fecha_inicio_anio));
         // Formato de la fecha anterior
-		$elementos = explode("-", $fecha_inicial);
-        $anio = $elementos[0];
-        $mes = $elementos[1];
-        $dia = $elementos[2];
-        if($mes == 12){
-            $anio = $anio + 1;
-            $mes_siguiente = 1;
+		$elementos_f_i = explode("-", $fecha_inicial);
+        $anio = $elementos_f_i[0];
+        $mes = $elementos_f_i[1];
+        $dia = $elementos_f_i[2];
+        if($mes == 1){
+            $anio = $anio - 1;
+            $mes_siguiente = 12;
             $dia = 1;
-        }else if($mes <= 11 ){
-            $mes_siguiente = $mes;
+        }else if($mes > 1 ){
+            $mes_siguiente = $mes - 1;
             $dia = 1;
         }
         $array = array($anio, $mes_siguiente, $dia);
         $fecha_formateada_anterior = implode("-", $array);
+        $fecha_formateada_anterior = date("Y-m-d", strtotime($fecha_formateada_anterior));
         // Formato a la fecha posterior
-		$elementos = explode("-", $fecha_inicial);
-        $anio = $elementos[0];
-        $mes = $elementos[1];
-        $dia = $elementos[2];
+		$elementos_f_f = explode("-", $fecha_inicial);
+        $anio = $elementos_f_f[0];
+        $mes = $elementos_f_f[1];
+        $dia = $elementos_f_f[2];
         if($mes == 12){
             $anio = $anio + 1;
             $mes_siguiente = 1;
@@ -8426,80 +8001,435 @@ class Comercial extends CI_Controller {
         }
         $array = array($anio, $mes_siguiente, $dia);
         $fecha_formateada_posterior = implode("-", $array);
+        $fecha_formateada_posterior = date("Y-m-d", strtotime($fecha_formateada_posterior));
+
+        // validar si ya se realizo un cierre de ese mes
+        $validacion_cierre = $this->model_comercial->validar_cierre_duplicado($fecha_formateada_posterior);
+        if($validacion_cierre == 'validacion_conforme'){
+	        // var_dump($fecha_formateada_anterior);
+	        // var_dump($fecha_formateada_posterior);
+			// Realizar un consulta de todos los productos registrados en el sistema
+			// para verificar los movimientos de esos productos en el kardex y seleccionar el ultimo movimiento de ese mes
+			// para obtener el stock y el precio final para el cierre del mes
+			$data_product = $this->model_comercial->get_all_productos_v2();
+			foreach ($data_product as $row){
+				$id_detalle_producto = $row->id_detalle_producto;
+				$id_pro = $row->id_pro;
+				$stock_sta_anita = $row->stock;
+				$stock_sta_clara = $row->stock_sta_clara;
+
+				// Obtener los saldos iniciales del producto para el inicio de los calculos
+				$saldos_iniciales = $this->model_comercial->traer_saldos_iniciales($fecha_inicio_anio,$id_pro);
+				if( count($saldos_iniciales) > 0 ){
+					$stock_saldo_inicial = $result->stock_inicial + $result->stock_inicial_sta_clara;
+					$precio_saldo_inicial = $result->precio_uni_inicial;
+				}else{
+					$stock_saldo_inicial = 0;
+					$precio_saldo_inicial = 0;
+				}
+
+
+
+				// obtener los registros del kardex hasta la fecha en consulta para registrar en la tabla saldos_iniciales
+                $detalle_movimientos_kardex = $this->model_comercial->traer_movimientos_kardex_saldos_iniciales($id_detalle_producto,$fecha_final,$fecha_inicio_anio);
+                $existe = count($detalle_movimientos_kardex);
+                $contador_kardex = 0;
+                if($existe > 0){
+                    foreach ($detalle_movimientos_kardex as $data) {
+                        if($data->descripcion == "ENTRADA"){
+                            if($contador_kardex == 0){
+                                $stock_saldo_final = $stock_saldo_inicial + $data->cantidad_ingreso;
+                                $precio_unitario_saldo_final = (($data->cantidad_ingreso*$data->precio_unitario_actual) + ($precio_saldo_inicial * $stock_saldo_inicial))/($data->cantidad_ingreso + $stock_saldo_inicial);
+                                $contador_kardex++;
+                            }else{
+                                $stock_antes_actualizar = $stock_saldo_final;
+                                $stock_saldo_final = $stock_saldo_final + $data->cantidad_ingreso;
+                                $precio_unitario_saldo_final = (($data->cantidad_ingreso*$data->precio_unitario_actual) + ($precio_unitario_saldo_final * $stock_antes_actualizar))/($data->cantidad_ingreso + $stock_antes_actualizar);
+                            }
+                        }else if($data->descripcion == "SALIDA"){
+                        	if($contador_kardex == 0){
+	                            $stock_saldo_final = $stock_saldo_final - $data->cantidad_salida;
+	                            $precio_unitario_saldo_final = $precio_saldo_inicial;
+	                            $contador_kardex++;
+	                        }else{
+	                        	$stock_saldo_final = $stock_saldo_final - $data->cantidad_salida;
+                            	$precio_unitario_saldo_final = $precio_unitario_saldo_final;	
+	                        }
+                        }else if($data->descripcion == "IMPORTACION"){
+                            if($contador_kardex == 0){
+                                $stock_saldo_final = $stock_saldo_inicial + $data->cantidad_ingreso;
+                                $precio_unitario_saldo_final = (($data->cantidad_ingreso*$data->precio_unitario_actual) + ($precio_saldo_inicial * $stock_saldo_inicial))/($data->cantidad_ingreso + $stock_saldo_inicial);
+                                $contador_kardex++;
+                            }else{
+                                $stock_antes_actualizar = $stock_saldo_final;
+                                $stock_saldo_final = $stock_saldo_final + $data->cantidad_ingreso;
+                                $precio_unitario_saldo_final = (($data->cantidad_ingreso*$data->precio_unitario_actual) + ($precio_unitario_saldo_final * $stock_antes_actualizar))/($data->cantidad_ingreso + $stock_antes_actualizar);
+                            }
+                        }else if($data->descripcion == "ORDEN INGRESO"){
+                            if($contador_kardex == 0){
+                                $stock_saldo_final = $stock_saldo_inicial + $data->cantidad_ingreso;
+                                $precio_unitario_saldo_final = (($data->cantidad_ingreso*$data->precio_unitario_actual) + ($precio_saldo_inicial * $stock_saldo_inicial))/($data->cantidad_ingreso + $stock_saldo_inicial);;
+                                $contador_kardex++;
+                            }else{
+                                $stock_saldo_final = $stock_saldo_final + $data->cantidad_ingreso;
+                                $precio_unitario_saldo_final = $precio_unitario_saldo_final;
+                            }
+                        }
+                    }
+                    // insertar valores a la tabla saldos_iniciales
+                    $datos = array(
+                        'id_pro'=> $id_pro,
+                        'fecha_cierre'=> $fecha_formateada_posterior,
+                        'precio_uni_inicial'=> $precio_unitario_saldo_final,
+                        'stock_inicial' => $stock_saldo_final - $stock_sta_clara,
+                        'stock_inicial_sta_clara' => $stock_saldo_final - $stock_sta_anita
+                    );
+                    $this->model_comercial->insert_saldos_iniciales($datos);
+                    $stock_saldo_final = 0;
+                	$precio_unitario_saldo_final = 0;
+                }else{
+                    $datos = array(
+                        'id_pro'=> $id_pro,
+                        'fecha_cierre'=> $fecha_formateada_posterior,
+                        'precio_uni_inicial'=> 0,
+                        'stock_inicial' => 0,
+                        'stock_inicial_sta_clara' => 0
+                    );
+                    $this->model_comercial->insert_saldos_iniciales($datos);
+                    $stock_saldo_final = 0;
+                	$precio_unitario_saldo_final = 0;
+                }
+
+                // Actualizar el stock y precio unitario de los productos de acuerdo al kardex actual
+                $detalle_movimientos_kardex_sin_fecha = $this->model_comercial->traer_movimientos_kardex_saldos_iniciales_sin_filtro_fecha($id_detalle_producto,$fecha_inicio_anio);
+                $existe_sin_fecha = count($detalle_movimientos_kardex_sin_fecha);
+                $contador_kardex_2 = 0;
+                if($existe_sin_fecha > 0){
+                    foreach ($detalle_movimientos_kardex_sin_fecha as $data_2) {
+                        if($data_2->descripcion == "ENTRADA"){
+                            if($contador_kardex_2 == 0){
+                                $stock_saldo_final_2 = $stock_saldo_inicial + $data_2->cantidad_ingreso;
+                                $precio_unitario_saldo_final_2 = (($data_2->cantidad_ingreso*$data_2->precio_unitario_actual) + ($precio_saldo_inicial * $stock_saldo_inicial))/($data_2->cantidad_ingreso + $stock_saldo_inicial);
+                                $contador_kardex_2++;
+                            }else{
+                                $stock_antes_actualizar = $stock_saldo_final_2;
+                                $stock_saldo_final_2 = $stock_saldo_final_2 + $data_2->cantidad_ingreso;
+                                $precio_unitario_saldo_final_2 = (($data_2->cantidad_ingreso*$data_2->precio_unitario_actual) + ($precio_unitario_saldo_final_2 * $stock_antes_actualizar))/($data_2->cantidad_ingreso + $stock_antes_actualizar);
+                            }
+                        }else if($data_2->descripcion == "SALIDA"){
+                        	if($contador_kardex_2 == 0){
+	                            $stock_saldo_final_2 = $stock_saldo_final - $data_2->cantidad_salida;
+	                            $precio_unitario_saldo_final_2 = $precio_saldo_inicial;
+	                            $contador_kardex_2++;
+	                        }else{
+	                            $stock_saldo_final_2 = $stock_saldo_final_2 - $data_2->cantidad_salida;
+	                            $precio_unitario_saldo_final_2 = $precio_unitario_saldo_final_2;
+                        	}
+                        }else if($data_2->descripcion == "IMPORTACION"){
+                            if($contador_kardex_2 == 0){
+                                $stock_saldo_final_2 = $stock_saldo_inicial + $data_2->cantidad_ingreso;
+                                $precio_unitario_saldo_final_2 = (($data_2->cantidad_ingreso*$data_2->precio_unitario_actual) + ($precio_saldo_inicial * $stock_saldo_inicial))/($data_2->cantidad_ingreso + $stock_saldo_inicial);                                
+                                $contador_kardex_2++;
+                            }else{
+                                $stock_antes_actualizar = $stock_saldo_final_2;
+                                $stock_saldo_final_2 = $stock_saldo_final_2 + $data_2->cantidad_ingreso;
+                                $precio_unitario_saldo_final_2 = (($data_2->cantidad_ingreso*$data_2->precio_unitario_actual) + ($precio_unitario_saldo_final_2 * $stock_antes_actualizar))/($data_2->cantidad_ingreso + $stock_antes_actualizar);
+                            }
+                        }else if($data_2->descripcion == "ORDEN INGRESO"){
+                            if($contador_kardex_2 == 0){
+                                $stock_saldo_final_2 = $stock_saldo_inicial + $data_2->cantidad_ingreso;
+                                $precio_unitario_saldo_final_2 = (($data_2->cantidad_ingreso*$data_2->precio_unitario_actual) + ($precio_saldo_inicial * $stock_saldo_inicial))/($data_2->cantidad_ingreso + $stock_saldo_inicial);
+                                $contador_kardex_2++;
+                            }else{
+                                $stock_saldo_final_2 = $stock_saldo_final_2 + $data_2->cantidad_ingreso;
+                                $precio_unitario_saldo_final_2 = $precio_unitario_saldo_final_2;
+                            }
+                        }
+                    }
+                    $actualizar_p_u_2 = array(
+                        'precio_unitario'=> $precio_unitario_saldo_final_2,
+                        'stock' => $stock_saldo_final_2 - $stock_sta_clara,
+                        'stock_sta_clara' => $stock_saldo_final_2 - $stock_sta_anita
+                    );
+                    $this->db->where('id_detalle_producto',$id_detalle_producto);
+                    $this->db->update('detalle_producto', $actualizar_p_u_2);
+                    $stock_saldo_final_2 = 0;
+                	$precio_unitario_saldo_final_2 = 0;
+                }else{
+                    $actualizar_p_u_2 = array(
+                        'precio_unitario'=> 0,
+                        'stock' => 0,
+                        'stock_sta_clara' => 0
+                    );
+                    $this->db->where('id_detalle_producto',$id_detalle_producto);
+                    $this->db->update('detalle_producto', $actualizar_p_u_2);
+                    $stock_saldo_final_2 = 0;
+                	$precio_unitario_saldo_final_2 = 0;
+                }
+
+                $id_detalle_producto = "";
+				$id_pro = "";
+				$stock_sta_anita = "";
+				$stock_sta_clara = "";
+
+				/*
+				// validacion si existe un registro de este producto en kardex dentro del periodo seleccionado
+				$validacion = $this->model_comercial->validar_registros_producto_periodo($fecha_inicial, $fecha_final, $id_detalle_producto);
+				if($validacion == 'no_existe_movimiento'){
+					// Verificar si existe saldos iniciales del mes anterior para colocarlos en el saldo inicial actual
+					$this->db->select('stock_inicial,precio_uni_inicial,id_saldos_iniciales,stock_inicial_sta_clara');
+			        $this->db->where('fecha_cierre',date($fecha_formateada_anterior));
+			        $this->db->where('id_pro',$id_pro);
+			        $query = $this->db->get('saldos_iniciales');
+				    if(count($query->result()) > 0){
+				    	// Obtengo los saldos iniciales del mes anterior
+				    	// osea del mes actual que se esta trabajando
+				        foreach($query->result() as $row){
+				            $id_saldos_iniciales_anterior = $row->id_saldos_iniciales;
+				            $stock_inicial_anterior = $row->stock_inicial;
+				            $stock_inicial_sta_clara_anterior = $row->stock_inicial_sta_clara;
+				            $precio_uni_inicial_anterior = $row->precio_uni_inicial;
+				        }
+				        // Actualizar los saldos iniciales del mes que se selecciono
+				        $datos = array(
+	                        'id_pro'=> $id_pro,
+	                        'fecha_cierre'=> $fecha_formateada_posterior,
+	                        'precio_uni_inicial'=> $precio_uni_inicial_anterior,
+	                        'stock_inicial' => $stock_inicial_anterior,
+	                        'stock_inicial_sta_clara' => $stock_inicial_sta_clara_anterior,
+	                        'prueba' => 'saldo inicial anterior'
+	                    );
+	                    $this->model_comercial->insert_saldos_iniciales($datos);
+				    }else{
+				    	$datos = array(
+				    	    'id_pro'=> $id_pro,
+	                        'fecha_cierre'=> $fecha_formateada_posterior,
+				    	    'precio_uni_inicial'=> 0,
+				    	    'stock_inicial' => 0,
+				    	    'stock_inicial_sta_clara' => 0,
+				    	    'prueba' => 'no tiene saldo inicial'
+				    	);
+				    	$this->model_comercial->insert_saldos_iniciales($datos);
+				    }
+				}else{
+					// Obtener los ultimos datos nececesarios del kardex para la actualizacion del saldos inicial del producto en el periodo que corresponde
+					$this->db->select('stock_actual,precio_unitario_actual_promedio,precio_unitario_anterior,descripcion,precio_unitario_actual,fecha_registro');
+					$this->db->where('id_kardex_producto',(int)$validacion);
+					$query = $this->db->get('kardex_producto');
+					foreach($query->result() as $row){
+					    $stock_actual = $row->stock_actual;
+					    $precio_unitario_actual_promedio = $row->precio_unitario_actual_promedio;
+					    $precio_unitario_anterior = $row->precio_unitario_anterior;
+					    $descripcion = $row->descripcion;
+					    $precio_unitario_actual = $row->precio_unitario_actual;
+					    $fecha_registro = $row->fecha_registro;
+					}
+					// Considerar el ultimo precio que se manejo dependiente del tipo de movimiento
+					if($descripcion == 'SALIDA'){
+					    $precio_unitario_anterior_especial = $precio_unitario_anterior;
+					}else if($descripcion == 'ENTRADA'  || $descripcion == 'ORDEN INGRESO'){
+					    $precio_unitario_anterior_especial = $precio_unitario_actual_promedio;
+					}
+					// datos los saldos iniciales del mes que se selecciono
+					$datos = array(
+						'id_pro'=> $id_pro,
+	                    'fecha_cierre'=> $fecha_formateada_posterior,
+			            'precio_uni_inicial'=> $precio_unitario_anterior_especial,
+			            'stock_inicial' => $stock_actual,
+			            'stock_inicial_sta_clara' => 0,
+			            'prueba' => 'kardex'
+			        );
+			        $this->model_comercial->insert_saldos_iniciales($datos);
+				}
+				//
+			}
+			echo '1';
+        }else if($validacion_cierre == 'cierre_duplicado'){
+            echo 'cierre_duplicado';
+        }
+	}
+	*/
+
+	public function actualizar_saldos_iniciales_controller_version_6(){
+		$almacen = $this->security->xss_clean($this->session->userdata('almacen'));
+		$fecha_inicial = $this->security->xss_clean($this->input->post("fecha_inicial"));
+		$fecha_final = $this->security->xss_clean($this->input->post("fecha_final"));
+        // Formato de la fecha anterior
+        /*
+		$elementos_f_i = explode("-", $fecha_inicial);
+        $anio = $elementos_f_i[0];
+        $mes = $elementos_f_i[1];
+        $dia = $elementos_f_i[2];
+        if($mes == 1){
+            $anio = $anio - 1;
+            $mes_siguiente = 12;
+            $dia = 1;
+        }else if($mes > 1 ){
+        	$anio = $anio;
+            $mes_siguiente = $mes;
+            $dia = 1;
+        }
+        $array = array($anio, $mes_siguiente, $dia);
+        $fecha_formateada_anterior = implode("-", $array);
+        */
+        $fecha_formateada_anterior = date("Y-m-d", strtotime($fecha_inicial));
+        // Formato a la fecha posterior
+		$elementos_f_f = explode("-", $fecha_inicial);
+        $anio = $elementos_f_f[0];
+        $mes = $elementos_f_f[1];
+        $dia = $elementos_f_f[2];
+        if($mes == 12){
+            $anio = $anio + 1;
+            $mes_siguiente = 1;
+            $dia = 1;
+        }else if($mes <= 11 ){
+        	$anio = $anio;
+            $mes_siguiente = $mes + 1;
+            $dia = 1;
+        }
+        $array = array($anio, $mes_siguiente, $dia);
+        $fecha_formateada_posterior = implode("-", $array);
+        $fecha_formateada_posterior = date("Y-m-d", strtotime($fecha_formateada_posterior));
+        /*
+        var_dump($fecha_formateada_anterior."_");
+        var_dump($fecha_formateada_posterior);
+        die();
+        */
 		// Realizar un consulta de todos los productos registrados en el sistema
 		// para verificar los movimientos de esos productos en el kardex y seleccionar el ultimo movimiento de ese mes
 		// para obtener el stock y el precio final para el cierre del mes
-		$data_product = $this->model_comercial->get_all_productos_v2();
-		foreach ($data_product as $row){
-			$id_detalle_producto = $row->id_detalle_producto;
-			$id_pro = $row->id_pro;
-			// validacion si existe un registro de este producto en kardex dentro del periodo seleccionado
-			$validacion = $this->model_comercial->validar_registros_producto_periodo($fecha_inicial, $fecha_final, $id_detalle_producto);
-			if($validacion == 'no_existe_movimiento'){
-				// Verificar si existe saldos iniciales del mes anterior para colocarlos en el saldo inicial actual
-				$this->db->select('stock_inicial,precio_uni_inicial,id_saldos_iniciales,stock_inicial_sta_clara');
-		        $this->db->where('fecha_cierre',date($fecha_formateada_anterior));
-		        $this->db->where('id_pro',$id_pro);
-		        $query = $this->db->get('saldos_iniciales');
-			    if(count($query->result()) > 0){
-			    	// Obtengo los saldos iniciales del mes anterior
-			    	// osea del mes actual que se esta trabajando
-			        foreach($query->result() as $row){
-			            $id_saldos_iniciales_anterior = $row->id_saldos_iniciales;
-			            $stock_inicial_anterior = $row->stock_inicial;
-			            $stock_inicial_sta_clara_anterior = $row->stock_inicial_sta_clara;
-			            $precio_uni_inicial_anterior = $row->precio_uni_inicial;
-			        }
-			        // Actualizar los saldos iniciales del mes que se selecciono
-			        $datos = array(
-                        'id_pro'=> $id_pro,
-                        'fecha_cierre'=> $fecha_formateada_posterior,
-                        'precio_uni_inicial'=> $precio_uni_inicial_anterior,
-                        'stock_inicial' => $stock_inicial_anterior,
-                        'stock_inicial_sta_clara' => $stock_inicial_sta_clara_anterior
-                    );
-                    $this->model_comercial->insert_saldos_iniciales($datos);
-			    }else{
-			    	$datos = array(
-			    	    'id_pro'=> $id_pro,
-                        'fecha_cierre'=> $fecha_formateada_posterior,
-			    	    'precio_uni_inicial'=> 0,
-			    	    'stock_inicial' => 0,
-			    	    'stock_inicial_sta_clara' => 0
-			    	);
-			    	$this->model_comercial->insert_saldos_iniciales($datos);
-			    }
-			}else{
-				// Obtener los ultimos datos nececesarios del kardex para la actualizacion del saldos inicial del producto en el periodo que corresponde
-				$this->db->select('stock_actual,precio_unitario_actual_promedio,precio_unitario_anterior,descripcion,precio_unitario_actual,fecha_registro');
-				$this->db->where('id_kardex_producto',(int)$validacion);
-				$query = $this->db->get('kardex_producto');
-				foreach($query->result() as $row){
-				    $stock_actual = $row->stock_actual;
-				    $precio_unitario_actual_promedio = $row->precio_unitario_actual_promedio;
-				    $precio_unitario_anterior = $row->precio_unitario_anterior;
-				    $descripcion = $row->descripcion;
-				    $precio_unitario_actual = $row->precio_unitario_actual;
-				    $fecha_registro = $row->fecha_registro;
+		$validacion_cierre = $this->model_comercial->validar_cierre_duplicado($fecha_formateada_posterior);
+        if($validacion_cierre == 'validacion_conforme'){
+			$data_product = $this->model_comercial->get_all_productos_v2();
+			foreach ($data_product as $row){
+				$id_detalle_producto = $row->id_detalle_producto;
+				$id_pro = $row->id_pro;
+				$stock_sta_anita = $row->stock;
+				$stock_sta_clara = $row->stock_sta_clara;
+				// validacion si existe un registro de este producto en kardex dentro del periodo seleccionado
+				$validacion = $this->model_comercial->validar_registros_producto_periodo($fecha_inicial, $fecha_final, $id_detalle_producto);
+				if($validacion == 'no_existe_movimiento'){
+					// Verificar si existe saldos iniciales del mes anterior para colocarlos en el saldo inicial actual
+					$this->db->select('stock_inicial,precio_uni_inicial,id_saldos_iniciales,stock_inicial_sta_clara');
+			        $this->db->where('fecha_cierre',date($fecha_formateada_anterior));
+			        $this->db->where('id_pro',$id_pro);
+			        $query = $this->db->get('saldos_iniciales');
+				    if(count($query->result()) > 0){
+				    	// Obtengo los saldos iniciales del mes anterior
+				    	// osea del mes actual que se esta trabajando
+				        foreach($query->result() as $row){
+				            $id_saldos_iniciales_anterior = $row->id_saldos_iniciales;
+				            $stock_inicial_anterior = $row->stock_inicial;
+				            $stock_inicial_sta_clara_anterior = $row->stock_inicial_sta_clara;
+				            $precio_uni_inicial_anterior = $row->precio_uni_inicial;
+				        }
+				        // actualizar los saldos iniciales del mes que se selecciono
+				        $datos = array(
+	                        'id_pro'=> $id_pro,
+	                        'fecha_cierre'=> $fecha_formateada_posterior,
+	                        'precio_uni_inicial'=> $precio_uni_inicial_anterior,
+	                        'stock_inicial' => $stock_inicial_anterior,
+	                        'stock_inicial_sta_clara' => $stock_inicial_sta_clara_anterior
+	                    );
+	                    $this->model_comercial->insert_saldos_iniciales($datos);
+				    }else{
+				    	$datos = array(
+				    	    'id_pro'=> $id_pro,
+	                        'fecha_cierre'=> $fecha_formateada_posterior,
+				    	    'precio_uni_inicial'=> 0,
+				    	    'stock_inicial' => 0,
+				    	    'stock_inicial_sta_clara' => 0
+				    	);
+				    	$this->model_comercial->insert_saldos_iniciales($datos);
+				    }
+				}else{
+					$this->db->select('stock_inicial,precio_uni_inicial,id_saldos_iniciales,stock_inicial_sta_clara');
+			        $this->db->where('fecha_cierre',date($fecha_formateada_anterior));
+			        $this->db->where('id_pro',$id_pro);
+			        $query = $this->db->get('saldos_iniciales');
+				    if(count($query->result()) > 0){
+				    	foreach($query->result() as $row){
+					    	$total_saldos_iniciales = $row->stock_inicial + $row->stock_inicial_sta_clara;
+					    	$stock_inicial_kardex = $total_saldos_iniciales;
+		                    $precio_unitario_inicial_kardex = $row->precio_uni_inicial;
+		                }
+				    }else{
+				    	$stock_inicial_kardex = 0;
+	                	$precio_unitario_inicial_kardex = 0;
+				    }
+
+				    $detalle_movimientos_kardex = $this->model_comercial->traer_movimientos_kardex($id_detalle_producto,$fecha_inicial,$fecha_final);
+				    $existe = count($detalle_movimientos_kardex);
+				    $contador_kardex = 0;
+		            if($existe > 0){
+		                foreach ($detalle_movimientos_kardex as $data) {
+		                	if($data->descripcion == "ENTRADA"){
+		                        if($contador_kardex == 0){
+		                            $stock_saldo_final = $stock_inicial_kardex + $data->cantidad_ingreso;
+		                            $precio_unitario_saldo_final = (($data->cantidad_ingreso*$data->precio_unitario_actual) + ($precio_unitario_inicial_kardex * $stock_inicial_kardex))/($data->cantidad_ingreso + $stock_inicial_kardex);
+		                            $contador_kardex++;
+		                        }else{
+		                            $stock_antes_actualizar = $stock_saldo_final;
+		                            $stock_saldo_final = $stock_saldo_final + $data->cantidad_ingreso;
+		                            $precio_unitario_saldo_final = (($data->cantidad_ingreso*$data->precio_unitario_actual) + ($precio_unitario_saldo_final * $stock_antes_actualizar))/($data->cantidad_ingreso + $stock_antes_actualizar);
+		                        }
+		                    }else if($data->descripcion == "SALIDA"){
+		                        if($contador_kardex == 0){
+		                            $stock_saldo_final = $stock_inicial_kardex - $data->cantidad_salida;
+		                            $precio_unitario_saldo_final = $precio_unitario_inicial_kardex;
+		                            $contador_kardex++;
+		                        }else{
+		                            $stock_saldo_final = $stock_saldo_final - $data->cantidad_salida;
+		                            $precio_unitario_saldo_final = $precio_unitario_saldo_final;
+		                        }
+		                    }else if($data->descripcion == "IMPORTACION"){
+		                        if($contador_kardex == 0){
+		                            $stock_saldo_final = $stock_inicial_kardex + $data->cantidad_ingreso;
+		                            $precio_unitario_saldo_final = (($data->cantidad_ingreso*$data->precio_unitario_actual) + ($precio_unitario_inicial_kardex * $stock_inicial_kardex))/($data->cantidad_ingreso + $stock_inicial_kardex);
+		                            $contador_kardex++;
+		                        }else{
+		                            $stock_antes_actualizar = $stock_saldo_final;
+		                            $stock_saldo_final = $stock_saldo_final + $data->cantidad_ingreso;
+		                            $precio_unitario_saldo_final = (($data->cantidad_ingreso*$data->precio_unitario_actual) + ($precio_unitario_saldo_final * $stock_antes_actualizar))/($data->cantidad_ingreso + $stock_antes_actualizar);
+		                        }
+		                    }else if($data->descripcion == "ORDEN INGRESO"){
+		                        if($contador_kardex == 0){
+		                            $stock_saldo_final = $stock_inicial_kardex + $data->cantidad_ingreso;
+		                            $precio_unitario_saldo_final = (($data->cantidad_ingreso*$data->precio_unitario_actual) + ($precio_unitario_inicial_kardex * $stock_inicial_kardex))/($data->cantidad_ingreso + $stock_inicial_kardex);
+		                            $contador_kardex++;
+		                        }else{
+		                            $stock_saldo_final = $stock_saldo_final + $data->cantidad_ingreso;
+		                            $precio_unitario_saldo_final = $precio_unitario_saldo_final;
+		                        }
+		                    }
+		                    // validacion de valores negativos parcial
+		                    if($stock_saldo_final < 0 && $precio_unitario_saldo_final < 0){
+		                    	echo $id_detalle_producto.'_validacion_parcial_negativos<br>';
+		                    }
+		                }
+		            }else{
+		            	echo 'no_hay_kardex_fecha_seleccionada';
+		            }
+
+		            // validacion de valores negativos final
+		            if($stock_saldo_final >= 0 && $precio_unitario_saldo_final >= 0){
+		            	$datos = array(
+							'id_pro'=> $id_pro,
+		                    'fecha_cierre'=> $fecha_formateada_posterior,
+				            'precio_uni_inicial'=> $precio_unitario_saldo_final,
+				            'stock_inicial' => $stock_saldo_final,
+				            'stock_inicial_sta_clara' => 0
+				        );
+				        $this->model_comercial->insert_saldos_iniciales($datos);
+		            }else{
+		            	echo 'validacion_final_negativos';
+		            }
 				}
-				// Considerar el ultimo precio que se manejo dependiente del tipo de movimiento
-				if($descripcion == 'SALIDA'){
-				    $precio_unitario_anterior_especial = $precio_unitario_anterior;
-				}else if($descripcion == 'ENTRADA'  || $descripcion == 'ORDEN INGRESO'){
-				    $precio_unitario_anterior_especial = $precio_unitario_actual_promedio;
-				}
-				// datos los saldos iniciales del mes que se selecciono
-				$datos = array(
-					'id_pro'=> $id_pro,
-                    'fecha_cierre'=> $fecha_formateada_posterior,
-		            'precio_uni_inicial'=> $precio_unitario_anterior_especial,
-		            'stock_inicial' => $stock_actual,
-		            'stock_inicial_sta_clara' => 0
-		        );
-		        $this->model_comercial->insert_saldos_iniciales($datos);
 			}
-		}
-		echo '1';
+			echo '1';
+        }else if($validacion_cierre == 'cierre_duplicado'){
+            echo 'cierre_duplicado';
+        }
 	}
 
 	public function actualizar_saldos_iniciales_controller_version_2(){
@@ -8507,6 +8437,7 @@ class Comercial extends CI_Controller {
 		$fechainicial = $this->security->xss_clean($this->input->post("fechainicial"));
 		$fechafinal = $this->security->xss_clean($this->input->post("fechafinal"));
 		// Formato a la fecha para actualizar los cierre anterior
+		/*
 		$elementos = explode("-", $fechainicial);
         $anio = $elementos[0];
         $mes = $elementos[1];
@@ -8521,6 +8452,8 @@ class Comercial extends CI_Controller {
         }
         $array = array($anio, $mes_siguiente, $dia);
         $fecha_formateada_anterior = implode("-", $array);
+        */
+        $fecha_formateada_anterior = date("Y-m-d", strtotime($fecha_inicial));
         // Formato a la fecha para actualizar los cierre anterior
 		$elementos = explode("-", $fechafinal);
         $anio = $elementos[0];
@@ -8536,32 +8469,124 @@ class Comercial extends CI_Controller {
         }
         $array = array($anio, $mes_siguiente, $dia);
         $fecha_formateada_posterior = implode("-", $array);
+        $fecha_formateada_posterior = date("Y-m-d", strtotime($fecha_formateada_posterior));
 		// Realizar un consulta de todos los productos registrados en el sistema
 		// para verificar los movimientos de esos productos en el kardex y seleccionar el ultimo movimiento de ese mes
 		// para obtener el stock y el precio final para el cierre del mes
-		$data_product = $this->model_comercial->get_all_productos();
-		foreach ($data_product as $row){
-			$id_detalle_producto = $row->id_detalle_producto;
-			$id_pro = $row->id_pro;
-			// validacion si existe un registro de este producto en kardex dentro del periodo seleccionado
-			$validacion = $this->model_comercial->validar_registros_producto_periodo($fechainicial, $fechafinal, $id_detalle_producto);
-			if($validacion == 'no_existe_movimiento'){
-				// Verificar si existe saldos iniciales del mes anterior para colocarlos en el saldo inicial actual
-				$this->db->select('stock_inicial,precio_uni_inicial,id_saldos_iniciales,stock_inicial_sta_clara');
-		        $this->db->where('fecha_cierre',date($fecha_formateada_anterior));
-		        $this->db->where('id_pro',$id_pro);
-		        $query = $this->db->get('saldos_iniciales');
-			    if(count($query->result()) > 0){
-			    	// Obtengo los saldos iniciales del mes anterior
-			    	// osea del mes actual que se esta trabajando
-			        foreach($query->result() as $row){
-			            $id_saldos_iniciales_anterior = $row->id_saldos_iniciales;
-			            $stock_inicial_anterior = $row->stock_inicial;
-			            $stock_inicial_sta_clara_anterior = $row->stock_inicial_sta_clara;
-			            $precio_uni_inicial_anterior = $row->precio_uni_inicial;
-			        }
-			        $total_saldo_inicial_anterior = $stock_inicial_anterior + $stock_inicial_sta_clara_anterior;
-			        // Obtener los saldos iniciales del mes posterior
+
+        $validacion_cierre = $this->model_comercial->validar_cierre_duplicado($fecha_formateada_posterior);
+        if($validacion_cierre == 'validacion_conforme'){
+			$data_product = $this->model_comercial->get_all_productos();
+			foreach ($data_product as $row){
+				$id_detalle_producto = $row->id_detalle_producto;
+				$id_pro = $row->id_pro;
+				// validacion si existe un registro de este producto en kardex dentro del periodo seleccionado
+				$validacion = $this->model_comercial->validar_registros_producto_periodo($fechainicial, $fechafinal, $id_detalle_producto);
+				if($validacion == 'no_existe_movimiento'){
+					// Verificar si existe saldos iniciales del mes anterior para colocarlos en el saldo inicial actual
+					$this->db->select('stock_inicial,precio_uni_inicial,id_saldos_iniciales,stock_inicial_sta_clara');
+			        $this->db->where('fecha_cierre',date($fecha_formateada_anterior));
+			        $this->db->where('id_pro',$id_pro);
+			        $query = $this->db->get('saldos_iniciales');
+				    if(count($query->result()) > 0){
+				    	// Obtengo los saldos iniciales del mes anterior
+				    	// osea del mes actual que se esta trabajando
+				        foreach($query->result() as $row){
+				            $id_saldos_iniciales_anterior = $row->id_saldos_iniciales;
+				            $stock_inicial_anterior = $row->stock_inicial;
+				            $stock_inicial_sta_clara_anterior = $row->stock_inicial_sta_clara;
+				            $precio_uni_inicial_anterior = $row->precio_uni_inicial;
+				        }
+				        $total_saldo_inicial_anterior = $stock_inicial_anterior + $stock_inicial_sta_clara_anterior;
+				        // Obtener los saldos iniciales del mes posterior
+		        		$this->db->select('stock_inicial,precio_uni_inicial,id_saldos_iniciales,stock_inicial_sta_clara');
+		                $this->db->where('fecha_cierre',date($fecha_formateada_posterior));
+		                $this->db->where('id_pro',$id_pro);
+		                $query = $this->db->get('saldos_iniciales');
+		        	    if(count($query->result()) > 0){
+		        	    	foreach($query->result() as $row){
+		        	    	    $id_saldos_iniciales_posterior = $row->id_saldos_iniciales;
+		        	    	    $stock_inicial_posterior = $row->stock_inicial;
+		        	    	    $stock_inicial_sta_clara_posterior = $row->stock_inicial_sta_clara;
+		        	    	    $precio_uni_inicial_posterior = $row->precio_uni_inicial;
+		        	    	}
+		        	    }
+		        	    // validacion de resultados negativos
+		        	    if($stock_inicial_sta_clara_posterior < 0){
+		        	    	$stock_inicial_sta_clara_posterior = 0;
+		        	    }else if($stock_inicial_posterior < 0 ){
+		        	    	$stock_inicial_posterior = 0;
+		        	    }
+		        	    // totalizar stock's de cierre
+		        	    $total_saldo_inicial_posterior = $stock_inicial_posterior + $stock_inicial_sta_clara_posterior;
+		        	    // Distribucion de casos
+		        	    if($total_saldo_inicial_anterior < $total_saldo_inicial_posterior){
+		        	    	$diferencia = $total_saldo_inicial_posterior - $total_saldo_inicial_anterior;
+		        	    	// Quitar la diferencia a sta anita
+		        	    	$result_posterior_anita = $stock_inicial_posterior - $diferencia;	        	    	
+		        	    	if($result_posterior_anita > 0){
+				        	    // Validacion por la cantidad en unidades de los saldos iniciales
+						        // Actualizar los saldos iniciales del mes que se selecciono
+			                    $actualizar = array(
+			                        'precio_uni_inicial'=> $precio_uni_inicial_posterior,
+			                        'stock_inicial' => $result_posterior_anita
+			                    );
+			                    $this->db->where('id_pro',$id_pro);
+			                    $this->db->where('fecha_cierre',date($fecha_formateada_posterior));
+			                    $this->db->update('saldos_iniciales', $actualizar);
+		        	    	}else{
+		        	    		$result_posterior_clara = $stock_inicial_sta_clara_posterior - $diferencia;
+						        // Actualizar los saldos iniciales del mes que se selecciono
+			                    $actualizar = array(
+			                        'precio_uni_inicial'=> $precio_uni_inicial_posterior,
+			                        'stock_inicial_sta_clara' => $result_posterior_clara
+			                    );
+			                    $this->db->where('id_pro',$id_pro);
+			                    $this->db->where('fecha_cierre',date($fecha_formateada_posterior));
+			                    $this->db->update('saldos_iniciales', $actualizar);
+		        	    	}
+		        	    }else if($total_saldo_inicial_anterior > $total_saldo_inicial_posterior){
+		        	    	$diferencia = $total_saldo_inicial_anterior - $total_saldo_inicial_posterior;
+		        	    	// Aumento la diferencia a sta anita
+		        	    	$result_posterior_anita = $stock_inicial_posterior + $diferencia;
+					        // Actualizar los saldos iniciales del mes que se selecciono
+		                    $actualizar = array(
+		                        'precio_uni_inicial'=> $precio_uni_inicial_posterior,
+		                        'stock_inicial' => $result_posterior_anita
+		                    );
+		                    $this->db->where('id_pro',$id_pro);
+		                    $this->db->where('fecha_cierre',date($fecha_formateada_posterior));
+		                    $this->db->update('saldos_iniciales', $actualizar);
+		        	    }
+				    }else{
+				    	$actualizar = array(
+				    	    'precio_uni_inicial'=> 0,
+				    	    'stock_inicial' => 0
+				    	);
+				    	$this->db->where('id_pro',$id_pro);
+				    	$this->db->where('fecha_cierre',date($fecha_formateada_posterior));
+				    	$this->db->update('saldos_iniciales', $actualizar);
+				    }
+				}else{
+					// Obtener los ultimos datos nececesarios del kardex para la actualizacion del saldos inicial del producto en el periodo que corresponde
+					$this->db->select('stock_actual,precio_unitario_actual_promedio,precio_unitario_anterior,descripcion,precio_unitario_actual,fecha_registro');
+					$this->db->where('id_kardex_producto',(int)$validacion);
+					$query = $this->db->get('kardex_producto');
+					foreach($query->result() as $row){
+					    $stock_actual = $row->stock_actual;
+					    $precio_unitario_actual_promedio = $row->precio_unitario_actual_promedio;
+					    $precio_unitario_anterior = $row->precio_unitario_anterior;
+					    $descripcion = $row->descripcion;
+					    $precio_unitario_actual = $row->precio_unitario_actual;
+					    $fecha_registro = $row->fecha_registro;
+					}
+					// Considerar el ultimo precio que se manejo dependiente del tipo de movimiento
+					if($descripcion == 'SALIDA'){
+					    $precio_unitario_anterior_especial = $precio_unitario_anterior;
+					}else if($descripcion == 'ENTRADA'  || $descripcion == 'ORDEN INGRESO'){
+					    $precio_unitario_anterior_especial = $precio_unitario_actual_promedio;
+					}
+					// Obtener los saldos iniciales de cierre del mes que ya se tiene como registro
 	        		$this->db->select('stock_inicial,precio_uni_inicial,id_saldos_iniciales,stock_inicial_sta_clara');
 	                $this->db->where('fecha_cierre',date($fecha_formateada_posterior));
 	                $this->db->where('id_pro',$id_pro);
@@ -8575,142 +8600,58 @@ class Comercial extends CI_Controller {
 	        	    	}
 	        	    }
 	        	    // validacion de resultados negativos
-	        	    if($stock_inicial_sta_clara_posterior < 0){
-	        	    	$stock_inicial_sta_clara_posterior = 0;
-	        	    }else if($stock_inicial_posterior < 0 ){
-	        	    	$stock_inicial_posterior = 0;
-	        	    }
-	        	    // totalizar stock's de cierre
+		    	    if($stock_inicial_sta_clara_posterior < 0){
+		    	    	$stock_inicial_sta_clara_posterior = 0;
+		    	    }else if($stock_inicial_posterior < 0 ){
+		    	    	$stock_inicial_posterior = 0;
+		    	    }
+		    	    // totalizar stock's de cierre
 	        	    $total_saldo_inicial_posterior = $stock_inicial_posterior + $stock_inicial_sta_clara_posterior;
-	        	    // Distribucion de casos
-	        	    if($total_saldo_inicial_anterior < $total_saldo_inicial_posterior){
-	        	    	$diferencia = $total_saldo_inicial_posterior - $total_saldo_inicial_anterior;
+	        	    if($stock_actual < $total_saldo_inicial_posterior){
+	        	    	$diferencia = $total_saldo_inicial_posterior - $stock_actual;
 	        	    	// Quitar la diferencia a sta anita
-	        	    	$result_posterior_anita = $stock_inicial_posterior - $diferencia;	        	    	
-	        	    	if($result_posterior_anita > 0){
-			        	    // Validacion por la cantidad en unidades de los saldos iniciales
+						$result_posterior_anita = $stock_inicial_posterior - $diferencia;	        	    	
+						if($result_posterior_anita > 0){
+						    // Validacion por la cantidad en unidades de los saldos iniciales
 					        // Actualizar los saldos iniciales del mes que se selecciono
-		                    $actualizar = array(
-		                        'precio_uni_inicial'=> $precio_uni_inicial_posterior,
-		                        'stock_inicial' => $result_posterior_anita
-		                    );
-		                    $this->db->where('id_pro',$id_pro);
-		                    $this->db->where('fecha_cierre',date($fecha_formateada_posterior));
-		                    $this->db->update('saldos_iniciales', $actualizar);
-	        	    	}else{
-	        	    		$result_posterior_clara = $stock_inicial_sta_clara_posterior - $diferencia;
+					        $actualizar = array(
+					            'precio_uni_inicial'=> $precio_unitario_anterior_especial,
+					            'stock_inicial' => $result_posterior_anita
+					        );
+					        $this->db->where('id_pro',$id_pro);
+					        $this->db->where('fecha_cierre',date($fecha_formateada_posterior));
+					        $this->db->update('saldos_iniciales', $actualizar);
+						}else{
+							$result_posterior_clara = $stock_inicial_sta_clara_posterior - $diferencia;
 					        // Actualizar los saldos iniciales del mes que se selecciono
-		                    $actualizar = array(
-		                        'precio_uni_inicial'=> $precio_uni_inicial_posterior,
-		                        'stock_inicial_sta_clara' => $result_posterior_clara
-		                    );
-		                    $this->db->where('id_pro',$id_pro);
-		                    $this->db->where('fecha_cierre',date($fecha_formateada_posterior));
-		                    $this->db->update('saldos_iniciales', $actualizar);
-	        	    	}
-	        	    }else if($total_saldo_inicial_anterior > $total_saldo_inicial_posterior){
-	        	    	$diferencia = $total_saldo_inicial_anterior - $total_saldo_inicial_posterior;
+					        $actualizar = array(
+					            'precio_uni_inicial'=> $precio_unitario_anterior_especial,
+					            'stock_inicial_sta_clara' => $result_posterior_clara
+					        );
+					        $this->db->where('id_pro',$id_pro);
+					        $this->db->where('fecha_cierre',date($fecha_formateada_posterior));
+					        $this->db->update('saldos_iniciales', $actualizar);
+						}
+	        	    }else if($stock_actual > $total_saldo_inicial_posterior){
+	        	    	$diferencia = $stock_actual - $total_saldo_inicial_posterior;
 	        	    	// Aumento la diferencia a sta anita
-	        	    	$result_posterior_anita = $stock_inicial_posterior + $diferencia;
-				        // Actualizar los saldos iniciales del mes que se selecciono
-	                    $actualizar = array(
-	                        'precio_uni_inicial'=> $precio_uni_inicial_posterior,
-	                        'stock_inicial' => $result_posterior_anita
-	                    );
-	                    $this->db->where('id_pro',$id_pro);
-	                    $this->db->where('fecha_cierre',date($fecha_formateada_posterior));
-	                    $this->db->update('saldos_iniciales', $actualizar);
+						$result_posterior_anita = $stock_inicial_posterior + $diferencia;
+						// Actualizar los saldos iniciales del mes que se selecciono
+					    $actualizar = array(
+					        'precio_uni_inicial'=> $precio_unitario_anterior_especial,
+					        'stock_inicial' => $result_posterior_anita
+					    );
+					    $this->db->where('id_pro',$id_pro);
+					    $this->db->where('fecha_cierre',date($fecha_formateada_posterior));
+					    $this->db->update('saldos_iniciales', $actualizar);
 	        	    }
-			    }else{
-			    	$actualizar = array(
-			    	    'precio_uni_inicial'=> 0,
-			    	    'stock_inicial' => 0
-			    	);
-			    	$this->db->where('id_pro',$id_pro);
-			    	$this->db->where('fecha_cierre',date($fecha_formateada_posterior));
-			    	$this->db->update('saldos_iniciales', $actualizar);
-			    }
-			}else{
-				// Obtener los ultimos datos nececesarios del kardex para la actualizacion del saldos inicial del producto en el periodo que corresponde
-				$this->db->select('stock_actual,precio_unitario_actual_promedio,precio_unitario_anterior,descripcion,precio_unitario_actual,fecha_registro');
-				$this->db->where('id_kardex_producto',(int)$validacion);
-				$query = $this->db->get('kardex_producto');
-				foreach($query->result() as $row){
-				    $stock_actual = $row->stock_actual;
-				    $precio_unitario_actual_promedio = $row->precio_unitario_actual_promedio;
-				    $precio_unitario_anterior = $row->precio_unitario_anterior;
-				    $descripcion = $row->descripcion;
-				    $precio_unitario_actual = $row->precio_unitario_actual;
-				    $fecha_registro = $row->fecha_registro;
 				}
-				// Considerar el ultimo precio que se manejo dependiente del tipo de movimiento
-				if($descripcion == 'SALIDA'){
-				    $precio_unitario_anterior_especial = $precio_unitario_anterior;
-				}else if($descripcion == 'ENTRADA'  || $descripcion == 'ORDEN INGRESO'){
-				    $precio_unitario_anterior_especial = $precio_unitario_actual_promedio;
-				}
-				// Obtener los saldos iniciales de cierre del mes que ya se tiene como registro
-        		$this->db->select('stock_inicial,precio_uni_inicial,id_saldos_iniciales,stock_inicial_sta_clara');
-                $this->db->where('fecha_cierre',date($fecha_formateada_posterior));
-                $this->db->where('id_pro',$id_pro);
-                $query = $this->db->get('saldos_iniciales');
-        	    if(count($query->result()) > 0){
-        	    	foreach($query->result() as $row){
-        	    	    $id_saldos_iniciales_posterior = $row->id_saldos_iniciales;
-        	    	    $stock_inicial_posterior = $row->stock_inicial;
-        	    	    $stock_inicial_sta_clara_posterior = $row->stock_inicial_sta_clara;
-        	    	    $precio_uni_inicial_posterior = $row->precio_uni_inicial;
-        	    	}
-        	    }
-        	    // validacion de resultados negativos
-	    	    if($stock_inicial_sta_clara_posterior < 0){
-	    	    	$stock_inicial_sta_clara_posterior = 0;
-	    	    }else if($stock_inicial_posterior < 0 ){
-	    	    	$stock_inicial_posterior = 0;
-	    	    }
-	    	    // totalizar stock's de cierre
-        	    $total_saldo_inicial_posterior = $stock_inicial_posterior + $stock_inicial_sta_clara_posterior;
-        	    if($stock_actual < $total_saldo_inicial_posterior){
-        	    	$diferencia = $total_saldo_inicial_posterior - $stock_actual;
-        	    	// Quitar la diferencia a sta anita
-					$result_posterior_anita = $stock_inicial_posterior - $diferencia;	        	    	
-					if($result_posterior_anita > 0){
-					    // Validacion por la cantidad en unidades de los saldos iniciales
-				        // Actualizar los saldos iniciales del mes que se selecciono
-				        $actualizar = array(
-				            'precio_uni_inicial'=> $precio_unitario_anterior_especial,
-				            'stock_inicial' => $result_posterior_anita
-				        );
-				        $this->db->where('id_pro',$id_pro);
-				        $this->db->where('fecha_cierre',date($fecha_formateada_posterior));
-				        $this->db->update('saldos_iniciales', $actualizar);
-					}else{
-						$result_posterior_clara = $stock_inicial_sta_clara_posterior - $diferencia;
-				        // Actualizar los saldos iniciales del mes que se selecciono
-				        $actualizar = array(
-				            'precio_uni_inicial'=> $precio_unitario_anterior_especial,
-				            'stock_inicial_sta_clara' => $result_posterior_clara
-				        );
-				        $this->db->where('id_pro',$id_pro);
-				        $this->db->where('fecha_cierre',date($fecha_formateada_posterior));
-				        $this->db->update('saldos_iniciales', $actualizar);
-					}
-        	    }else if($stock_actual > $total_saldo_inicial_posterior){
-        	    	$diferencia = $stock_actual - $total_saldo_inicial_posterior;
-        	    	// Aumento la diferencia a sta anita
-					$result_posterior_anita = $stock_inicial_posterior + $diferencia;
-					// Actualizar los saldos iniciales del mes que se selecciono
-				    $actualizar = array(
-				        'precio_uni_inicial'=> $precio_unitario_anterior_especial,
-				        'stock_inicial' => $result_posterior_anita
-				    );
-				    $this->db->where('id_pro',$id_pro);
-				    $this->db->where('fecha_cierre',date($fecha_formateada_posterior));
-				    $this->db->update('saldos_iniciales', $actualizar);
-        	    }
 			}
-		}
-		echo '1';
+			echo '1';
+        }else if($validacion_cierre == 'cierre_duplicado'){
+            echo 'cierre_duplicado';
+        }
+
 	}
 
 	public function actualizar_saldos_iniciales_controller_version_3(){
@@ -8926,11 +8867,211 @@ class Comercial extends CI_Controller {
         }
 	}
 
+	/*
 	public function eliminarregistrosalida()
 	{
 		$id_registro_salida = $this->input->get('eliminar');
 		$this->model_comercial->eliminarRegistroSalida($id_registro_salida);
 	}
+	*/
+
+	public function eliminarregistrosalida(){
+        $this->db->trans_begin();
+        $contador_kardex_v = 0;
+        $contador_kardex = 0;
+        $aux = 0;
+        $almacen = $this->security->xss_clean($this->session->userdata('almacen'));
+        $id_salida_producto = $this->security->xss_clean($this->input->post('id_salida_producto'));
+        // $id_detalle_producto = $this->security->xss_clean($this->input->post('id_detalle_producto'));
+        // validar que la salida a eliminar no corresponde a una fecha en la que ya se realizo un cierre
+        $result_fecha_salida = $this->model_comercial->get_fecha_salida_eliminar($id_salida_producto);
+        foreach ($result_fecha_salida as $row_fecha){
+            $fecha_registro = $row_fecha->fecha;
+            $id_detalle_producto = $row_fecha->id_detalle_producto;
+            $id_area = $row_fecha->id_area;
+            $id_pro = $row_fecha->id_pro;
+            $cantidad_salida = $row_fecha->cantidad_salida;
+            // formato de fecha para la comparacion
+            $elementos = explode("-", $fecha_registro);
+            $anio = $elementos[0];
+            $mes = $elementos[1];
+            $dia = $elementos[2];
+            // Validar si el mes es diciembre 12 : sino sale fuera de rango
+            if($mes == 12){
+                $anio = $anio + 1;
+                $mes_siguiente = 1;
+                $dia = 1;
+            }else if($mes <= 11 ){
+                $mes_siguiente = $mes + 1;
+                $dia = 1;
+            }
+            $array = array($anio, $mes_siguiente, $dia);
+            $fecha_formateada = implode("-", $array);
+            // consulta si la factura corresponde a un periodo que ya cerro
+            $this->db->select('id_saldos_iniciales');
+            $this->db->where('fecha_cierre',$fecha_formateada);
+            $query = $this->db->get('saldos_iniciales');
+            if($query->num_rows() > 0){
+                echo 'periodo_cerrado';
+            }else{
+                // Proceso de validacion de resultados
+                // Eliminar el kardex de cada producto asociado a la salida e ir actualizando el stock y su precio unitario
+                $result_mov_kardex_v = $this->model_comercial->get_salida_producto_eliminar($id_salida_producto, $id_detalle_producto); // trae el producto asociados a la salida
+                foreach ($result_mov_kardex_v as $row_mov_v){
+                    // iniciar valores
+                    $stock_saldo_final = 0;
+                    $precio_unitario_saldo_final = 0;
+                    // obtener valores de la consulta
+                    $id_detalle_producto = $row_mov_v->id_detalle_producto;
+                    $fecha_registro = $row_mov_v->fecha;
+                    // actualizacion del stock y precio unitario del podructo en funcion del kardex // para lo cual necesitamos obtener el ultimo registro en el kardex de ese producto
+                    $detalle_movimientos_kardex_v = $this->model_comercial->traer_movimientos_kardex_eliminar($id_detalle_producto);
+                    $existe_v = count($detalle_movimientos_kardex_v);
+                    if($existe_v > 0){
+                        foreach ($detalle_movimientos_kardex_v as $data_v) {
+                            $numero_comprobante_kardex_v = $data_v->num_comprobante;
+                            if($id_salida_producto != $numero_comprobante_kardex_v){
+                                if($data_v->descripcion == "ENTRADA" || $data_v->descripcion == "IMPORTACION"){
+                                    if($contador_kardex_v == 0){
+                                        $stock_saldo_final = $data_v->cantidad_ingreso;
+                                        $precio_unitario_saldo_final = $data_v->precio_unitario_actual;
+                                        $contador_kardex_v++;
+                                    }else{
+                                        $stock_antes_actualizar = $stock_saldo_final;
+                                        $stock_saldo_final = $stock_saldo_final + $data_v->cantidad_ingreso;
+                                        $precio_unitario_saldo_final = (($data_v->cantidad_ingreso*$data_v->precio_unitario_actual) + ($precio_unitario_saldo_final * $stock_antes_actualizar))/($data_v->cantidad_ingreso + $stock_antes_actualizar);
+                                    }
+                                }else if($data_v->descripcion == "SALIDA"){
+                                    $stock_saldo_final = $stock_saldo_final - $data_v->cantidad_salida;
+                                    $precio_unitario_saldo_final = $precio_unitario_saldo_final;
+                                }else if($data_v->descripcion == "ORDEN INGRESO"){
+                                    $stock_saldo_final = $stock_saldo_final + $data_v->cantidad_ingreso;
+                                    $precio_unitario_saldo_final = $precio_unitario_saldo_final;
+                                }
+                            }
+                        }
+                    }else{
+                        $stock_saldo_final = 0;
+                        $precio_unitario_saldo_final = 0;
+                    }
+
+                    if($stock_saldo_final < 0 || $precio_unitario_saldo_final < 0){
+                        // echo 'valores_negativos_producto '.$stock_saldo_final." ".$precio_unitario_saldo_final." ";
+                        $aux++;
+                    }
+                }
+
+                if($aux == 0){
+                    // Eliminar el kardex de cada producto asociado a la factura e ir actualizando el stock y su precio unitarioc
+                    $result_mov_kardex_v = $this->model_comercial->get_salida_producto_eliminar($id_salida_producto, $id_detalle_producto); // trae el producto asociados a la factura, porque pueden ser varios pero en el filtro especifico un producto
+                    foreach ($result_mov_kardex_v as $row_mov_v){
+                        // iniciar valores
+                        $stock_saldo_final = 0;
+                        $precio_unitario_saldo_final = 0;
+                        // obtener valores de la consulta
+                        $id_detalle_producto = $row_mov_v->id_detalle_producto;
+                        $fecha_registro = $row_mov_v->fecha;
+                        // eliminacion del kardex del producto
+                        $sql = "DELETE FROM kardex_producto WHERE id_detalle_producto = " . $id_detalle_producto . " AND DATE(fecha_registro) = '" .$fecha_registro."' AND num_comprobante = '" .$id_salida_producto."'";
+                        $query = $this->db->query($sql);
+                        // actualizacion del stock y precio unitario del podructo en funcion del kardex // para lo cual necesitamos obtener el ultimo registro en el kardex de ese producto
+                        $detalle_movimientos_kardex_v = $this->model_comercial->traer_movimientos_kardex_eliminar($id_detalle_producto);
+                        $existe_v = count($detalle_movimientos_kardex_v);
+                        if($existe_v > 0){
+                            foreach ($detalle_movimientos_kardex_v as $data_v) {
+                                $numero_comprobante_kardex_v = $data_v->num_comprobante;
+                                if($id_salida_producto != $numero_comprobante_kardex_v){
+                                    if($data_v->descripcion == "ENTRADA" || $data_v->descripcion == "IMPORTACION"){
+                                        if($contador_kardex_v == 0){
+                                            $stock_saldo_final = $data_v->cantidad_ingreso;
+                                            $precio_unitario_saldo_final = $data_v->precio_unitario_actual;
+                                            $contador_kardex_v++;
+                                        }else{
+                                            $stock_antes_actualizar = $stock_saldo_final;
+                                            $stock_saldo_final = $stock_saldo_final + $data_v->cantidad_ingreso;
+                                            $precio_unitario_saldo_final = (($data_v->cantidad_ingreso*$data_v->precio_unitario_actual) + ($precio_unitario_saldo_final * $stock_antes_actualizar))/($data_v->cantidad_ingreso + $stock_antes_actualizar);
+                                        }
+                                    }else if($data_v->descripcion == "SALIDA"){
+                                        $stock_saldo_final = $stock_saldo_final - $data_v->cantidad_salida;
+                                        $precio_unitario_saldo_final = $precio_unitario_saldo_final;
+                                    }else if($data_v->descripcion == "ORDEN INGRESO"){
+                                        $stock_saldo_final = $stock_saldo_final + $data_v->cantidad_ingreso;
+                                        $precio_unitario_saldo_final = $precio_unitario_saldo_final;
+                                    }
+                                }
+                            }
+                        }else{
+                            $stock_saldo_final = 0;
+                            $precio_unitario_saldo_final = 0;
+                        }
+                        // obtener el stock del producto de acuerdo al almacen para descontar en el stock general
+                        $this->db->select('stock,stock_sta_clara');
+				        $this->db->where('id_detalle_producto',$id_detalle_producto);
+				        $query = $this->db->get('detalle_producto');
+					    if(count($query->result()) > 0){
+					        foreach($query->result() as $row){
+					            $stock_sta_anita = $row->stock;
+					            $stock_sta_clara = $row->stock_sta_clara;
+					        }
+					        if($almacen == 1){
+					        	$actualizar_p_u_2 = array(
+		                            'precio_unitario'=> $precio_unitario_saldo_final,
+		                            'stock_sta_clara' => $stock_saldo_final - $stock_sta_anita
+		                        );
+		                        $this->db->where('id_detalle_producto',$id_detalle_producto);
+		                        $this->db->update('detalle_producto', $actualizar_p_u_2);
+					        }else if($almacen == 2){
+					        	$actualizar_p_u_2 = array(
+		                            'precio_unitario'=> $precio_unitario_saldo_final,
+		                            'stock' => $stock_saldo_final - $stock_sta_clara
+		                        );
+		                        $this->db->where('id_detalle_producto',$id_detalle_producto);
+		                        $this->db->update('detalle_producto', $actualizar_p_u_2);
+					        }
+					    }
+					    // descontar en el stock de acuerdo al area al que pertenece
+					    $this->db->select('stock_area_sta_anita,stock_area_sta_clara');
+				        $this->db->where('id_area',$id_area);
+				        $this->db->where('id_pro',$id_pro);
+				        $query = $this->db->get('detalle_producto_area');
+				        if(count($query->result()) > 0){
+				        	foreach($query->result() as $row){
+					            $stock_area_sta_anita = $row->stock_area_sta_anita;
+					            $stock_area_sta_clara = $row->stock_area_sta_clara;
+					        }
+					        if($almacen == 1){
+					        	$actualizar_stock_area = array(
+		                            'stock_area_sta_clara' => $stock_area_sta_clara + $cantidad_salida
+		                        );
+		                        $this->db->where('id_pro',$id_pro);
+		                        $this->db->where('id_area',$id_area);
+		                        $this->db->update('detalle_producto_area', $actualizar_stock_area);
+					        }else if($almacen == 2){
+					        	$actualizar_stock_area = array(
+		                            'stock_area_sta_anita' => $stock_area_sta_anita + $cantidad_salida
+		                        );
+		                        $this->db->where('id_pro',$id_pro);
+		                        $this->db->where('id_area',$id_area);
+		                        $this->db->update('detalle_producto_area', $actualizar_stock_area);
+					        }
+				        }
+
+                    }
+                    // ELIMINAR REGISTROS
+                    $sql = "DELETE FROM adm_facturas_asociadas WHERE id_salida_producto = " . $id_salida_producto . "";
+                    $query = $this->db->query($sql);
+
+                    $sql = "DELETE FROM salida_producto WHERE id_salida_producto = " . $id_salida_producto . "";
+                    $query = $this->db->query($sql);
+
+                    echo 'eliminacion_correcta';
+                    $this->db->trans_complete();
+                }else{
+                    echo 'valores_negativos_producto';
+                }
+            }
+        }
+    }
 
 	public function co_exportar_resumen_producto_excel(){
 		$almacen = $this->security->xss_clean($this->session->userdata('almacen'));
@@ -9392,18 +9533,18 @@ class Comercial extends CI_Controller {
 		$f_final = $data[1];
 
 		$this->load->library('pHPExcel');
-		/* variables de PHPExcel */
+		// variables de PHPExcel
 		$objPHPExcel = new PHPExcel();
 		$nombre_archivo = "phpExcel";
 
-		/* propiedades de la celda */
+		// propiedades de la celda
 		$objPHPExcel->getDefaultStyle()->getFont()->setName('Arial Narrow');
 		$objPHPExcel->getDefaultStyle()->getFont()->setSize(10);
 		$objPHPExcel->getActiveSheet()->getRowDimension('1')->setRowHeight(10);
 		$objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(10);
 		$objPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(10);
 
-		/* Obtener el nombre del mes */
+		// Obtener el nombre del mes
         $elementos = explode("-", $f_inicial);
         $anio = $elementos[0];
         $mes = $elementos[1];
@@ -9435,10 +9576,10 @@ class Comercial extends CI_Controller {
             $nombre_mes = "DICIEMBRE";
         }
 
-		/* Here your first sheet */
+		// Here your first sheet
 	    $sheet = $objPHPExcel->getActiveSheet();
 
-	    /* Style - Bordes */
+	    // Style - Bordes
 	    $borders = array(
 			'borders' => array(
 				'allborders' => array(
@@ -9471,33 +9612,34 @@ class Comercial extends CI_Controller {
 		$objPHPExcel->setActiveSheetIndex(0); // Esta línea y en esta posición hace que los formatos vayan a la primera hoja
 		$objPHPExcel->getDefaultStyle()->getFont()->setSize(12);
 		$objPHPExcel->setActiveSheetIndex(0)->mergeCells('A1:J1');
-		$objPHPExcel->setActiveSheetIndex(0)->mergeCells('K1:M1');
-		$objPHPExcel->getActiveSheet()->getStyle('A1:M1')->applyFromArray($borders);
-		$objPHPExcel->getActiveSheet()->getStyle('A1:M1')->applyFromArray($style);
-		$objPHPExcel->getActiveSheet()->getStyle('A1:M1')->applyFromArray($styleArray);
+		$objPHPExcel->setActiveSheetIndex(0)->mergeCells('K1:O1');
+		$objPHPExcel->getActiveSheet()->getStyle('A1:O1')->applyFromArray($borders);
+		$objPHPExcel->getActiveSheet()->getStyle('A1:O1')->applyFromArray($style);
+		$objPHPExcel->getActiveSheet()->getStyle('A1:O1')->applyFromArray($styleArray);
 		//$objPHPExcel->getActiveSheet()->getRowDimension('A')->setRowHeight(40);
-		$objPHPExcel->getActiveSheet()->getStyle('A1:M1')->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
+		$objPHPExcel->getActiveSheet()->getStyle('A1:O1')->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_CENTER);
 		$objPHPExcel->getActiveSheet()->getRowDimension('1')->setRowHeight(30);
 
 		$objPHPExcel->getDefaultStyle()->getFont()->setSize(10);
-		$objPHPExcel->getActiveSheet()->getStyle('A2:M2')->applyFromArray($borders);
-		$objPHPExcel->getActiveSheet()->getStyle('A2:M2')->applyFromArray($style);
-		$objPHPExcel->getActiveSheet()->getStyle('A2:M2')->applyFromArray($styleArray);
+		$objPHPExcel->getActiveSheet()->getStyle('A2:O2')->applyFromArray($borders);
+		$objPHPExcel->getActiveSheet()->getStyle('A2:O2')->applyFromArray($style);
+		$objPHPExcel->getActiveSheet()->getStyle('A2:O2')->applyFromArray($styleArray);
 
 		$objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(5);
 		$objPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(15);
 		$objPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth(15);
-		$objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth(10);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth(15);
 		$objPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth(15);
-		$objPHPExcel->getActiveSheet()->getColumnDimension('F')->setWidth(45);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('F')->setWidth(15);
 		$objPHPExcel->getActiveSheet()->getColumnDimension('G')->setWidth(50);
-		$objPHPExcel->getActiveSheet()->getColumnDimension('H')->setWidth(15);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('H')->setWidth(55);
 		$objPHPExcel->getActiveSheet()->getColumnDimension('I')->setWidth(15);
 		$objPHPExcel->getActiveSheet()->getColumnDimension('J')->setWidth(15);
 		$objPHPExcel->getActiveSheet()->getColumnDimension('K')->setWidth(15);
 		$objPHPExcel->getActiveSheet()->getColumnDimension('L')->setWidth(15);
 		$objPHPExcel->getActiveSheet()->getColumnDimension('M')->setWidth(15);
-
+		$objPHPExcel->getActiveSheet()->getColumnDimension('N')->setWidth(15);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('O')->setWidth(35);
 		// Write cells
 		if($almacen == 1){
 			$objWorkSheet->setCellValue('A1', 'SALIDA DE PRODUCTOS VALORIZADOS - STA. CLARA                     FECHA: '.$nombre_mes.' '.$anio);
@@ -9508,23 +9650,31 @@ class Comercial extends CI_Controller {
 
     	$objWorkSheet->setCellValue('A2', '')
 	    			 ->setCellValue('B2', 'MES')
-	    			 ->setCellValue('C2', 'TIPO DOC.')
-	    			 ->setCellValue('D2', 'SERIE')
-	    			 ->setCellValue('E2', 'NUMERO')
-	    			 ->setCellValue('F2', 'PROVEEDOR')
-	    			 ->setCellValue('G2', 'NOMBRE DEL PRODUCTO')
-	    			 ->setCellValue('H2', 'PROCED')
-	    			 ->setCellValue('I2', 'SUM/REP')
-	    			 ->setCellValue('J2', 'MEDIDA')
-	    			 ->setCellValue('K2', 'CANTIDAD')
-	    			 ->setCellValue('L2', 'CU')
-	    			 ->setCellValue('M2', 'CT');
-
-	    /* Traer informacion de la BD */
+	    			 ->setCellValue('C2', 'FECHA')
+	    			 ->setCellValue('D2', 'TIPO DOC.')
+	    			 ->setCellValue('E2', 'SERIE')
+	    			 ->setCellValue('F2', 'NUMERO')
+	    			 ->setCellValue('G2', 'PROVEEDOR')
+	    			 ->setCellValue('H2', 'NOMBRE DEL PRODUCTO')
+	    			 ->setCellValue('I2', 'PROCED')
+	    			 ->setCellValue('J2', 'SUM/REP')
+	    			 ->setCellValue('K2', 'MEDIDA')
+	    			 ->setCellValue('L2', 'CANTIDAD')
+	    			 ->setCellValue('M2', 'CU')
+	    			 ->setCellValue('N2', 'CT')
+	    			 ->setCellValue('O2', 'SOLICITANTE');
+	    // Traer informacion de la BD
 	    // Selecciono todos los productos que salieron de almacen dentro de la fecha seleccionada
 	    $result = $this->model_comercial->get_info_salidas_report($f_inicial, $f_final, $almacen);
 	    // Recorrido
 	    $p = 3;
+		$contador_filas = 1;
+		$variable = "";
+		$auxiliar = "";
+		$suma_cantidades_utilizadas = 0;
+		$stock_inicial = 0;
+		$precio_uni_inicial = 0;
+		$contador_kardex = 0;
 	    if(count($result) > 0){
 		    foreach ($result as $reg) {
 		    	$id_detalle_producto = $reg->id_detalle_producto;
@@ -9536,11 +9686,66 @@ class Comercial extends CI_Controller {
 		    	$nom_uni_med = $reg->nom_uni_med;
 		    	$id_salida_producto = $reg->id_salida_producto;
 		    	$p_u_salida = $reg->p_u_salida;
-
+		    	$solicitante = $reg->solicitante;
+		    	$id_pro = $reg->id_pro;
+		    	// obtener el precio unitario ponderado del producto en la fecha de salida
+		    	$fecha_inicio_anio = explode("-", date('Y-m-d'));
+                $anio = $fecha_inicio_anio[0];
+                $mes = 1;
+                $dia = 1;
+                $array = array($anio, $mes, $dia);
+                $fecha_inicio_anio = implode("-", $array);
+                $fecha_inicio_anio = date("Y-m-d", strtotime($fecha_inicio_anio));
+                // consultar en bd por el saldo inicial del producto en dicha fecha
+                $this->db->select('stock_inicial,precio_uni_inicial');
+                $this->db->where('fecha_cierre',$fecha_inicio_anio);
+                $this->db->where('id_pro',$id_pro);
+                $query = $this->db->get('saldos_iniciales');
+                if(count($query->result()) > 0){
+                    foreach($query->result() as $row){
+                        $stock_inicial = $row->stock_inicial;
+                        $precio_uni_inicial = $row->precio_uni_inicial;
+                    }
+                }
+                // obtener movimientos hasta la fecha de salida
+                // consultar por los movimientos del producto en el mes para acumularlo en la variable stock_inicial
+                $stock_anterior = 0;
+                $precio_unitario_anterior = 0;
+                $result_kardex = $this->model_comercial->traer_movimientos_kardex($id_detalle_producto,$fecha_inicio_anio,$fecha_salida);
+                $existe_2 = count($result_kardex);
+                if($existe_2 > 0){
+                    foreach ($result_kardex as $data) {
+                        if($data->descripcion == "ENTRADA" || $data->descripcion == "IMPORTACION" || $data->descripcion == "ORDEN INGRESO"){
+                            if($contador_kardex == 0){
+                                $stock_saldo_final = $stock_inicial + $data->cantidad_ingreso;
+                                $precio_unitario_ponderado = (($stock_inicial*$precio_uni_inicial)+($data->cantidad_ingreso*$data->precio_unitario_actual))/($stock_inicial+$data->cantidad_ingreso);
+                                $contador_kardex++;
+                            }else{
+                                $stock_saldo_final = $stock_saldo_final + $data->cantidad_ingreso;
+                                $precio_unitario_ponderado = (($stock_anterior*$precio_unitario_anterior)+($data->cantidad_ingreso*$data->precio_unitario_actual))/($stock_anterior+$data->cantidad_ingreso);
+                            }
+                            $stock_anterior = $stock_saldo_final;
+                            $precio_unitario_anterior = $precio_unitario_ponderado;
+                        }else if($data->descripcion == "SALIDA"){
+                            if($contador_kardex == 0){
+                                $stock_saldo_final = $stock_inicial - $data->cantidad_salida;
+                                $precio_unitario_ponderado = $precio_uni_inicial;
+                                $contador_kardex++;
+                            }else{
+                                $stock_saldo_final = $stock_saldo_final - $data->cantidad_salida;
+                            }
+                            $stock_anterior = $stock_saldo_final;
+                            $precio_unitario_anterior = $precio_unitario_ponderado;
+                        }
+                    }
+                }else{
+                    $stock_saldo_final = $stock_inicial;
+                    $precio_unitario_ponderado = $precio_uni_inicial;
+                }
 		    	// Identificando las facturas utilizadas para la salida del producto
 		    	$invoice = $this->model_comercial->get_select_facturas_asociadas($id_salida_producto);
-		    	$contador_filas = 1;
-		    	if(count($invoice) > 0){
+		    	/*
+		    	if(count($invoice) == 1){
 			    	foreach ($invoice as $row) {
 			    		$id_ingreso_producto = $row->id_ingreso_producto;
 			    		$cantidad_utilizada = $row->cantidad_utilizada;
@@ -9569,7 +9774,7 @@ class Comercial extends CI_Controller {
     			    	$objPHPExcel->getActiveSheet()->getStyle('K'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
     			    	$objPHPExcel->getActiveSheet()->getStyle('L'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
     			    	$objPHPExcel->getActiveSheet()->getStyle('M'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-    			    	/* Centrar contenido */
+    			    	/* Centrar contenido
     			    	$objPHPExcel->getActiveSheet()->getStyle('A'.$p)->applyFromArray($style);
     		    		$objPHPExcel->getActiveSheet()->getStyle('B'.$p)->applyFromArray($style);
     		    		$objPHPExcel->getActiveSheet()->getStyle('C'.$p)->applyFromArray($style);
@@ -9583,7 +9788,8 @@ class Comercial extends CI_Controller {
     		    		$objPHPExcel->getActiveSheet()->getStyle('K'.$p)->applyFromArray($style);
     		    		$objPHPExcel->getActiveSheet()->getStyle('L'.$p)->applyFromArray($style);
     		    		$objPHPExcel->getActiveSheet()->getStyle('M'.$p)->applyFromArray($style);
-    		    		/* border */
+    		    		$objPHPExcel->getActiveSheet()->getStyle('N'.$p)->applyFromArray($style);
+    		    		/* border
     		    		$objPHPExcel->getActiveSheet()->getStyle('A'.$p)->applyFromArray($borders);
     		    		$objPHPExcel->getActiveSheet()->getStyle('B'.$p)->applyFromArray($borders);
     		    		$objPHPExcel->getActiveSheet()->getStyle('C'.$p)->applyFromArray($borders);
@@ -9597,6 +9803,7 @@ class Comercial extends CI_Controller {
     		    		$objPHPExcel->getActiveSheet()->getStyle('K'.$p)->applyFromArray($borders);
     		    		$objPHPExcel->getActiveSheet()->getStyle('L'.$p)->applyFromArray($borders);
     		    		$objPHPExcel->getActiveSheet()->getStyle('M'.$p)->applyFromArray($borders);
+    		    		$objPHPExcel->getActiveSheet()->getStyle('N'.$p)->applyFromArray($borders);
 
 			    		$objWorkSheet->setCellValue('A'.$p, $contador_filas)
 			    					 ->setCellValue('B'.$p, $nombre_mes)
@@ -9608,13 +9815,265 @@ class Comercial extends CI_Controller {
 			    					 ->setCellValue('H'.$p, $no_procedencia)
 			    					 ->setCellValue('I'.$p, $no_categoria)
 			    					 ->setCellValue('J'.$p, $nom_uni_med)
-			    					 ->setCellValue('K'.$p, $cantidad_utilizada)
+			    					 ->setCellValue('K'.$p, $cantidad_salida)
 			    					 ->setCellValue('L'.$p, $p_u_salida)
-			    					 ->setCellValue('M'.$p, ($cantidad_utilizada*$p_u_salida));
+			    					 ->setCellValue('M'.$p, ($cantidad_salida*$p_u_salida))
+			    					 ->setCellValue('N'.$p, $solicitante);
+			    		$p++;
+			    		$contador_filas++;
+			    	}
+			    }if(count($invoice) == 2){
+			    	foreach ($invoice as $row) {
+			    		$id_ingreso_producto = $row->id_ingreso_producto;
+			    		$cantidad_utilizada = $row->cantidad_utilizada;
+			    		// Obtener los datos del detalle de la factura
+			    		$data_invoice = $this->model_comercial->get_select_data_invoice($id_ingreso_producto);
+			    		foreach ($data_invoice as $data){
+			    			$serie = $data->serie_comprobante;
+			    			$nro_comprobante = $data->nro_comprobante;
+			    			$razon_social = $data->razon_social;
+			    			$no_comprobante = $data->no_comprobante;
+			    			$precio_entrada = $data->precio;
+			    			$fecha_registro = $data->fecha;
+			    			$no_moneda = $data->no_moneda;
+			    			$id_moneda = $data->id_moneda;
+			    		}
+			    		// obtener el tipo de cambio del precio de entrada de la factura 
+			    		$this->db->select('dolar_venta,euro_venta,fr_venta');
+				        $this->db->where('fecha_actual',$fecha_registro);
+				        $query = $this->db->get('tipo_cambio');
+				        foreach($query->result() as $row){
+				            $dolar_venta_fecha = $row->dolar_venta;
+				            $euro_venta_fecha = $row->euro_venta;
+				            $fr_venta_fecha = $row->fr_venta;
+				        }
+
+    			    	$objPHPExcel->getActiveSheet()->getStyle('K'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+    			    	$objPHPExcel->getActiveSheet()->getStyle('L'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+    			    	$objPHPExcel->getActiveSheet()->getStyle('M'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+    			    	// Centrar contenido
+    			    	$objPHPExcel->getActiveSheet()->getStyle('A'.$p)->applyFromArray($style);
+    		    		$objPHPExcel->getActiveSheet()->getStyle('B'.$p)->applyFromArray($style);
+    		    		$objPHPExcel->getActiveSheet()->getStyle('C'.$p)->applyFromArray($style);
+    		    		$objPHPExcel->getActiveSheet()->getStyle('D'.$p)->applyFromArray($style);
+    		    		$objPHPExcel->getActiveSheet()->getStyle('E'.$p)->applyFromArray($style);
+    		    		$objPHPExcel->getActiveSheet()->getStyle('F'.$p)->applyFromArray($style);
+    		    		$objPHPExcel->getActiveSheet()->getStyle('G'.$p)->applyFromArray($style);
+    		    		$objPHPExcel->getActiveSheet()->getStyle('H'.$p)->applyFromArray($style);
+    		    		$objPHPExcel->getActiveSheet()->getStyle('I'.$p)->applyFromArray($style);
+    		    		$objPHPExcel->getActiveSheet()->getStyle('J'.$p)->applyFromArray($style);
+    		    		$objPHPExcel->getActiveSheet()->getStyle('K'.$p)->applyFromArray($style);
+    		    		$objPHPExcel->getActiveSheet()->getStyle('L'.$p)->applyFromArray($style);
+    		    		$objPHPExcel->getActiveSheet()->getStyle('M'.$p)->applyFromArray($style);
+    		    		$objPHPExcel->getActiveSheet()->getStyle('N'.$p)->applyFromArray($style);
+    		    		// border
+    		    		$objPHPExcel->getActiveSheet()->getStyle('A'.$p)->applyFromArray($borders);
+    		    		$objPHPExcel->getActiveSheet()->getStyle('B'.$p)->applyFromArray($borders);
+    		    		$objPHPExcel->getActiveSheet()->getStyle('C'.$p)->applyFromArray($borders);
+    		    		$objPHPExcel->getActiveSheet()->getStyle('D'.$p)->applyFromArray($borders);
+    		    		$objPHPExcel->getActiveSheet()->getStyle('E'.$p)->applyFromArray($borders);
+    		    		$objPHPExcel->getActiveSheet()->getStyle('F'.$p)->applyFromArray($borders);
+    		    		$objPHPExcel->getActiveSheet()->getStyle('G'.$p)->applyFromArray($borders);
+    		    		$objPHPExcel->getActiveSheet()->getStyle('H'.$p)->applyFromArray($borders);
+    		    		$objPHPExcel->getActiveSheet()->getStyle('I'.$p)->applyFromArray($borders);
+    		    		$objPHPExcel->getActiveSheet()->getStyle('J'.$p)->applyFromArray($borders);
+    		    		$objPHPExcel->getActiveSheet()->getStyle('K'.$p)->applyFromArray($borders);
+    		    		$objPHPExcel->getActiveSheet()->getStyle('L'.$p)->applyFromArray($borders);
+    		    		$objPHPExcel->getActiveSheet()->getStyle('M'.$p)->applyFromArray($borders);
+    		    		$objPHPExcel->getActiveSheet()->getStyle('N'.$p)->applyFromArray($borders);
+
+			    		$objWorkSheet->setCellValue('A'.$p, $contador_filas)
+			    					 ->setCellValue('B'.$p, $nombre_mes)
+			    					 ->setCellValue('C'.$p, $no_comprobante)
+			    					 ->setCellValueExplicit('D'.$p, $serie,PHPExcel_Cell_DataType::TYPE_STRING)
+			    					 ->setCellValue('E'.$p, $nro_comprobante)
+			    					 ->setCellValue('F'.$p, $razon_social)
+			    					 ->setCellValue('G'.$p, $no_producto)
+			    					 ->setCellValue('H'.$p, $no_procedencia)
+			    					 ->setCellValue('I'.$p, $no_categoria)
+			    					 ->setCellValue('J'.$p, $nom_uni_med)
+			    					 ->setCellValue('K'.$p, ($cantidad_salida/2))
+			    					 ->setCellValue('L'.$p, $p_u_salida)
+			    					 ->setCellValue('M'.$p, (($cantidad_salida/2)*$p_u_salida));
 			    		$p++;
 			    		$contador_filas++;
 			    	}
 			    }
+			    */
+			    if(count($invoice) > 0){
+				    foreach ($invoice as $row) {
+			    		$id_ingreso_producto = $row->id_ingreso_producto;
+			    		$cantidad_utilizada = $row->cantidad_utilizada;
+			    		$suma_cantidades_utilizadas = $suma_cantidades_utilizadas + $cantidad_utilizada;
+			    		if($cantidad_utilizada < 0){
+			    			$auxiliar = "stock_negativo";
+			    		}
+			    	}
+			    }
+			    if($auxiliar != "stock_negativo"){
+				    if(count($invoice) > 0){
+					    foreach ($invoice as $row) {
+				    		$id_ingreso_producto = $row->id_ingreso_producto;
+				    		$cantidad_utilizada = $row->cantidad_utilizada;
+				    		// Obtener los datos del detalle de la factura
+				    		$data_invoice = $this->model_comercial->get_select_data_invoice($id_ingreso_producto);
+				    		foreach ($data_invoice as $data){
+				    			$serie = $data->serie_comprobante;
+				    			$nro_comprobante = $data->nro_comprobante;
+				    			$razon_social = $data->razon_social;
+				    			$no_comprobante = $data->no_comprobante;
+				    			$precio_entrada = $data->precio;
+				    			$fecha_registro = $data->fecha;
+				    			$no_moneda = $data->no_moneda;
+				    			$id_moneda = $data->id_moneda;
+				    		}
+				    		// obtener el tipo de cambio del precio de entrada de la factura 
+				    		$this->db->select('dolar_venta,euro_venta,fr_venta');
+					        $this->db->where('fecha_actual',$fecha_registro);
+					        $query = $this->db->get('tipo_cambio');
+					        foreach($query->result() as $row){
+					            $dolar_venta_fecha = $row->dolar_venta;
+					            $euro_venta_fecha = $row->euro_venta;
+					            $fr_venta_fecha = $row->fr_venta;
+					        }
+
+					    	$objPHPExcel->getActiveSheet()->getStyle('L'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+					    	$objPHPExcel->getActiveSheet()->getStyle('M'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+					    	$objPHPExcel->getActiveSheet()->getStyle('N'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+					    	/* Centrar contenido */
+					    	$objPHPExcel->getActiveSheet()->getStyle('A'.$p)->applyFromArray($style);
+				    		$objPHPExcel->getActiveSheet()->getStyle('B'.$p)->applyFromArray($style);
+				    		$objPHPExcel->getActiveSheet()->getStyle('C'.$p)->applyFromArray($style);
+				    		$objPHPExcel->getActiveSheet()->getStyle('D'.$p)->applyFromArray($style);
+				    		$objPHPExcel->getActiveSheet()->getStyle('E'.$p)->applyFromArray($style);
+				    		$objPHPExcel->getActiveSheet()->getStyle('F'.$p)->applyFromArray($style);
+				    		$objPHPExcel->getActiveSheet()->getStyle('G'.$p)->applyFromArray($style);
+				    		$objPHPExcel->getActiveSheet()->getStyle('H'.$p)->applyFromArray($style);
+				    		$objPHPExcel->getActiveSheet()->getStyle('I'.$p)->applyFromArray($style);
+				    		$objPHPExcel->getActiveSheet()->getStyle('J'.$p)->applyFromArray($style);
+				    		$objPHPExcel->getActiveSheet()->getStyle('K'.$p)->applyFromArray($style);
+				    		$objPHPExcel->getActiveSheet()->getStyle('L'.$p)->applyFromArray($style);
+				    		$objPHPExcel->getActiveSheet()->getStyle('M'.$p)->applyFromArray($style);
+				    		$objPHPExcel->getActiveSheet()->getStyle('N'.$p)->applyFromArray($style);
+				    		$objPHPExcel->getActiveSheet()->getStyle('O'.$p)->applyFromArray($style);
+				    		/* border */
+				    		$objPHPExcel->getActiveSheet()->getStyle('A'.$p)->applyFromArray($borders);
+				    		$objPHPExcel->getActiveSheet()->getStyle('B'.$p)->applyFromArray($borders);
+				    		$objPHPExcel->getActiveSheet()->getStyle('C'.$p)->applyFromArray($borders);
+				    		$objPHPExcel->getActiveSheet()->getStyle('D'.$p)->applyFromArray($borders);
+				    		$objPHPExcel->getActiveSheet()->getStyle('E'.$p)->applyFromArray($borders);
+				    		$objPHPExcel->getActiveSheet()->getStyle('F'.$p)->applyFromArray($borders);
+				    		$objPHPExcel->getActiveSheet()->getStyle('G'.$p)->applyFromArray($borders);
+				    		$objPHPExcel->getActiveSheet()->getStyle('H'.$p)->applyFromArray($borders);
+				    		$objPHPExcel->getActiveSheet()->getStyle('I'.$p)->applyFromArray($borders);
+				    		$objPHPExcel->getActiveSheet()->getStyle('J'.$p)->applyFromArray($borders);
+				    		$objPHPExcel->getActiveSheet()->getStyle('K'.$p)->applyFromArray($borders);
+				    		$objPHPExcel->getActiveSheet()->getStyle('L'.$p)->applyFromArray($borders);
+				    		$objPHPExcel->getActiveSheet()->getStyle('M'.$p)->applyFromArray($borders);
+				    		$objPHPExcel->getActiveSheet()->getStyle('N'.$p)->applyFromArray($borders);
+				    		$objPHPExcel->getActiveSheet()->getStyle('O'.$p)->applyFromArray($borders);
+
+				    		$objWorkSheet->setCellValue('A'.$p, $contador_filas)
+				    					 ->setCellValue('B'.$p, $nombre_mes)
+				    					 ->setCellValue('C'.$p, $fecha_salida)
+				    					 ->setCellValue('D'.$p, $no_comprobante)
+				    					 ->setCellValueExplicit('E'.$p, $serie,PHPExcel_Cell_DataType::TYPE_STRING)
+				    					 ->setCellValue('F'.$p, $nro_comprobante)
+				    					 ->setCellValue('G'.$p, $razon_social)
+				    					 ->setCellValue('H'.$p, $no_producto)
+				    					 ->setCellValue('I'.$p, $no_procedencia)
+				    					 ->setCellValue('J'.$p, $no_categoria)
+				    					 ->setCellValue('K'.$p, $nom_uni_med)
+				    					 ->setCellValue('L'.$p, $cantidad_utilizada)
+				    					 ->setCellValue('M'.$p, $precio_unitario_ponderado)
+				    					 ->setCellValue('N'.$p, ($cantidad_utilizada*$precio_unitario_ponderado))
+				    					 ->setCellValue('O'.$p, $solicitante);
+				    		$p++;
+				    		$contador_filas++;
+				    	}
+				    }
+			    }else{
+		    		// $id_ingreso_producto = $row->id_ingreso_producto;
+		    		// Obtener los datos del detalle de la factura
+		    		$data_invoice = $this->model_comercial->get_select_data_invoice($id_ingreso_producto);
+		    		foreach ($data_invoice as $data){
+		    			$serie = $data->serie_comprobante;
+		    			$nro_comprobante = $data->nro_comprobante;
+		    			$razon_social = $data->razon_social;
+		    			$no_comprobante = $data->no_comprobante;
+		    			$precio_entrada = $data->precio;
+		    			$fecha_registro = $data->fecha;
+		    			$no_moneda = $data->no_moneda;
+		    			$id_moneda = $data->id_moneda;
+		    		}
+		    		// obtener el tipo de cambio del precio de entrada de la factura 
+		    		$this->db->select('dolar_venta,euro_venta,fr_venta');
+			        $this->db->where('fecha_actual',$fecha_registro);
+			        $query = $this->db->get('tipo_cambio');
+			        foreach($query->result() as $row){
+			            $dolar_venta_fecha = $row->dolar_venta;
+			            $euro_venta_fecha = $row->euro_venta;
+			            $fr_venta_fecha = $row->fr_venta;
+			        }
+
+			    	$objPHPExcel->getActiveSheet()->getStyle('L'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+			    	$objPHPExcel->getActiveSheet()->getStyle('M'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+			    	$objPHPExcel->getActiveSheet()->getStyle('N'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+			    	/* Centrar contenido */
+			    	$objPHPExcel->getActiveSheet()->getStyle('A'.$p)->applyFromArray($style);
+		    		$objPHPExcel->getActiveSheet()->getStyle('B'.$p)->applyFromArray($style);
+		    		$objPHPExcel->getActiveSheet()->getStyle('C'.$p)->applyFromArray($style);
+		    		$objPHPExcel->getActiveSheet()->getStyle('D'.$p)->applyFromArray($style);
+		    		$objPHPExcel->getActiveSheet()->getStyle('E'.$p)->applyFromArray($style);
+		    		$objPHPExcel->getActiveSheet()->getStyle('F'.$p)->applyFromArray($style);
+		    		$objPHPExcel->getActiveSheet()->getStyle('G'.$p)->applyFromArray($style);
+		    		$objPHPExcel->getActiveSheet()->getStyle('H'.$p)->applyFromArray($style);
+		    		$objPHPExcel->getActiveSheet()->getStyle('I'.$p)->applyFromArray($style);
+		    		$objPHPExcel->getActiveSheet()->getStyle('J'.$p)->applyFromArray($style);
+		    		$objPHPExcel->getActiveSheet()->getStyle('K'.$p)->applyFromArray($style);
+		    		$objPHPExcel->getActiveSheet()->getStyle('L'.$p)->applyFromArray($style);
+		    		$objPHPExcel->getActiveSheet()->getStyle('M'.$p)->applyFromArray($style);
+		    		$objPHPExcel->getActiveSheet()->getStyle('N'.$p)->applyFromArray($style);
+		    		$objPHPExcel->getActiveSheet()->getStyle('O'.$p)->applyFromArray($style);
+		    		/* border */
+		    		$objPHPExcel->getActiveSheet()->getStyle('A'.$p)->applyFromArray($borders);
+		    		$objPHPExcel->getActiveSheet()->getStyle('B'.$p)->applyFromArray($borders);
+		    		$objPHPExcel->getActiveSheet()->getStyle('C'.$p)->applyFromArray($borders);
+		    		$objPHPExcel->getActiveSheet()->getStyle('D'.$p)->applyFromArray($borders);
+		    		$objPHPExcel->getActiveSheet()->getStyle('E'.$p)->applyFromArray($borders);
+		    		$objPHPExcel->getActiveSheet()->getStyle('F'.$p)->applyFromArray($borders);
+		    		$objPHPExcel->getActiveSheet()->getStyle('G'.$p)->applyFromArray($borders);
+		    		$objPHPExcel->getActiveSheet()->getStyle('H'.$p)->applyFromArray($borders);
+		    		$objPHPExcel->getActiveSheet()->getStyle('I'.$p)->applyFromArray($borders);
+		    		$objPHPExcel->getActiveSheet()->getStyle('J'.$p)->applyFromArray($borders);
+		    		$objPHPExcel->getActiveSheet()->getStyle('K'.$p)->applyFromArray($borders);
+		    		$objPHPExcel->getActiveSheet()->getStyle('L'.$p)->applyFromArray($borders);
+		    		$objPHPExcel->getActiveSheet()->getStyle('M'.$p)->applyFromArray($borders);
+		    		$objPHPExcel->getActiveSheet()->getStyle('N'.$p)->applyFromArray($borders);
+		    		$objPHPExcel->getActiveSheet()->getStyle('O'.$p)->applyFromArray($borders);
+
+		    		$objWorkSheet->setCellValue('A'.$p, $contador_filas)
+		    					 ->setCellValue('B'.$p, $nombre_mes)
+		    					 ->setCellValue('C'.$p, $fecha_salida)
+		    					 ->setCellValue('D'.$p, $no_comprobante)
+		    					 ->setCellValueExplicit('E'.$p, $serie,PHPExcel_Cell_DataType::TYPE_STRING)
+		    					 ->setCellValue('F'.$p, $nro_comprobante)
+		    					 ->setCellValue('G'.$p, $razon_social)
+		    					 ->setCellValue('H'.$p, $no_producto)
+		    					 ->setCellValue('I'.$p, $no_procedencia)
+		    					 ->setCellValue('J'.$p, $no_categoria)
+		    					 ->setCellValue('K'.$p, $nom_uni_med)
+		    					 ->setCellValue('L'.$p, $suma_cantidades_utilizadas)
+		    					 ->setCellValue('M'.$p, $precio_unitario_ponderado)
+		    					 ->setCellValue('N'.$p, ($suma_cantidades_utilizadas*$precio_unitario_ponderado))
+		    					 ->setCellValue('O'.$p, $solicitante);
+		    		$p++;
+		    		$contador_filas++;
+			    }
+			    $auxiliar = "";
+			    $suma_cantidades_utilizadas = 0;
+			    $stock_inicial = 0;
+			    $contador_kardex = 0;
 	    		/* Rename sheet */
 			    $objWorkSheet->setTitle("reporte_mensual_salidas_oficial");
 		    }
@@ -9631,6 +10090,11 @@ class Comercial extends CI_Controller {
 
 	public function al_exportar_inventario_almacen(){
 		$almacen = $this->security->xss_clean($this->session->userdata('almacen'));
+
+		$data = $this->security->xss_clean($this->uri->segment(3));
+		$data = json_decode($data, true);
+		$area_combo = $data[0];
+
 		$this->load->library('pHPExcel');
 		/* variables de PHPExcel */
 		$objPHPExcel = new PHPExcel();
@@ -9693,16 +10157,16 @@ class Comercial extends CI_Controller {
 
 		$objPHPExcel->getActiveSheet()->getColumnDimension('A')->setWidth(25);
 		$objPHPExcel->getActiveSheet()->getColumnDimension('B')->setWidth(55);
-		$objPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth(15);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('C')->setWidth(20);
 		$objPHPExcel->getActiveSheet()->getColumnDimension('D')->setWidth(20);
 		$objPHPExcel->getActiveSheet()->getColumnDimension('E')->setWidth(25);
 		$objPHPExcel->getActiveSheet()->getColumnDimension('F')->setWidth(20);
 		$objPHPExcel->getActiveSheet()->getColumnDimension('G')->setWidth(15);
-		$objPHPExcel->getActiveSheet()->getColumnDimension('H')->setWidth(15);
-		$objPHPExcel->getActiveSheet()->getColumnDimension('I')->setWidth(15);
-		$objPHPExcel->getActiveSheet()->getColumnDimension('J')->setWidth(15);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('H')->setWidth(20);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('I')->setWidth(20);
+		$objPHPExcel->getActiveSheet()->getColumnDimension('J')->setWidth(20);
 		$objPHPExcel->getActiveSheet()->getColumnDimension('K')->setWidth(20);
-		//Write cells
+		// Write cells
 		if($almacen == 1){
 			$objWorkSheet->setCellValue('A1', 'INVENTARIO FISICO DE PRODUCTOS - STA. CLARA                     FECHA: '.date('d-m-y'));
     	}else if($almacen == 2){
@@ -9710,7 +10174,7 @@ class Comercial extends CI_Controller {
     	}
 	    $objWorkSheet->setCellValue('A2', 'ID PRODUCTO')
 	    			 ->setCellValue('B2', 'NOMBRE O DESCRIPCION')
-	    			 ->setCellValue('C2', 'ESTADO')
+	    			 ->setCellValue('C2', 'ÁREA')
 	    			 ->setCellValue('D2', 'CATEGORIA')
 	    			 ->setCellValue('E2', 'TIPO DE PRODUCTO')
 	    			 ->setCellValue('F2', 'PROCEDENCIA')
@@ -9720,10 +10184,11 @@ class Comercial extends CI_Controller {
 	    			 ->setCellValue('J2', 'VALORIZADO S/.')
 	    			 ->setCellValue('K2', 'INVENTARIO');
 	    /* Traer informacion de la BD */
-	    $result = $this->model_comercial->get_info_inventario_actual();
+	    $result = $this->model_comercial->get_info_inventario_actual_V2($area_combo);
 	    /* Recorro con todos los nombres seleccionados que tienen una salida/ingreso en el kardex */
 	    $i = 0;
 	    $sumatoria = 0;
+	    $valorizado = 0;
 	    $p = 3;
 	    foreach ($result as $reg) {
 	    	$objPHPExcel->getActiveSheet()->getStyle('H'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
@@ -9759,34 +10224,61 @@ class Comercial extends CI_Controller {
     			$estado = 'INACTIVO';
     		}
 	    	if($almacen == 1){
+	    		$valorizado = $reg->stock_sta_clara*$reg->precio_unitario;
 			    $objWorkSheet->setCellValue('A'.$p, $reg->id_producto)
 	    					 ->setCellValue('B'.$p, $reg->no_producto)
-	    					 ->setCellValue('C'.$p, $estado)
+	    					 ->setCellValue('C'.$p, $reg->no_area)
 	    					 ->setCellValue('D'.$p, $reg->no_categoria)
 	    					 ->setCellValue('E'.$p, $reg->no_tipo_producto)
 	    					 ->setCellValue('F'.$p, $reg->no_procedencia)
 	    					 ->setCellValue('G'.$p, $reg->nom_uni_med)
-	    					 ->setCellValue('H'.$p, $reg->stock_sta_clara)
+	    					 ->setCellValue('H'.$p, $reg->stock_area_sta_clara)
 	    					 ->setCellValue('I'.$p, $reg->precio_unitario)
-	    					 ->setCellValue('J'.$p, $reg->stock_sta_clara*$reg->precio_unitario)
+	    					 ->setCellValue('J'.$p, $valorizado)
 	    					 ->setCellValue('K'.$p, "");
 	    	}else if($almacen == 2){
+	    		$valorizado = $reg->stock*$reg->precio_unitario;
 	    		$objWorkSheet->setCellValue('A'.$p, $reg->id_producto)
 	    					 ->setCellValue('B'.$p, $reg->no_producto)
-	    					 ->setCellValue('C'.$p, $estado)
+	    					 ->setCellValue('C'.$p, $reg->no_area)
 	    					 ->setCellValue('D'.$p, $reg->no_categoria)
 	    					 ->setCellValue('E'.$p, $reg->no_tipo_producto)
 	    					 ->setCellValue('F'.$p, $reg->no_procedencia)
 	    					 ->setCellValue('G'.$p, $reg->nom_uni_med)
-	    					 ->setCellValue('H'.$p, $reg->stock)
+	    					 ->setCellValue('H'.$p, $reg->stock_area_sta_anita)
 	    					 ->setCellValue('I'.$p, $reg->precio_unitario)
-	    					 ->setCellValue('J'.$p, $reg->stock*$reg->precio_unitario)
+	    					 ->setCellValue('J'.$p, $valorizado)
 	    					 ->setCellValue('K'.$p, "");
 	    	}
-		    /* Rename sheet */
+	    	$sumatoria = $sumatoria + $valorizado;
+		    // Rename sheet
 		    $objWorkSheet->setTitle("Inventario_Almacen");
 		    $p++;
         }
+
+        // Formatos
+	    $objPHPExcel->getActiveSheet()->getStyle('J'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+	    // Centrar contenido
+	    $objPHPExcel->getActiveSheet()->getStyle('I'.$p)->applyFromArray($style);
+	    $objPHPExcel->getActiveSheet()->getStyle('J'.$p)->applyFromArray($style);
+	    $objPHPExcel->getActiveSheet()->getStyle('I'.$p)->applyFromArray($styleArray);
+	    $objPHPExcel->getActiveSheet()->getStyle('J'.$p)->applyFromArray($styleArray);
+	    // borderF
+	    $objPHPExcel->getActiveSheet()->getStyle('I'.$p)->applyFromArray($borders);
+	    $objPHPExcel->getActiveSheet()->getStyle('J'.$p)->applyFromArray($borders);
+
+	    $objWorkSheet->setCellValue('A'.$p, "")
+		    		 ->setCellValue('B'.$p, "")
+		    		 ->setCellValue('C'.$p, "")
+		    		 ->setCellValue('D'.$p, "")
+		    		 ->setCellValue('E'.$p, "")
+		    		 ->setCellValue('F'.$p, "")
+		    		 ->setCellValue('G'.$p, "")
+		    		 ->setCellValue('H'.$p, "")
+		    		 ->setCellValue('I'.$p, "T. EN SOLES")
+		    		 ->setCellValue('J'.$p, $sumatoria);
+
+
 	    $objPHPExcel->setActiveSheetIndex(0);
 		/* datos de la salida del excel */
 		header("Content-type: application/vnd.ms-excel");
@@ -10918,21 +11410,18 @@ class Comercial extends CI_Controller {
 		        'bold' => true
 		    )
 		);
-
-	    /* Traer informacion de la BD */
+	    // Traer informacion de la BD
 	    $nombre_productos_salidas = $this->model_comercial->traer_nombres_kardex($indice);
-	    /* Recorro con todos los nombres seleccionados que tienen una salida/ingreso en el kardex */
-	    /* Tambien debo considerar los que no han tenido registros en la tabla kardex pero si debe aparece SI o vacio */
+	    // Recorro con todos los nombres seleccionados que tienen una salida/ingreso en el kardex
+	    // Tambien debo considerar los que no han tenido registros en la tabla kardex pero si debe aparece SI o vacio
 	    $i = 0;
         foreach ($nombre_productos_salidas as $reg) {
-
         	$nombre_producto = $reg->no_producto;
         	$id_producto = $reg->id_producto;
         	$id_unidad_medida = $reg->id_unidad_medida;
         	$id_detalle_producto = $reg->id_detalle_producto;
         	$id_pro = $reg->id_pro;
-
-        	/* Traer sólo productos que tengan registros en el periodo seleccionado */
+        	// Traer sólo productos que tengan registros en el periodo seleccionado
         	$produtos_con_kardex = $this->model_comercial->traer_producto_con_kardex($id_detalle_producto,$f_inicial,$f_final);
         	if( count($produtos_con_kardex) > 0 ){
         		// Add new sheet
@@ -10974,7 +11463,6 @@ class Comercial extends CI_Controller {
 				$objPHPExcel->getActiveSheet()->getColumnDimension('K')->setWidth(15);
 				$objPHPExcel->getActiveSheet()->getColumnDimension('L')->setWidth(15);
 				$objPHPExcel->getActiveSheet()->getColumnDimension('M')->setWidth(15);
-
 				//Write cells
 			    $objWorkSheet->setCellValue('A1', 'INVENTARIO PERMANENTE VALORIZADO')
 			            	 ->setCellValue('A2', 'PERIODO: '.$anio)
@@ -11013,8 +11501,7 @@ class Comercial extends CI_Controller {
 			    			 ->setCellValue('K13', 'CANTIDAD')
 			    			 ->setCellValue('L13', 'CU')
 			    			 ->setCellValue('M13', 'CT');
-
-			    /* Formato para la fila 14 */
+			    // Formato para la fila 14
 		    	$objPHPExcel->getActiveSheet()->getStyle('A14')->applyFromArray($borders);
 		    	$objPHPExcel->getActiveSheet()->getStyle('B14')->applyFromArray($borders);
 		    	$objPHPExcel->getActiveSheet()->getStyle('C14')->applyFromArray($borders);
@@ -11068,6 +11555,7 @@ class Comercial extends CI_Controller {
 
 			    if( count($saldos_iniciales) > 0 ){
 		    		foreach ($saldos_iniciales as $result) {
+		    			$total_saldos_iniciales = $result->stock_inicial + $result->stock_inicial_sta_clara;
 		    			/* Formato de Fecha */
 	                    $elementos = explode("-", $result->fecha_cierre);
 	                    $anio = $elementos[0];
@@ -11080,21 +11568,24 @@ class Comercial extends CI_Controller {
 				    			     ->setCellValue('B14', " ")
 				    			     ->setCellValue('C14', "SI")
 				    			     ->setCellValue('D14', " ")
-				    			     ->setCellValue('E14', $result->stock_inicial)
+				    			     ->setCellValue('E14', $total_saldos_iniciales)
 				    			     ->setCellValue('F14', $result->precio_uni_inicial)
-				    			     ->setCellValue('G14', $result->stock_inicial*$result->precio_uni_inicial)
+				    			     ->setCellValue('G14', $total_saldos_iniciales*$result->precio_uni_inicial)
 				    			     ->setCellValueExplicit('H14', "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
 				    			     ->setCellValue('I14', $result->precio_uni_inicial)
 				    			     ->setCellValueExplicit('J14', "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
-				    			     ->setCellValue('K14', $result->stock_inicial)
+				    			     ->setCellValue('K14', $total_saldos_iniciales)
 				    			     ->setCellValue('L14', $result->precio_uni_inicial)
-				    			     ->setCellValue('M14', $result->stock_inicial*$result->precio_uni_inicial);
+				    			     ->setCellValue('M14', $total_saldos_iniciales*$result->precio_uni_inicial);
 					    /* ENTRADAS */
-						$sumatoria_cantidad_entradas = $sumatoria_cantidad_entradas + $result->stock_inicial;
-						$sumatoria_parciales_entradas = $sumatoria_parciales_entradas + ($result->stock_inicial * $result->precio_uni_inicial);
+						$sumatoria_cantidad_entradas = $sumatoria_cantidad_entradas + $total_saldos_iniciales;
+						$sumatoria_parciales_entradas = $sumatoria_parciales_entradas + ($total_saldos_iniciales * $result->precio_uni_inicial);
 						/* SALDOS */
-						$sumatoria_cantidad_saldos = $sumatoria_cantidad_saldos + $result->stock_inicial;
-						$sumatoria_parciales_saldos = $sumatoria_parciales_saldos + ($result->stock_inicial * $result->precio_uni_inicial);
+						$sumatoria_cantidad_saldos = $sumatoria_cantidad_saldos + $total_saldos_iniciales;
+						$sumatoria_parciales_saldos = $sumatoria_parciales_saldos + ($total_saldos_iniciales * $result->precio_uni_inicial);
+						// Nuevo - Dejar el saldo inicial para los registros posteriores
+	                    $stock_inicial_kardex = $total_saldos_iniciales;
+	                    $precio_unitario_inicial_kardex = $result->precio_uni_inicial;
 			    	}
 		    	}else{
 		    		$objWorkSheet->setCellValueExplicit('A14', $f_inicial)
@@ -11110,11 +11601,15 @@ class Comercial extends CI_Controller {
 			    			     ->setCellValueExplicit('K14', "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
 			    			     ->setCellValueExplicit('L14', "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
 			    			     ->setCellValueExplicit('M14', "0.00",PHPExcel_Cell_DataType::TYPE_STRING);
+			    	// Nuevo - Dejar el saldo inicial para los registros posteriores
+	                $stock_inicial_kardex = 0;
+	                $precio_unitario_inicial_kardex = 0;
 		    	}
 
 		    	/* Recorrido del detalle del kardex general por producto */
 			    $detalle_movimientos_kardex = $this->model_comercial->traer_movimientos_kardex($id_detalle_producto,$f_inicial,$f_final);
 			    $y = 0;
+			    $contador_kardex = 0;
 			    if( count($detalle_movimientos_kardex) > 0 ){
 				    foreach ($detalle_movimientos_kardex as $data) {
 				    	$p = 15;
@@ -11159,17 +11654,28 @@ class Comercial extends CI_Controller {
 				    	$objPHPExcel->getActiveSheet()->getStyle('L'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
 				    	$objPHPExcel->getActiveSheet()->getStyle('M'.$p)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
 
-				    	/* Formato de Fecha */
+				    	// Formato de Fecha
 	                    $elementos = explode("-", $data->fecha_registro);
 	                    $anio = $elementos[0];
 	                    $mes = $elementos[1];
 	                    $dia = $elementos[2];
 	                    $array = array($dia, $mes, $anio);
 	                    $fecha_formateada_2 = implode("-", $array);
-	                    /* fin de formato */
+	                    // Fin de formato
 
-				    	/* fin de formato */
 				    	if($data->descripcion == "ENTRADA"){
+				    		if($contador_kardex == 0){
+	                            $stock_saldo_final = $stock_inicial_kardex + $data->cantidad_ingreso;
+	                            $precio_unitario_saldo_final = (($data->cantidad_ingreso*$data->precio_unitario_actual) + ($precio_unitario_inicial_kardex * $stock_inicial_kardex))/($data->cantidad_ingreso + $stock_inicial_kardex);
+	                            $contador_kardex++;
+	                        }else{
+	                            $stock_antes_actualizar = $stock_saldo_final;
+	                            $stock_saldo_final = $stock_saldo_final + $data->cantidad_ingreso;
+	                            if(($data->cantidad_ingreso + $stock_antes_actualizar) == 0){
+	                            	var_dump(" ".$id_detalle_producto);
+	                            }
+	                            $precio_unitario_saldo_final = (($data->cantidad_ingreso*$data->precio_unitario_actual) + ($precio_unitario_saldo_final * $stock_antes_actualizar))/($data->cantidad_ingreso + $stock_antes_actualizar);
+	                        }
 				    		$objWorkSheet->setCellValue('A'.$p, $fecha_formateada_2)
 				    					 ->setCellValue('B'.$p, "FT")
 				    					 ->setCellValueExplicit('C'.$p, str_pad($data->serie_comprobante, 3, 0, STR_PAD_LEFT),PHPExcel_Cell_DataType::TYPE_STRING)
@@ -11180,10 +11686,18 @@ class Comercial extends CI_Controller {
 				    					 ->setCellValueExplicit('H'.$p, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
 				    					 ->setCellValue('I'.$p, $data->precio_unitario_actual)
 				    					 ->setCellValueExplicit('J'.$p, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
-				    					 ->setCellValue('K'.$p, $data->stock_actual)
-				    					 ->setCellValue('L'.$p, $data->precio_unitario_actual_promedio)
-				    					 ->setCellValue('M'.$p, $data->stock_actual*$data->precio_unitario_actual_promedio);
+				    					 ->setCellValue('K'.$p, $stock_saldo_final)
+				    					 ->setCellValue('L'.$p, $precio_unitario_saldo_final)
+				    					 ->setCellValue('M'.$p, $stock_saldo_final*$precio_unitario_saldo_final);
 				    	}else if($data->descripcion == "SALIDA"){
+				    		if($contador_kardex == 0){
+	                            $stock_saldo_final = $stock_inicial_kardex - $data->cantidad_salida;
+	                            $precio_unitario_saldo_final = $precio_unitario_inicial_kardex;
+	                            $contador_kardex++;
+	                        }else{
+	                            $stock_saldo_final = $stock_saldo_final - $data->cantidad_salida;
+	                            $precio_unitario_saldo_final = $precio_unitario_saldo_final;
+	                        }
 				    		$objWorkSheet->setCellValue('A'.$p, $fecha_formateada_2)
 				    					 ->setCellValue('B'.$p, "OS")
 				    					 ->setCellValue('C'.$p, "NIG")
@@ -11192,12 +11706,20 @@ class Comercial extends CI_Controller {
 				    					 ->setCellValueExplicit('F'.$p, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
 				    					 ->setCellValueExplicit('G'.$p, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
 				    					 ->setCellValue('H'.$p, $data->cantidad_salida)
-				    					 ->setCellValue('I'.$p, $data->precio_unitario_anterior)
-				    					 ->setCellValue('J'.$p, $data->cantidad_salida*$data->precio_unitario_anterior)
-				    					 ->setCellValue('K'.$p, $data->stock_actual)
-				    					 ->setCellValue('L'.$p, $data->precio_unitario_actual)
-				    					 ->setCellValue('M'.$p, $data->stock_actual*$data->precio_unitario_actual);
+				    					 ->setCellValue('I'.$p, $precio_unitario_saldo_final)
+				    					 ->setCellValue('J'.$p, $data->cantidad_salida*$precio_unitario_saldo_final)
+				    					 ->setCellValue('K'.$p, $stock_saldo_final)
+				    					 ->setCellValue('L'.$p, $precio_unitario_saldo_final)
+				    					 ->setCellValue('M'.$p, $stock_saldo_final*$precio_unitario_saldo_final);
 				    	}else if($data->descripcion == "ORDEN INGRESO"){
+				    		if($contador_kardex == 0){
+	                            $stock_saldo_final = $stock_inicial_kardex + $data->cantidad_ingreso;
+	                            $precio_unitario_saldo_final = (($data->cantidad_ingreso*$data->precio_unitario_actual) + ($precio_unitario_inicial_kardex * $stock_inicial_kardex))/($data->cantidad_ingreso + $stock_inicial_kardex);
+	                            $contador_kardex++;
+	                        }else{
+	                            $stock_saldo_final = $stock_saldo_final + $data->cantidad_ingreso;
+	                            $precio_unitario_saldo_final = $precio_unitario_saldo_final;
+	                        }
 				    		$objWorkSheet->setCellValue('A'.$p, $fecha_formateada_2)
 				    					 ->setCellValue('B'.$p, "OI")
 				    					 ->setCellValueExplicit('C'.$p, str_pad($data->serie_comprobante, 3, 0, STR_PAD_LEFT),PHPExcel_Cell_DataType::TYPE_STRING)
@@ -11208,23 +11730,20 @@ class Comercial extends CI_Controller {
 				    					 ->setCellValueExplicit('H'.$p, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
 				    					 ->setCellValue('I'.$p, $data->precio_unitario_actual)
 				    					 ->setCellValueExplicit('J'.$p, "0.00",PHPExcel_Cell_DataType::TYPE_STRING)
-				    					 ->setCellValue('K'.$p, $data->stock_actual)
-				    					 ->setCellValue('L'.$p, $data->precio_unitario_actual_promedio)
-				    					 ->setCellValue('M'.$p, $data->stock_actual*$data->precio_unitario_actual_promedio);
+				    					 ->setCellValue('K'.$p, $stock_saldo_final)
+				    					 ->setCellValue('L'.$p, $precio_unitario_saldo_final)
+				    					 ->setCellValue('M'.$p, $stock_saldo_final*$precio_unitario_saldo_final);
 				    	}		    	
 				    	/* ENTRADAS */
 						$sumatoria_cantidad_entradas = $sumatoria_cantidad_entradas + $data->cantidad_ingreso;
 						$sumatoria_parciales_entradas = $sumatoria_parciales_entradas + ($data->cantidad_ingreso * $data->precio_unitario_actual);
 						/* SALIDAS */
 						$sumatoria_cantidad_salidas = $sumatoria_cantidad_salidas + $data->cantidad_salida;
-						$sumatoria_parciales_salidas = $sumatoria_parciales_salidas + ($data->cantidad_salida * $data->precio_unitario_actual);
+						$sumatoria_parciales_salidas = $sumatoria_parciales_salidas + ($data->cantidad_salida * $precio_unitario_saldo_final);
 						/* SALDOS */
-						$sumatoria_cantidad_saldos = $sumatoria_cantidad_saldos + $data->stock_actual;
-						if($data->descripcion == "SALIDA"){
-				    		$sumatoria_parciales_saldos = $sumatoria_parciales_saldos + ($data->precio_unitario_actual * $data->stock_actual);
-				    	}else if($data->descripcion == "ENTRADA"){
-				    		$sumatoria_parciales_saldos = $sumatoria_parciales_saldos + ($data->precio_unitario_actual_promedio * $data->stock_actual);
-				    	}
+                    	$sumatoria_cantidad_saldos = $sumatoria_cantidad_saldos + $stock_saldo_final;
+                    	// Sumatoria de saldos parciales caso general
+                    	$sumatoria_parciales_saldos = $sumatoria_parciales_saldos + ($stock_saldo_final * $precio_unitario_saldo_final);
 				    	$y = $y + 1;
 					}
 				}

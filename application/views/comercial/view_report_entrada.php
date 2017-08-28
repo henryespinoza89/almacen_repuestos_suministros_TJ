@@ -1,17 +1,17 @@
 <?php
-	if ($this->input->post('nombre_producto_autocomplete')){
+	if($this->input->post('nombre_producto_autocomplete')){
         $nombre_producto_autocomplete = array('name'=>'nombre_producto_autocomplete','id'=>'nombre_producto_autocomplete','value'=>$this->input->post('nombre_producto_autocomplete'), 'style'=>'width:230px;font-family: verdana;float: left;margin-bottom: 0;','placeholder'=>' :: Nombre del Producto ::');
     }else{
         $nombre_producto_autocomplete = array('name'=>'nombre_producto_autocomplete','id'=>'nombre_producto_autocomplete', 'style'=>'width:230px;font-family: verdana;float: left;margin-bottom: 0;','placeholder'=>' :: Nombre del Producto ::'); 
     }
 
-    if ($this->input->post('fechainicial')){
+    if($this->input->post('fechainicial')){
 	    $fechainicial = array('name'=>'fechainicial','id'=>'fechainicial','maxlength'=>'10','value'=>$this->input->post('fechainicial'), 'style'=>'width:100px','readonly'=> 'readonly', 'class'=>'required');
 	}else{
 	    $fechainicial = array('name'=>'fechainicial','id'=>'fechainicial','maxlength'=>'10', 'style'=>'width:100px','readonly'=> 'readonly', 'class'=>'required');
 	}
 
-	if ($this->input->post('fechafinal')){
+	if($this->input->post('fechafinal')){
 	    $fechafinal = array('name'=>'fechafinal','id'=>'fechafinal','maxlength'=>'10','value'=>$this->input->post('fechafinal'), 'style'=>'width:100px','readonly'=> 'readonly', 'class'=>'required');
 	}else{
 	    $fechafinal = array('name'=>'fechafinal','id'=>'fechafinal','maxlength'=>'10', 'style'=>'width:100px','readonly'=> 'readonly', 'class'=>'required');
@@ -38,11 +38,10 @@
 	    		// Lo convierto a objeto
 			    var jObject = {};
 
-			    for(i in array_json)
-			    {
+			    for(i in array_json){
 			        jObject[i] = array_json[i];
 			    }
-			    //Luego lo paso por JSON  a un archivo php llamado js.php
+			    
 			    jObject= JSON.stringify(jObject);
 	    		
 	    		url = '<?php echo base_url(); ?>comercial/al_exportar_report_ingresos/'+jObject;

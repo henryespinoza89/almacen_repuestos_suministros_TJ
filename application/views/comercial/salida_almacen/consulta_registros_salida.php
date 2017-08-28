@@ -294,6 +294,8 @@ $("#actualizar_saldos_iniciales").on("click",function(){
     },
     function(){
       var dataString = 'id_salida_producto='+id_salida_producto+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
+      
+      /*
       $.ajax({
         type: "POST",
         url: "<?php echo base_url(); ?>comercial/eliminarsalidaproducto/",
@@ -306,6 +308,33 @@ $("#actualizar_saldos_iniciales").on("click",function(){
           }
         }
       });
+      */
+
+      $.ajax({
+        type: "POST",
+        url: "<?php echo base_url(); ?>comercial/eliminarregistrosalida/",
+        data: dataString,
+        success: function(msg){
+          if(msg == 'eliminacion_correcta'){
+            swal({
+              title: "La salida ha sido eliminada con Éxito!",
+              text: "",
+              type: "success",
+              confirmButtonText: "OK"
+            },function(isConfirm){
+              if (isConfirm) {
+                window.location.href="<?php echo base_url();?>comercial/gestion_consultar_salida_registros";  
+              }
+            });
+          }else if(msg == 'periodo_cerrado'){
+            sweetAlert("No se puede eliminar la salida", "No puede eliminar salidas de un periodo donde ya realizo el Cierre Mensual de Almacén. Verificar!", "error");
+          }else if(msg == 'valores_negativos_producto'){
+            sweetAlert("No se puede eliminar la salida", "Se produce valores negativos en el stock o precio unitario de los productos asociados a la salida. Existen salidas posteriores a la fecha de salida. Verificar!", "error");
+          }
+        }
+      });
+
+
     });
   }
 
@@ -340,6 +369,32 @@ $("#actualizar_saldos_iniciales").on("click",function(){
         <input name="submit" type="submit" id="actualizar_stock_area" value="Actualizar Stock por Área" style="padding-bottom:3px; padding-top:3px; margin-bottom: 15px; background-color: #CD0A0A; border-radius:6px; width: 150px;margin-right: 15px;" />
       </div>
       -->
+      <?php
+        foreach($anios_registros_salidas as $row_anios){
+          $input_filter_list_anio = array('name'=>'input_filter_list_anio_'.$row_anios->fecha_registro,'id'=>'input_filter_list_anio_'.$row_anios->fecha_registro,'maxlength'=>'20', 'value'=>$row_anios->fecha_registro, 'style'=>'display:none');
+      ?>
+        <form name="filtroBusqueda" action="#" method="post" style="width:140px; float:left;margin-bottom: 0px;border-bottom: none;">
+          <?php echo form_open(base_url()."comercial/gestion_consultar_salida_registros", 'id="buscar" style="width:780px;margin-bottom: 0px;border-bottom: none;"') ?>
+            <table width="150" border="0" cellspacing="0" cellpadding="0" style="display:block;float: left;">
+              <tr>
+                <td width="219" style="display: none;"><?php echo form_input($input_filter_list_anio);?></td>
+                <td width="150" style="padding-bottom:4px;">
+                  <?php 
+                    if ($this->input->post('input_filter_list_anio_'.$row_anios->fecha_registro)){
+                  ?>
+                    <input name="submit" type="submit" id="submit" value="<?php echo $row_anios->fecha_registro ?>" style="padding-bottom:3px; padding-top:3px; margin-bottom: 15px; background-color: #FF5722; border-radius:6px; width: 100px;margin-right: 15px;" />
+                  <?php } else { ?>
+                    <input name="submit" type="submit" id="submit" value="<?php echo $row_anios->fecha_registro ?>" style="padding-bottom:3px; padding-top:3px; margin-bottom: 15px; background-color: #303F9F; border-radius:6px; width: 100px;margin-right: 15px;" />
+                  <?php } ?>
+                </td>
+              </tr>
+            </table>
+          <?php echo form_close() ?>
+        </form>
+      <?php
+        } 
+      ?>
+      
       <?php 
       $existe = count($salidaproducto);
       if($existe <= 0){
@@ -375,10 +430,10 @@ $("#actualizar_saldos_iniciales").on("click",function(){
                 <td style="vertical-align: middle;"><?php echo $listasalidaproductos->no_producto; ?></td>
                 <td style="vertical-align: middle;"><?php echo number_format($listasalidaproductos->cantidad_salida,2,'.',',');?></td>
                 <!--
-                <td width="20" align="center"><img class="editar_producto" src="<?php echo base_url();?>assets/img/edit.png" width="20" height="20" title="Editar producto" onClick="editar_producto(<?php echo $listasalidaproductos->id_salida_producto; ?>)" /></td>
+                <td width="20" align="center"><img class="editar_producto" src="<?php // echo base_url();?>assets/img/edit.png" width="20" height="20" title="Editar producto" onClick="editar_producto(<?php echo $listasalidaproductos->id_salida_producto; ?>)" /></td>
                 -->
                 <td width="20" align="center">
-                  <img class="delete_salida" src="<?php echo base_url();?>assets/img/trash.png" width="20" height="20" title="Eliminar Producto" onClick="delete_salida(<?php echo $listasalidaproductos->id_salida_producto; ?>)" style="cursor: pointer;"/>
+                  <img class="delete_salida" src="<?php echo base_url();?>assets/img/trash.png" width="20" height="20" title="Eliminar Salida" onClick="delete_salida(<?php echo $listasalidaproductos->id_salida_producto; ?>)" style="cursor: pointer;"/>
                   <!--
                   <a href="" class="eliminar_salida" id="elim_<?php // echo $listasalidaproductos->id_salida_producto; ?>">
                   <img src="<?php // echo base_url();?>assets/img/trash.png" width="20" height="20" title="Eliminar Salida"/></a>

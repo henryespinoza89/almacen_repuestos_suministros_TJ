@@ -3,9 +3,9 @@
   //$total_factura_contabilidad = array('name'=>'total_factura_contabilidad','id'=>'total_factura_contabilidad', 'style'=>'width:80px');
   //$monto_total_factura = array('name'=>'monto_total_factura','id'=>'monto_total_factura', 'style'=>'width:80px');
   if ($this->input->post('seriecomprobante')){
-    $seriecomprobante = array('name'=>'seriecomprobante','id'=>'seriecomprobante','maxlength'=>'5','value'=>$this->input->post('seriecomprobante'), 'style'=>'width:30px;margin-right: 2px;', 'class'=>'required','onpaste'=>'return false');
+    $seriecomprobante = array('name'=>'seriecomprobante','id'=>'seriecomprobante','maxlength'=>'5','value'=>$this->input->post('seriecomprobante'), 'style'=>'width:40px;margin-right: 2px;', 'class'=>'required','onpaste'=>'return false');
   }else{
-    $seriecomprobante = array('name'=>'seriecomprobante','id'=>'seriecomprobante','maxlength'=>'5', 'style'=>'width:30px;margin-right: 2px;', 'class'=>'required','onpaste'=>'return false');
+    $seriecomprobante = array('name'=>'seriecomprobante','id'=>'seriecomprobante','maxlength'=>'5', 'style'=>'width:40px;margin-right: 2px;', 'class'=>'required','onpaste'=>'return false');
   }
 
   if ($this->input->post('total_factura_contabilidad')){
@@ -15,9 +15,9 @@
   }
 
   if ($this->input->post('numcomprobante')){
-    $numcomprobante = array('name'=>'numcomprobante','id'=>'numcomprobante','maxlength'=>'20','value'=>$this->input->post('numcomprobante'), 'style'=>'width:108px', 'class'=>'required');
+    $numcomprobante = array('name'=>'numcomprobante','id'=>'numcomprobante','maxlength'=>'20','value'=>$this->input->post('numcomprobante'), 'style'=>'width:111px', 'class'=>'required');
   }else{
-    $numcomprobante = array('name'=>'numcomprobante','id'=>'numcomprobante','maxlength'=>'20', 'style'=>'width:108px', 'class'=>'required');
+    $numcomprobante = array('name'=>'numcomprobante','id'=>'numcomprobante','maxlength'=>'20', 'style'=>'width:111px', 'class'=>'required');
   }
   // ,'onpaste'=>'return false' // No permite utilizar el ctr v en el input
 
@@ -269,38 +269,7 @@
       });
     });
 
-    $('#lista_factura_importada_pendiente').jTPS( {perPages:[10,20,30,50,'Todos'],scrollStep:1,scrollDelay:30,clickCallback:function () {     
-      var table = '#lista_factura_importada_pendiente';
-      document.cookie = 'jTPS=sortasc:' + $(table + ' .sortableHeader').index($(table + ' .sortAsc')) + ',' +
-        'sortdesc:' + $(table + ' .sortableHeader').index($(table + ' .sortDesc')) + ',' +
-        'page:' + $(table + ' .pageSelector').index($(table + ' .hilightPageSelector')) + ';';
-      }
-    });
-    // reinstate sort and pagination if cookie exists
-    var cookies = document.cookie.split(';');
-    for (var ci = 0, cie = cookies.length; ci < cie; ci++) {
-      var cookie = cookies[ci].split('=');
-      if (cookie[0] == 'jTPS') {
-        var commands = cookie[1].split(',');
-        for (var cm = 0, cme = commands.length; cm < cme; cm++) {
-          var command = commands[cm].split(':');
-          if (command[0] == 'sortasc' && parseInt(command[1]) >= 0) {
-            $('#lista_factura_importada_pendiente .sortableHeader:eq(' + parseInt(command[1]) + ')').click();
-          } else if (command[0] == 'sortdesc' && parseInt(command[1]) >= 0) {
-            $('#lista_factura_importada_pendiente .sortableHeader:eq(' + parseInt(command[1]) + ')').click().click();
-          } else if (command[0] == 'page' && parseInt(command[1]) >= 0) {
-            $('#lista_factura_importada_pendiente .pageSelector:eq(' + parseInt(command[1]) + ')').click();
-          }
-        }
-      }
-    }
-
-    // bind mouseover for each tbody row and change cell (td) hover style
-    $('#lista_factura_importada_pendiente tbody tr:not(.stubCell)').bind('mouseover mouseout',
-      function (e) {
-        e.type == 'mouseover' ? $(this).children('td').addClass('hilightRow') : $(this).children('td').removeClass('hilightRow');
-      }
-    );
+    $('#lista_factura_importada_pendiente').DataTable();
 
   });
 
@@ -332,6 +301,44 @@
     $("#table_button_finalizar_salida").css('display','none');
   }
 
+  function delete_factura(id_ingreso_producto){
+    swal({   
+      title: "Estas seguro?",
+      text: "No se podrá recuperar esta información!",
+      type: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#DD6B55",
+      confirmButtonText: "Si, eliminar!",
+      closeOnConfirm: false 
+    },
+    function(){
+      var dataString = 'id_ingreso_producto='+id_ingreso_producto+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
+      $.ajax({
+        type: "POST",
+        url: "<?php echo base_url(); ?>comercial/eliminarregistroingreso/",
+        data: dataString,
+        success: function(msg){
+          if(msg == 'eliminacion_correcta'){
+            swal({
+              title: "La factura ha sido eliminada con Éxito!",
+              text: "",
+              type: "success",
+              confirmButtonText: "OK"
+            },function(isConfirm){
+              if (isConfirm) {
+                window.location.href="<?php echo base_url();?>comercial/gestionfacturasmasivas";  
+              }
+            });
+          }else if(msg == 'periodo_cerrado'){
+            sweetAlert("No se puede eliminar la factura", "No puede eliminar facturas de un periodo donde ya realizo el Cierre Mensual de Almacén. Verificar!", "error");
+          }else if(msg == 'valores_negativos_producto'){
+            sweetAlert("No se puede eliminar la factura", "Se produce valores negativos en el stock o precio unitario de los productos asociados a la factura. Existen salidas posteriores a la fecha de factura. Verificar!", "error");
+          }
+        }
+      });
+    });
+  }
+
 </script>
 </head>
 <body>
@@ -344,7 +351,7 @@
           <table width="360" border="0" cellspacing="0" cellpadding="0" style="margin-top: 4px;">
             <tr>
               <td width="120" valign="middle" height="30">Comprobante:</td>
-              <td width="194" height="30"><?php echo form_dropdown('comprobante',$listacomprobante,$selected_comprobante,'id="comprobante" style="width:158px;"');?></td>
+              <td width="194" height="30"><?php echo form_dropdown('comprobante',$listacomprobante,$selected_comprobante,'id="comprobante" style="width:158px;margin-left: 0px;"');?></td>
             </tr>
             <tr>
           </table>
@@ -359,13 +366,13 @@
           <table width="360" border="0" cellspacing="0" cellpadding="0" style="margin-top: 4px;">
             <tr>
               <td width="120" valign="middle" height="30">Moneda</td>
-              <td width="194" height="30"><?php echo form_dropdown('moneda',$listasimmon,$selected_moneda,'id="moneda" style="width:158px;"');?></td>
+              <td width="194" height="30"><?php echo form_dropdown('moneda',$listasimmon,$selected_moneda,'id="moneda" style="width:158px;margin-left: 0px;"');?></td>
             </tr>
             <tr>
           </table>
           <table width="360" border="0" cellspacing="0" cellpadding="0" style="margin-top: 4px;">
             <tr>
-              <td width="130" valign="middle" height="30">Proveedor</td>
+              <td width="124" valign="middle" height="30">Proveedor</td>
               <td width="194" height="30"><?php echo form_input($nombre_proveedor);?></td>
             </tr>
             <tr>
@@ -382,7 +389,7 @@
           <table width="486" border="0" cellspacing="0" cellpadding="0" style="margin-top: 4px;">
             <tr>
               <td width="120" valign="middle" height="30">Agente de Aduana</td>
-              <td width="194" height="30"><?php echo form_dropdown('agente',$listaagente,$selected_agente,'id="agente" style="width:158px;"');?></td>
+              <td width="194" height="30"><?php echo form_dropdown('agente',$listaagente,$selected_agente,'id="agente" style="width:158px;margin-left: 0px;"');?></td>
             </tr>
             <tr>
           </table>
@@ -405,7 +412,7 @@
           <table width="625" border="0" cellspacing="0" cellpadding="0">
             <td width="134" align="left">
               <!--<input name="test_masiva_informacion" type="button" id="test_masiva_informacion" value="Realizar Test" style="border-radius: 0px;margin-top: 6px;height: 24px;margin-left: 227px;" />-->
-              <input name="registrar_factura_masiva" type="submit" id="registrar_factura_masiva"  value="Registrar Factura" style="border-radius: 0px;margin-bottom: 6px;height: 24px;margin-left: 330px;border-radius: 6px;" />
+              <input name="registrar_factura_masiva" type="submit" id="registrar_factura_masiva"  value="REGISTRAR FACTURA" style="border-radius: 0px;margin-bottom: 6px;height: 24px;margin-left: 330px;border-radius: 6px;background-color: #FF5722;" />
             </td>
           </table>
         </div>
@@ -419,49 +426,44 @@
       }
       else{
     ?>
-    <table border="0" cellspacing="0" cellpadding="0" id="lista_factura_importada_pendiente" style="width:1350px;">
+    <table border="0" cellspacing="0" cellpadding="0" id="lista_factura_importada_pendiente" style="float: left;width:1350px;" class="table table-hover table-striped">
         <thead>
-              <tr class="tituloTable">
-                <td sort="idprod" width="80" height="25">ITEM</td>
-                <td sort="idproducto" width="200" height="25">FECHA DE REGISTRO</td>
-                <td sort="idproducto" width="100" height="25">SERIE</td>
-                <td sort="idproducto" width="160" height="25">N° DE COMPROBANTE</td>
-                <td sort="idproducto" width="520" height="25">PROVEEDOR</td>
-                <td sort="idproducto" width="220" height="25">AGENTE ADUANA</td>
-                <td sort="idproducto" width="120" height="25">MONEDA</td>
-                <td width="20">&nbsp;</td>
+              <tr class="tituloTable" style="font-family: Helvetica Neu,Helvetica,Arial,sans-serif;font-size: 12px;height: 35px;">
+                <td sort="idprod" width="80" height="35">ITEM</td>
+                <td sort="idproducto" width="200" height="35">FECHA DE REGISTRO</td>
+                <td sort="idproducto" width="100" height="35">SERIE</td>
+                <td sort="idproducto" width="200" height="35">N° DE COMPROBANTE</td>
+                <td sort="idproducto" width="460" height="35">PROVEEDOR</td>
+                <td sort="idproducto" width="200" height="35">AGENTE ADUANA</td>
+                <td sort="idproducto" width="140" height="35">MONEDA</td>
+                <td width="20" style="background-image: none;">&nbsp;</td>
+                <!--<td width="20" style="background-image: none;">&nbsp;</td>-->
               </tr>
         </thead>
         <?php 
           $i = 1;
           foreach($factura_import as $data){ ?>  
               <tr class="contentTable">
-                <td height="27"><?php echo str_pad($i, 3, 0, STR_PAD_LEFT); ?></td>
-                <td><?php echo $data->fecha; ?></td>
-                <td><?php echo $data->serie_comprobante; ?></td>
-                <td><?php echo $data->nro_comprobante; ?></td>
-                <td><?php echo $data->razon_social; ?></td>
-                <td><?php echo $data->no_agente; ?></td>
-                <td><?php echo $data->no_moneda; ?></td>
+                <td height="27" style="vertical-align: middle;"><?php echo str_pad($i, 3, 0, STR_PAD_LEFT); ?></td>
+                <td style="vertical-align: middle;"><?php echo $data->fecha; ?></td>
+                <td style="vertical-align: middle;"><?php echo $data->serie_comprobante; ?></td>
+                <td style="vertical-align: middle;"><?php echo $data->nro_comprobante; ?></td>
+                <td style="vertical-align: middle;"><?php echo $data->razon_social; ?></td>
+                <td style="vertical-align: middle;"><?php echo $data->no_agente; ?></td>
+                <td style="vertical-align: middle;"><?php echo $data->no_moneda; ?></td>
                 <td width="20" align="center"><input type="radio" name="newsletter" onClick="fill_inputs(<?php echo $data->id_ingreso_producto; ?>)" style="cursor: pointer;" title="Finalizar Registro"/></td>
                 <!--<td width="20" align="center">
                     <a href="" class="eliminar_salida" id="elim_<?php //echo $listasalidaproductos->id_salida_producto; ?>">
                     <img src="<?php //echo base_url();?>assets/img/trash.png" width="20" height="20" title="Eliminar Registro"/></a>
                 </td>-->
+                <!--<td width="20" align="center">
+                  <img class="delete_factura" src="<?php //echo base_url();?>assets/img/trash.png" width="20" height="20" title="Eliminar Factura" onClick="delete_factura(<?php echo $data->id_ingreso_producto; ?>)" style="cursor: pointer;"/>
+                </td>-->
               </tr>
           <?php 
             $i++;
             } 
-        ?>
-        <tfoot class="nav">
-          <tr>
-            <td colspan=13>
-              <div class="pagination"></div>
-              <div class="paginationTitle">Página</div>
-              <div class="selectPerPage"></div>
-            </td>
-          </tr>                   
-        </tfoot>     
+          ?>   
     </table>
     <?php }?>
   </div>

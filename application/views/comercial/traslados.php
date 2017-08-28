@@ -450,7 +450,7 @@
 		<div id="options" style="border-bottom: 1px solid #000; padding-bottom: 10px; margin-bottom: 0;">
         	<div class="newagente" style="height: 20px;margin-top: 3px;"><a href="<?php echo base_url(); ?>comercial/consultar_traslado_productos/">Consultar Traslados</a></div>
       	</div>
-		<div style="width: 400px;float: left;background: whitesmoke;border-bottom: 1px solid #000;height: 170px;padding-top: 15px;padding-left: 15px;font-size: 11px;font-family: 'verdana';">
+		<div style="width: 400px;float: left;background: whitesmoke;border-bottom: 1px solid #000;height: 180px;padding-top: 15px;padding-left: 15px;font-size: 11px;font-family: 'verdana';">
 			<table width="518" border="0" cellspacing="0" cellpadding="0">
 		        <tr>
 		          	<td width="148" valign="middle" height="30">Punto de Partida:</td>
@@ -495,7 +495,7 @@
 		        </tr>						        
 			</table>
 		</div>
-		<div style="width: 960px;height: 170px;float: left;background: whitesmoke;border-bottom: 1px solid #000;padding-top: 15px;margin-bottom: 15px;font-size: 11px;font-family: 'verdana';">
+		<div style="width: 960px;height: 180px;float: left;background: whitesmoke;border-bottom: 1px solid #000;padding-top: 15px;margin-bottom: 15px;font-size: 11px;font-family: 'verdana';">
 			<!--
 			<table width="518" border="0" cellspacing="0" cellpadding="0">
 				<tr>

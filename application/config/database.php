@@ -58,8 +58,8 @@ $db['default']['database'] = 'tejidosj_almacen_hilanderia';
 // local
 $db['default']['hostname'] = 'localhost';
 $db['default']['username'] = 'postgres';
-$db['default']['password'] = '120492';
-$db['default']['database'] = 'almacen';
+$db['default']['password'] = 'alda';
+$db['default']['database'] = 'almacen_hilanderia';
 $db['default']['dbdriver'] = 'postgre';
 $db['default']['port'] = '5432';
 $db['default']['dbprefix'] = '';

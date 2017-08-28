@@ -1,6 +1,19 @@
 <script type="text/javascript">
   $(function(){
 
+    $("#nombrepro_agregar_area").autocomplete({
+      source: function (request, respond) {
+        $.post("<?php echo base_url('comercial/traer_producto_autocomplete_agregar_area'); ?>", {<?php echo $this->security->get_csrf_token_name(); ?>: "<?php echo $this->security->get_csrf_hash(); ?>", q: request.term},
+        function (response) {
+            respond(response);
+        }, 'json');
+      }, select: function (event, ui) {
+        var selectedObj = ui.item;
+        var nombre_producto = selectedObj.nombre_producto;
+        $("#nombrepro_agregar_area").val(nombre_producto);
+      }
+    });
+
     /** Función de Autocompletado para el Tipo de Proceso **/
     $("#uni_med").autocomplete({
       source: function (request, respond) {
@@ -205,6 +218,8 @@
                       sweetAlert("!El Nombre del Producto ya se encuentra asociado al Área seleccionada. Verificar!", "", "error");
                     }else if(msg == 'error_registro'){
                       sweetAlert("!Se ha producto un error. Intentelo Nuevamente!", "", "error");
+                    }else if(msg == 'nombre_duplicado'){
+                      sweetAlert("Validación", "!El nombre del producto ya se encuentra registrado en el sistema!", "error");
                     }
                   }
                 });
@@ -214,6 +229,40 @@
             $("#mdlNuevoProducto").dialog("close");
           }
           }
+      });
+    });
+
+    $(".newprospect_new_area").click(function() {
+      $("#mdl_area_producto" ).dialog({
+        modal: true,resizable: false,show: "blind",position: 'center',width: 400,height: 270,draggable: false,closeOnEscape: false, //Aumenta el marco general
+        buttons: {
+        Registrar: function() {
+            var nombrepro_agregar_area = $('#nombrepro_agregar_area').val(); area = $('#area_2').val();
+            if(nombrepro_agregar_area == '' || area == ''){
+              sweetAlert("Falta completar campos obligatorios del formulario, por favor verifique!", "", "error");
+            }else{
+              var dataString = 'nombrepro_agregar_area='+nombrepro_agregar_area+'&area='+area+'&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>';
+              $.ajax({
+                type: "POST",
+                url: "<?php echo base_url(); ?>comercial/registrar_producto_nueva_area/",
+                data: dataString,
+                success: function(msg){
+                  if(msg == 1){
+                    swal({ title: "El Producto ha sido asociado a la nueva área con éxito!",text: "",type: "success",confirmButtonText: "OK",timer: 2000 });
+                    $("#mdl_area_producto").dialog("close");
+                    $('#nombrepro_agregar_area').val('');
+                    $('#area_2').val('');
+                  }else if(msg == 'area_duplicada'){
+                    sweetAlert("Validación", "!El producto ya se encuentra asociado al área seleccionada. Verificar!", "error");
+                  }
+                }
+              });
+            }
+        },
+        Cancelar: function(){
+          $("#mdl_area_producto").dialog("close");
+        }
+        }
       });
     });
 
@@ -237,6 +286,16 @@
       }else{  $selected_area = "";
     ?>
       $("#area").append('<option value="" selected="selected">:: SELECCIONE ::</option>');
+    <?php 
+      } 
+    ?>
+
+    <?php 
+      if ($this->input->post('area_2')){
+        $selected_agregar_area =  (int)$this->input->post('area_2');
+      }else{  $selected_agregar_area = "";
+    ?>
+      $("#area_2").append('<option value="" selected="selected">:: SELECCIONE ::</option>');
     <?php 
       } 
     ?>
@@ -538,9 +597,10 @@
       <!--<div class="tituloFiltro">Filtros para Exportar a PDF</div>-->
       <div id="options_productos">
         <div class="newprospect">Nuevo Producto</div>
+        <div class="newprospect_new_area" style="width: 260px;">Agregar un producto a una nueva área</div>
         <div class="newct"><a href="<?php echo base_url(); ?>comercial/gestioncategoriaproductos/">Categoria de Producto</a></div>
         <div class="newtp"><a href="<?php echo base_url(); ?>comercial/gestiontipoproductos/">Tipo de Producto</a></div>
-        <input name="export_excel" type="submit" id="export_excel" value="EXPORTAR INVENTARIO DE ALMACEN" style="padding-bottom:5px; padding-top:3px; background-color: #FF5722; border-radius:6px;width: 215px;margin-left:666px;" />
+        <input name="export_excel" type="submit" id="export_excel" value="EXPORTAR INVENTARIO DE ALMACEN" style="padding-bottom:5px; padding-top:3px; background-color: #FF5722; border-radius:6px;width: 215px;margin-left:407px;" />
         <!--<input name="eliminar_registros" type="submit" id="eliminar_registros" value="Eliminar registros" style="padding-bottom:3px; padding-top:3px; background-color: #0B610B; border-radius:6px;width: 155px;float: right;" />
         <input name="actualizar_saldos_iniciales" type="submit" id="actualizar_saldos_iniciales" value="Actualizar saldos iniciales" style="padding-bottom:3px; padding-top:3px; background-color: #0B610B; border-radius:6px;width: 155px;float: right;" />
         <!--<input name="consolidar" type="submit" id="consolidar" value="Consolidar Stock" style="padding-bottom:3px; padding-top:3px; background-color: #0B610B; border-radius:6px;width: 155px;float: right;" />-->
@@ -555,7 +615,7 @@
           else
           {
         ?>
-        <table border="0" cellspacing="0" cellpadding="0" id="listaProductos" style="width:1370px;" class="table table-hover table-striped">
+        <table border="0" cellspacing="0" cellpadding="0" id="listaProductos" style="width:1370px;padding-top: 8px;" class="table table-hover table-striped">
           <thead>
             <tr class="tituloTable" style="font-family: Helvetica Neu,Helvetica,Arial,sans-serif;font-size: 12px;height: 35px;">
               <td sort="idprod" width="65" height="27">ITEM</td>
@@ -636,7 +696,7 @@
   </div>
   <!---  Ventanas modales -->
   <div id="mdlNuevoProducto" style="display:none">
-      <div id="contenedor" style="width:320px; height:290px;"> <!--Aumenta el marco interior-->
+    <div id="contenedor" style="width:320px; height:290px;"> <!--Aumenta el marco interior-->
       <div id="tituloCont">Nuevo Producto</div>
       <div id="formFiltro" style="width:500px;">
       <?php
@@ -648,54 +708,81 @@
         $stock = array('name'=>'stock','id'=>'stock','maxlength'=>'30', 'style'=>'width:150px');//este es un input
         $producto_asociado = array('name'=>'producto_asociado','id'=>'producto_asociado','maxlength'=>'100', 'style'=>'width:150px');//este es un input
       ?>  
-        <form method="post" id="nuevo_producto" style=" border-bottom:0px">
-          <table>
-            <tr>
-              <td width="130">ID Producto:</td>
-              <td width="263"><?php echo form_input($codigopro);?></td>
-            </tr>
-            <tr>
-              <td width="130">Descripción:</td>
-              <td width="263"><?php echo form_input($nombrepro);?></td>
-            </tr>
-            <tr>
-              <td>Área:</td>
-              <td width="263"><?php echo form_dropdown('area',$listaarea,$selected_area,"id='area' style='margin-left: 0px;width: 150px;'" );?></td>
-            </tr>
-            <tr> 
-                <td>Categoria:</td>
-                <td width="263"><?php echo form_dropdown('categoriaN',$listacategoria,'',"id='categoriaN' style='margin-left: 0px;width: 150px;'");?>
-                <div align="right"></div></td>
-            </tr>
-            <tr> 
-                <td height="30">Tipo de Producto:</td>
-                <td>
-                  <select name="tipo" id="tipo" class='required' style='width:158px;margin-left: 0px;width: 150px;'></select>
-                </td>
-            </tr>
-            <tr>
-                <td>Procedencia:</td>
-                <td><?php echo form_dropdown('procedenciaN',$listaprocedencia,'',"id='procedenciaN' style='margin-left: 0px;width: 150px;'");?></td>
-            </tr>
-            <tr>
-                <td>Unidad de Medida:</td>
-                <td><?php echo form_input($uni_med);?></td>
-            </tr>
-            <tr>
-                <td width="130">Observaciones:</td>
-                <td width="263"><?php echo form_input($observacion);?></td>
-            </tr>
-            <!--
-            <tr>
-                <td width="130">Producto Asociado:</td>
-                <td width="263"><?php //echo form_input($producto_asociado);?></td>
-            </tr>
-            -->
-          </table>
-        </form>
-        </div>
+      <form method="post" id="nuevo_producto" style=" border-bottom:0px">
+        <table>
+          <tr>
+            <td width="130">ID Producto:</td>
+            <td width="263"><?php echo form_input($codigopro);?></td>
+          </tr>
+          <tr>
+            <td width="130">Descripción:</td>
+            <td width="263"><?php echo form_input($nombrepro);?></td>
+          </tr>
+          <tr>
+            <td>Área:</td>
+            <td width="263"><?php echo form_dropdown('area',$listaarea,$selected_area,"id='area' style='margin-left: 0px;width: 150px;'" );?></td>
+          </tr>
+          <tr> 
+              <td>Categoria:</td>
+              <td width="263"><?php echo form_dropdown('categoriaN',$listacategoria,'',"id='categoriaN' style='margin-left: 0px;width: 150px;'");?>
+              <div align="right"></div></td>
+          </tr>
+          <tr> 
+              <td height="30">Tipo de Producto:</td>
+              <td>
+                <select name="tipo" id="tipo" class='required' style='width:158px;margin-left: 0px;width: 150px;'></select>
+              </td>
+          </tr>
+          <tr>
+              <td>Procedencia:</td>
+              <td><?php echo form_dropdown('procedenciaN',$listaprocedencia,'',"id='procedenciaN' style='margin-left: 0px;width: 150px;'");?></td>
+          </tr>
+          <tr>
+              <td>Unidad de Medida:</td>
+              <td><?php echo form_input($uni_med);?></td>
+          </tr>
+          <tr>
+              <td width="130">Observaciones:</td>
+              <td width="263"><?php echo form_input($observacion);?></td>
+          </tr>
+          <!--
+          <tr>
+              <td width="130">Producto Asociado:</td>
+              <td width="263"><?php //echo form_input($producto_asociado);?></td>
+          </tr>
+          -->
+        </table>
+      </form>
       </div>
     </div>
+  </div>
+
+  <div id="mdl_area_producto" style="display:none">
+    <div id="contenedor" style="width:350px; height:140px;"> <!--Aumenta el marco interior-->
+      <div id="tituloCont">Agregar área a un producto</div>
+      <div id="formFiltro" style="width:500px;">
+      <?php
+        $nombrepro_agregar_area = array('name'=>'nombrepro_agregar_area','id'=>'nombrepro_agregar_area','maxlength'=>'60', 'style'=>'width:180px;margin-left: 18px;');//este es un input
+      ?>  
+      <form method="post" id="nuevo_producto" style=" border-bottom:0px">
+        <table>
+          <tr>
+            <td width="130" style="text-align: end;padding-bottom: 4px;">NOMBRE DEL PRODUCTO:</td>
+            <td width="263"><?php echo form_input($nombrepro_agregar_area);?></td>
+          </tr>
+          <tr>
+            <td style="text-align: end;padding-bottom: 4px;">AREA:</td>
+            <td width="263"><?php echo form_dropdown('area_2',$listaarea,$selected_agregar_area,"id='area_2' style='width: 180px;margin-left: 18px;'" );?></td>
+          </tr>
+        </table>
+      </form>
+      </div>
+    </div>
+  </div>
+
+
+
+
     <div id="mdlEditarProducto"></div>
     <div id="modalerror"></div>
     <div id="finregistro"></div>

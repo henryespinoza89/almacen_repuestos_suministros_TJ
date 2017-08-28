@@ -155,17 +155,16 @@
       <div class="tituloFiltro">Filtrar Búsqueda</div>
       <form name="filtroBusqueda" action="#" method="post">
         <?php
-          	// para el numero de factura
           	if ($this->input->post('num_factura')){
-            $num_factura = array('name'=>'num_factura','id'=>'num_factura','maxlength'=>'12','value'=>$this->input->post('num_factura'), 'style'=>'width:130px');
+              $num_factura = array('name'=>'num_factura','id'=>'num_factura','maxlength'=>'12','value'=>$this->input->post('num_factura'), 'style'=>'width:130px');
           	}else{
-            $num_factura = array('name'=>'num_factura','id'=>'num_factura','maxlength'=>'12', 'style'=>'width:130px');
+              $num_factura = array('name'=>'num_factura','id'=>'num_factura','maxlength'=>'12', 'style'=>'width:130px');
             }
-            //para la Fecha de Registro
+
           	if ($this->input->post('fecharegistro')){
-      			$fecharegistro = array('name'=>'fecharegistro','id'=>'fecharegistro','maxlength'=>'10','value'=>$this->input->post('fecharegistro'), 'style'=>'width:130px','readonly'=> 'readonly', 'class'=>'required');
+      			 $fecharegistro = array('name'=>'fecharegistro','id'=>'fecharegistro','maxlength'=>'10','value'=>$this->input->post('fecharegistro'), 'style'=>'width:130px','readonly'=> 'readonly', 'class'=>'required');
         		}else{
-        		$fecharegistro = array('name'=>'fecharegistro','id'=>'fecharegistro','maxlength'=>'10', 'style'=>'width:130px','readonly'=> 'readonly', 'class'=>'required');
+        		  $fecharegistro = array('name'=>'fecharegistro','id'=>'fecharegistro','maxlength'=>'10', 'style'=>'width:130px','readonly'=> 'readonly', 'class'=>'required');
         		}
         ?>
         <?php echo form_open(base_url()."comercial/gestionconsultarRegistros", 'id="buscar"') ?>

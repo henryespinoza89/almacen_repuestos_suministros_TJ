@@ -19,7 +19,6 @@
     <!--script language="JavaScript" type="text/javascript" src="<?php echo base_url();?>assets/lib/jquery-1.9.1.min.js"></script-->
     <script language="JavaScript" type="text/javascript" src="<?php echo base_url();?>assets/js/jquery.steps.js"></script>
     <!-- JQuery Validate -->
-    
     <script language="JavaScript" type="text/javascript" src="<?php echo base_url();?>assets/js/jshashtable-3.0.js"></script>
     <script language="JavaScript" type="text/javascript" src="<?php echo base_url();?>assets/js/jquery-validate.js"></script>
 	<script language="JavaScript" type="text/javascript" src="<?php echo base_url();?>assets/js/jTPS.js"></script>
@@ -62,7 +61,7 @@
               	}
         	}
       	});
-
+		
       	$("#icon_notification").on('click',function(){
       		if(auxiliar == 0){
       			$("#view_invoice").hide();
@@ -176,7 +175,7 @@
 <body>
 <header>
 	<div id="logo"><a href="<?php echo base_url();?>comercial/gestionproductos"><img src="<?php echo base_url();?>assets/img/logo_tejidos.jpg" height="72" title="Sistema de Almacén"></a></div>
-	<div class="notification" id="notification" style="float: left;margin-top: 38px;margin-left: 620px;">
+	<div class="notification" id="notification" style="float: left;margin-top: 30px;margin-left: 620px;">
 		<i><span class="fa fa-bell" id="icon_notification"></span></i>
 	</div>
 	<div class="view_invoice" id="view_invoice"></div>
@@ -215,7 +214,7 @@
 					<li style="width: 191px;">
 						<a href='<?php echo base_url();?>comercial/gestioningreso'><span>Gestión Ingreso de Facturas</span></a>
 						<ul>
-							<li style="width: 191px;"><a href='<?php echo base_url();?>comercial/gestioncierrealmacen'><span style="padding-left: 6px;">Cierre de Almacén</span></a></li>
+							<!--<li style="width: 191px;"><a href='<?php // echo base_url();?>comercial/gestioncierrealmacen'><span style="padding-left: 6px;">Cierre de Almacén</span></a></li>-->
 							<li style="width: 191px;"><a href='<?php echo base_url();?>comercial/gestion_cierre_saldos_iniciales'><span style="padding-left: 6px;">Cierre de Saldos Iniciales</span></a></li>
 						</ul>
 					</li>

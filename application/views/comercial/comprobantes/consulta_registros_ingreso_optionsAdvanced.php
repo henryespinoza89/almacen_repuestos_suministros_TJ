@@ -155,6 +155,75 @@
       }
     });
     // FIN DE ELIMINAR
+    
+    $('.button_filter_list_anio_2012').on("click",function(){      
+      var fecha_anual = $("#button_filter_list_anio_2012").val();
+      console.log(fecha_anual);
+      console.log('2012');
+    });
+    /*
+
+    $('.button_filter_list_anio_2013').on("click",function(){      
+      var fecha_anual = $("#button_filter_list_anio_2013").val();
+      alert(fecha_anual);
+    });
+
+    $('.button_filter_list_anio_2014').on("click",function(){      
+      var fecha_anual = $("#button_filter_list_anio_2014").val();
+      alert(fecha_anual);
+    });
+
+    $('.button_filter_list_anio_2015').on("click",function(){      
+      var fecha_anual = $("#button_filter_list_anio_2015").val();
+      alert(fecha_anual);
+    });
+
+    $('.button_filter_list_anio_2016').on("click",function(){      
+      var fecha_anual = $("#button_filter_list_anio_2016").val();
+      alert(fecha_anual);
+    });
+
+    $('.button_filter_list_anio_2017').on("click",function(){      
+      var fecha_anual = $("#button_filter_list_anio_2017").val();
+      alert(fecha_anual);
+    });
+
+    $('.button_filter_list_anio_2018').on("click",function(){      
+      var fecha_anual = $("#button_filter_list_anio_2018").val();
+      alert(fecha_anual);
+    });
+
+    $('.button_filter_list_anio_2019').on("click",function(){      
+      var fecha_anual = $("#button_filter_list_anio_2019").val();
+      alert(fecha_anual);
+    });
+
+    $('.button_filter_list_anio_2020').on("click",function(){      
+      var fecha_anual = $("#button_filter_list_anio_2020").val();
+      alert(fecha_anual);
+    });
+
+    $('.button_filter_list_anio_2021').on("click",function(){      
+      var fecha_anual = $("#button_filter_list_anio_2021").val();
+      alert(fecha_anual);
+    });
+
+    $('.button_filter_list_anio_2022').on("click",function(){      
+      var fecha_anual = $("#button_filter_list_anio_2022").val();
+      alert(fecha_anual);
+    });
+
+    $('.button_filter_list_anio_2023').on("click",function(){      
+      var fecha_anual = $("#button_filter_list_anio_2023").val();
+      alert(fecha_anual);
+    });
+
+    $('.button_filter_list_anio_2024').on("click",function(){      
+      var fecha_anual = $("#button_filter_list_anio_2024").val();
+      alert(fecha_anual);
+    });
+    */
+
   });
 
   //Fuera de $(function(){         });
@@ -177,7 +246,7 @@
   }
 
   function delete_factura(id_ingreso_producto){
-    swal({   
+    swal({
       title: "Estas seguro?",
       text: "No se podrá recuperar esta información!",
       type: "warning",
@@ -193,6 +262,23 @@
         url: "<?php echo base_url(); ?>comercial/eliminarregistroingreso/",
         data: dataString,
         success: function(msg){
+          if(msg == 'eliminacion_correcta'){
+            swal({
+              title: "La factura ha sido eliminada con Éxito!",
+              text: "",
+              type: "success",
+              confirmButtonText: "OK"
+            },function(isConfirm){
+              if (isConfirm) {
+                window.location.href="<?php echo base_url();?>comercial/gestionconsultarRegistros_optionsAdvanced";  
+              }
+            });
+          }else if(msg == 'periodo_cerrado'){
+            sweetAlert("No se puede eliminar la factura", "No puede eliminar facturas de un periodo donde ya realizo el Cierre Mensual de Almacén. Verificar!", "error");
+          }else if(msg == 'valores_negativos_producto'){
+            sweetAlert("No se puede eliminar la factura", "Se produce valores negativos en el stock o precio unitario de los productos asociados a la factura. Existen salidas posteriores a la fecha de factura. Verificar!", "error");
+          }
+          /*
           if(msg == '1'){
             swal({
               title: "La factura ha sido eliminada con Éxito!",
@@ -207,6 +293,7 @@
           }else if(msg == 'dont_delete'){
             sweetAlert("No se puede eliminar la factura", "No puede eliminar facturas de un periodo donde se ya realizo el Cierre Mensual de Almacén. Verificar!", "error");
           }
+          */
         }
       });
     });
@@ -223,6 +310,31 @@
         <input name="submit" type="submit" id="button_killer" value=" Buttom Killer xD" style="padding-bottom:3px; padding-top:3px; margin-bottom: 15px; background-color: #CD0A0A; border-radius:6px; width: 150px;margin-right: 15px;" />
       </div>
       -->
+      <?php
+        foreach($anios_registros as $row_anios){
+          $input_filter_list_anio = array('name'=>'input_filter_list_anio_'.$row_anios->fecha_registro,'id'=>'input_filter_list_anio_'.$row_anios->fecha_registro,'maxlength'=>'20', 'value'=>$row_anios->fecha_registro, 'style'=>'display:none');
+      ?>
+        <form name="filtroBusqueda" action="#" method="post" style="width:140px; float:left;margin-bottom: 0px;border-bottom: none;">
+          <?php echo form_open(base_url()."comercial/gestionconsultarRegistros_optionsAdvanced", 'id="buscar" style="width:780px;margin-bottom: 0px;border-bottom: none;"') ?>
+            <table width="150" border="0" cellspacing="0" cellpadding="0" style="display:block;float: left;">
+              <tr>
+                <td width="219" style="display: none;"><?php echo form_input($input_filter_list_anio);?></td>
+                <td width="150" style="padding-bottom:4px;">
+                  <?php 
+                    if ($this->input->post('input_filter_list_anio_'.$row_anios->fecha_registro)){
+                  ?>
+                    <input name="submit" type="submit" id="submit" value="<?php echo $row_anios->fecha_registro ?>" style="padding-bottom:3px; padding-top:3px; margin-bottom: 15px; background-color: #FF5722; border-radius:6px; width: 100px;margin-right: 15px;" />
+                  <?php } else { ?>
+                    <input name="submit" type="submit" id="submit" value="<?php echo $row_anios->fecha_registro ?>" style="padding-bottom:3px; padding-top:3px; margin-bottom: 15px; background-color: #303F9F; border-radius:6px; width: 100px;margin-right: 15px;" />
+                  <?php } ?>
+                </td>
+              </tr>
+            </table>
+          <?php echo form_close() ?>
+        </form>
+      <?php
+        } 
+      ?>
       <!--Iniciar listar-->
         <?php 
           $existe = count($registros);
